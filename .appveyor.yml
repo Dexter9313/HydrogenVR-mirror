@@ -84,9 +84,9 @@ after_build:
     - copy %PYTHON_PATH%\python37.dll %RELEASE_DIR%
     - copy %PYTHONQT_SHARED% %RELEASE_DIR%
     - copy %PYTHONQT_QTALL_SHARED% %RELEASE_DIR%
-    - echo %cd%
-    - dir
-    - move ..\data\ %RELEASE_DIR%
+    - cd ..
+    - move data %RELEASE_DIR%
+    - cd Release
     - ..\..\%PROJECT_DIRECTORY%\ci\appveyor\before_archiving.bat
     - 7z a -tzip %RELEASE_DIR_NAME%.zip %RELEASE_DIR%
     - IF "%BUILD_TYPE%" == "64bit" (set ARCH=/DX64) ELSE (set ARCH=/DX86)
