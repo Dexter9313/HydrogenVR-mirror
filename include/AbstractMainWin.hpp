@@ -35,10 +35,8 @@
  * won't be taken into account. You will have to set your own Python object by
  * overriding the @ref setupPythonAPI method.
  *
- * The following Python object are also declared by the engine :
- * * <code>%VRHandler</code> : Is equivalent to accessing @ref vrHandler. See
- * @ref VRHandler description for a Python API specification. This object is
- * only available (not None) if and only if VR is enabled.
+ * Some engine class are also instanciated in Python. For the complete list, see
+ * : @ref pycall .
  *
  * The following methods have a Python equivalent function and both will get
  * called by the engine. Implementation of any Python functions is optional.
