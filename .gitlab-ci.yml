@@ -1,0 +1,14 @@
+pages:
+    stage: deploy
+    script:
+        - mkdir build
+        - cd build
+        - cmake ..
+        - make doc
+        - mv html ..
+        - cd ..
+        - mv html public
+    artifacts:
+        paths:
+            - public
+
