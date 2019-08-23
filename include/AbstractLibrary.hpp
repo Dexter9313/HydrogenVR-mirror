@@ -19,19 +19,12 @@
 #ifndef ABSTRACT_LIBRARY_HPP
 #define ABSTRACT_LIBRARY_HPP
 
-
-
 class AbstractLibrary
 {
-	public:
-		AbstractLibrary();
-		virtual void setupPythonAPI() = 0;
-		virtual ~AbstractLibrary();
-
-	private:
-		/* data */
+  public:
+	AbstractLibrary() = default;
+	virtual void setupPythonAPI(){};
+	virtual ~AbstractLibrary();
 };
 
-
 #endif // ABSTRACT_LIBRARY_HPP
-
