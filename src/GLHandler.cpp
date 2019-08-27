@@ -186,7 +186,8 @@ void GLHandler::beginRendering(RenderTarget const& renderTarget, CubeFace face)
 }
 
 void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
-                            RenderTarget const& to)
+                            RenderTarget const& to,
+                            std::vector<Texture> const& uniformTextures)
 {
 	Mesh quad(newMesh());
 	setVertices(quad, {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
@@ -194,7 +195,14 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
 
 	beginRendering(to);
 	useShader(shader);
-	useTextures({getColorAttachmentTexture(from)});
+	std::vector<Texture> texs;
+	texs.push_back(getColorAttachmentTexture(from));
+	// TODO(florian) performance
+	for(auto tex : uniformTextures)
+	{
+		texs.push_back(tex);
+	}
+	useTextures(texs);
 	setBackfaceCulling(false);
 	render(quad, PrimitiveType::TRIANGLE_STRIP);
 	setBackfaceCulling(true);

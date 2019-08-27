@@ -333,12 +333,21 @@ class GLHandler : public QObject
 	 * * Its fragment shader must have a uniform sampler2D to get the @p from
 	 * color attachment texture into. First sampler2D found in the fragment
 	 * shader will be used.
+	 * Additional textures can be sent to following sampler2Ds via the @p
+	 * uniformTextures parameter.
 	 */
 	static void postProcess(ShaderProgram shader,
 	                        GLHandler::RenderTarget const& from,
 	                        RenderTarget const& to
 	                        = {QSettings().value("window/width").toUInt(),
-	                           QSettings().value("window/height").toUInt()});
+	                           QSettings().value("window/height").toUInt()},
+	                        std::vector<Texture> const& uniformTextures = {});
+
+	static RenderTarget getScreenRenderTarget()
+	{
+		return {QSettings().value("window/width").toUInt(),
+		        QSettings().value("window/height").toUInt()};
+	};
 
 	static void
 	    generateEnvironmentMap(GLHandler::RenderTarget const& renderTarget,
