@@ -367,6 +367,14 @@ class GLHandler : public QObject
 	                         int screenx0, int screeny0, int screenx1,
 	                         int screeny1);
 	/**
+	 * @brief Begins wireframe rendering.
+	 */
+	static void beginWireframe();
+	/**
+	 * @brief Ends wireframe rendering.
+	 */
+	static void endWireframe();
+	/**
 	 * @brief Begins transparent meshes rendering.
 	 *
 	 * The meshes will access the depth buffer as read only to not occlude one

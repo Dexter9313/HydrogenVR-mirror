@@ -103,6 +103,10 @@ void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 	{
 		dbgCamera->toggle();
 	}
+	if(e->key() == Qt::Key_F2)
+	{
+		toggleWireframe();
+	}
 	if(e->key() == Qt::Key_F8)
 	{
 		PythonQtHandler::toggleConsole();
@@ -330,6 +334,11 @@ void AbstractMainWin::toggleHDR()
 	setHDR(!getHDR());
 }
 
+void AbstractMainWin::toggleWireframe()
+{
+	setWireframe(!getWireframe());
+}
+
 void AbstractMainWin::initializeGL()
 {
 	// Init GL
@@ -403,6 +412,10 @@ void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
 		renderVRControls();
 	}
 	// render scene
+	if(wireframe)
+	{
+		GLHandler::beginWireframe();
+	}
 	renderScene(*renderPath.camera, pathId);
 	if(pathIdRenderingControllers == pathId && !renderControllersBeforeScene)
 	{
@@ -413,6 +426,10 @@ void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
 	if(debug && debugInHeadset)
 	{
 		dbgCamera->renderCamera(renderPath.camera);
+	}
+	if(wireframe)
+	{
+		GLHandler::endWireframe();
 	}
 }
 
@@ -533,12 +550,20 @@ void AbstractMainWin::paintGL()
 				pair.second.camera->uploadMatrices();
 			}
 			// render scene
+			if(wireframe)
+			{
+				GLHandler::beginWireframe();
+			}
 			renderScene(*pair.second.camera, pair.first);
 			PythonQtHandler::evalScript(
 			    "if \"renderScene\" in dir():\n\trenderScene()");
 			if(debug)
 			{
 				dbgCamera->renderCamera(pair.second.camera);
+			}
+			if(wireframe)
+			{
+				GLHandler::endWireframe();
 			}
 		}
 

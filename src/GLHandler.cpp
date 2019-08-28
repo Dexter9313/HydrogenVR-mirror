@@ -253,6 +253,16 @@ void GLHandler::showOnScreen(RenderTarget const& renderTarget, int screenx0,
 	                        GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
+void GLHandler::beginWireframe()
+{
+	GLHandler::glf().glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+}
+
+void GLHandler::endWireframe()
+{
+	GLHandler::glf().glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
 void GLHandler::beginTransparent(GLenum blendfuncSfactor,
                                  GLenum blendfuncDfactor)
 {

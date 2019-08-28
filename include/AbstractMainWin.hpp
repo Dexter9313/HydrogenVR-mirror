@@ -93,6 +93,12 @@ class AbstractMainWin : public QOpenGLWindow
 	 */
 	Q_PROPERTY(bool hdr READ getHDR WRITE setHDR)
 	/**
+	 * @brief Wether the engine renders all meshes as wireframes or not.
+	 *
+	 * @accessors getWireframe(), setWireframe()
+	 */
+	Q_PROPERTY(bool wireframe READ getWireframe WRITE setWireframe)
+	/**
 	 * @brief Wether VR mode is enabled or not.
 	 *
 	 * @accessors vrIsEnabled(), setVR()
@@ -142,6 +148,14 @@ class AbstractMainWin : public QOpenGLWindow
 	 */
 	void setHDR(bool hdr);
 	/**
+	 * @getter{wireframe}
+	 */
+	bool getWireframe() const { return wireframe; };
+	/**
+	 * @setter{wireframe}
+	 */
+	void setWireframe(bool wireframe) { this->wireframe = wireframe; };
+	/**
 	 * @getter{vr}
 	 */
 	bool vrIsEnabled() const;
@@ -165,6 +179,10 @@ class AbstractMainWin : public QOpenGLWindow
 	 * @toggle{hdr}
 	 */
 	void toggleHDR();
+	/**
+	 * @toggle{wireframe}
+	 */
+	void toggleWireframe();
 	/**
 	 * @toggle{vr}
 	 */
@@ -433,7 +451,8 @@ class AbstractMainWin : public QOpenGLWindow
 	QList<QPair<QString, RenderPath>> sceneRenderPipeline_;
 	DebugCamera* dbgCamera = nullptr;
 
-	bool hdr = QSettings().value("window/hdr").toBool();
+	bool hdr       = QSettings().value("window/hdr").toBool();
+	bool wireframe = false;
 
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
 	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};
