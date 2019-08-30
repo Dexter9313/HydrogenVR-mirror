@@ -31,10 +31,20 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 
 	InputManager inputManager;
 	addGroup("controls", tr("Controls"));
-	for(auto const& key : inputManager.getMapping().keys())
+	currentForm->addRow(tr("ENGINE"), new QWidget());
+	for(auto const& key : inputManager.getOrderedEngineKeys())
 	{
 		addKeySequenceSetting(inputManager[key].id, key,
 		                      inputManager[key].name);
+	}
+	if(!inputManager.getOrderedProgramKeys().empty())
+	{
+		currentForm->addRow(PROJECT_NAME, new QWidget());
+		for(auto const& key : inputManager.getOrderedProgramKeys())
+		{
+			addKeySequenceSetting(inputManager[key].id, key,
+			                      inputManager[key].name);
+		}
 	}
 
 	addGroup("vr", tr("Virtual Reality"));
@@ -352,11 +362,14 @@ void SettingsWidget::addKeySequenceSetting(QString const& name,
 
 	if(!settings.contains(fullName))
 	{
-		settings.setValue(fullName, defaultVal);
+		settings.setValue(fullName,
+		                  defaultVal.toString(QKeySequence::PortableText));
 	}
 
-	auto keyseqEdit = new QKeySequenceEdit(
-	    settings.value(fullName).value<QKeySequence>(), this);
+	auto keyseqEdit
+	    = new QKeySequenceEdit(QKeySequence(settings.value(fullName).toString(),
+	                                        QKeySequence::PortableText),
+	                           this);
 
 	connect(
 	    keyseqEdit, &QKeySequenceEdit::keySequenceChanged, this,
