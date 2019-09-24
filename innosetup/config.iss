@@ -80,7 +80,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"; Tasks:
 [Run]
 Filename: "{app}\{#MyAppName}.exe"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 Filename: "{tmp}\{#VCREDIST_EXE}"; Check: VCRedistNeedsInstall
-Filename: "{tmp}\python.exe"
+Filename: "{tmp}\python.exe"; Check: PythonNeedsInstall
 
 [Code]
 #IFDEF UNICODE
@@ -176,4 +176,9 @@ begin
 #else
   Result := not (VCVersionInstalled(VC_2015_REDIST_X86_MIN) or VCVersionInstalled(VC_2017_REDIST_X86_MIN));
 #endif
+end;
+
+function PythonNeedsInstall: Boolean;
+begin
+  Result := not RegKeyExists(HKEY_CURRENT_USER, 'Software\Python')
 end;
