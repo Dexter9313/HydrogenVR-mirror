@@ -934,7 +934,7 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
                                            GLvoid const* data,
                                            GLint internalFormat, GLenum format,
                                            GLenum target, GLint filter,
-                                           GLint wrap)
+                                           GLint wrap, GLenum type)
 {
 	++texCount();
 	Texture tex  = {};
@@ -943,7 +943,7 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
 	// glActiveTexture(GL_TEXTURE0);
 	glf().glBindTexture(target, tex.glTexture);
 	glf().glTexImage2D(target, 0, internalFormat, width, height, 0, format,
-	                   GL_UNSIGNED_BYTE, data);
+	                   type, data);
 	// GL_UNSIGNED_BYTE, data);
 	// glGenerateMipmap(target);
 	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
