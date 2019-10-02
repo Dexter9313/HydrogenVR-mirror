@@ -4,17 +4,17 @@ build:
     verbosity: detailed
 environment:
   matrix:
-    - QTPATH: 'C:\Qt\5.11\msvc2015'
+    - BUILD_TYPE: 32bit
+      QTPATH: 'C:\Qt\5.11\msvc2015'
       PYTHON_PATH: 'C:\Python37'
       PYTHON_LIB: 'C:\Python37\libs'
-      BUILD_TYPE: 32bit
       GENERATOR: '"Visual Studio 14 2015"'
       VCREDIST: vc_redist.x86.exe
       PYTHON_URL: "https://www.python.org/ftp/python/3.7.4/python-3.7.4.exe"
-    - QTPATH: 'C:\Qt\5.11\msvc2015_64'
+    - BUILD_TYPE: 64bit
+      QTPATH: 'C:\Qt\5.11\msvc2015_64'
       PYTHON_PATH: 'C:\Python37-x64'
       PYTHON_LIB: 'C:\Python37-x64\libs'
-      BUILD_TYPE: 64bit
       GENERATOR: '"Visual Studio 14 2015 Win64"'
       VCREDIST: vc_redist.x64.exe
       PYTHON_URL: "https://www.python.org/ftp/python/3.7.4/python-3.7.4-amd64.exe"
