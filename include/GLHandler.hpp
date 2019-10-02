@@ -602,6 +602,11 @@ class GLHandler : public QObject
 	static Mesh newMesh();
 
   public: // doesn't work in PythonQt
+	static void setVertices(
+	    GLHandler::Mesh& mesh, float const* vertices, size_t size,
+	    ShaderProgram const& shaderProgram,
+	    std::vector<QPair<const char*, unsigned int>> const& mapping,
+	    std::vector<unsigned int> const& elements = {});
 	/**
 	 * @brief Sets vertices data for a mesh.
 	 *
@@ -669,6 +674,8 @@ class GLHandler : public QObject
 	                        QStringList const& mappingNames,
 	                        std::vector<unsigned int> const& mappingSizes,
 	                        std::vector<unsigned int> const& elements = {});
+	static void updateVertices(GLHandler::Mesh& mesh, float const* vertices,
+	                           size_t size);
 	/**
 	 * @brief Updates a mesh vertices data.
 	 *
