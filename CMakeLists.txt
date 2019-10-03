@@ -296,6 +296,7 @@ if(NOT WIN32)
 	endif()
 
 	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5:amd64,\
+	libassimp4:amd64,\
 	libpythonqt-qt5-python3-3:amd64,\
 	libpythonqt-qtall-qt5-python3-3:amd64,\
 	libqt5gui5:amd64,\
