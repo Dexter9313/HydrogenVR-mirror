@@ -9,14 +9,16 @@ environment:
       PYTHON_PATH: 'C:\Python37'
       PYTHON_LIB: 'C:\Python37\libs'
       GENERATOR: '"Visual Studio 14 2015"'
-      VCREDIST: vc_redist.x86.exe
+      VCREDIST13: vcredist_x86.exe
+      VCREDIST15: vc_redist.x86.exe
       PYTHON_URL: "https://www.python.org/ftp/python/3.7.4/python-3.7.4.exe"
     - BUILD_TYPE: 64bit
       QTPATH: 'C:\Qt\5.11\msvc2015_64'
       PYTHON_PATH: 'C:\Python37-x64'
       PYTHON_LIB: 'C:\Python37-x64\libs'
       GENERATOR: '"Visual Studio 14 2015 Win64"'
-      VCREDIST: vc_redist.x64.exe
+      VCREDIST13: vcredist_x64.exe
+      VCREDIST15: vc_redist.x64.exe
       PYTHON_URL: "https://www.python.org/ftp/python/3.7.4/python-3.7.4-amd64.exe"
 
 install:
@@ -96,8 +98,8 @@ after_build:
     - 7z a -tzip %RELEASE_DIR_NAME%.zip %RELEASE_DIR%
     - IF "%BUILD_TYPE%" == "64bit" (set ARCH=/DX64) ELSE (set ARCH=/DX86)
 
-    - set VCREDIST13_URL="https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/%VCREDIST%"
-    - set VCREDIST15_URL="https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/%VCREDIST%"
+    - set VCREDIST13_URL="https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/%VCREDIST13%"
+    - set VCREDIST15_URL="https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/%VCREDIST15%"
     - appveyor DownloadFile %VCREDIST13_URL% -FileName vcredist13.exe
     - appveyor DownloadFile %VCREDIST15_URL% -FileName vcredist15.exe
     - appveyor DownloadFile %PYTHON_URL% -FileName python.exe
