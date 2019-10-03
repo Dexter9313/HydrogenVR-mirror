@@ -158,6 +158,10 @@ const
   VC_2017_REDIST_X86_MIN = '{5EEFCEFB-E5F7-4C82-99A5-813F04AA4FBD}';
   VC_2017_REDIST_X64_MIN = '{F1B0FB3A-E0EA-47A6-9383-3650655403B0}';
 
+  { Visual C++ 2019 Redistributable 14.23.27820 }
+  VC_2019_REDIST_X86_MIN = '{00AC3934-26B4-406E-807C-1692AC7329EC}';
+  VC_2019_REDIST_X64_MIN = '{A94EC1B2-932B-49D7-8AF2-4FBD29FF314B}';
+
 function MsiQueryProductState(szProduct: string): INSTALLSTATE;
   external 'MsiQueryProductState{#AW}@msi.dll stdcall';
 
@@ -174,9 +178,9 @@ begin
   { the Visual C++ 2010 Redist (x86) and Visual C++ 2010 SP1 Redist(x86) }
   { are installed for the current user }
 #ifdef X64
-  Result := not (VCVersionInstalled(VC_2013_REDIST_X64_MIN) or VCVersionInstalled(VC_2017_REDIST_X64_MIN));
+  Result := not (VCVersionInstalled(VC_2013_REDIST_X64_MIN));
 #else
-  Result := not (VCVersionInstalled(VC_2013_REDIST_X86_MIN) or VCVersionInstalled(VC_2017_REDIST_X86_MIN));
+  Result := not (VCVersionInstalled(VC_2013_REDIST_X86_MIN));
 #endif
 end;
 
@@ -188,9 +192,9 @@ begin
   { the Visual C++ 2010 Redist (x86) and Visual C++ 2010 SP1 Redist(x86) }
   { are installed for the current user }
 #ifdef X64
-  Result := not (VCVersionInstalled(VC_2015_REDIST_X64_MIN) or VCVersionInstalled(VC_2017_REDIST_X64_MIN));
+  Result := not (VCVersionInstalled(VC_2015_REDIST_X64_MIN) or VCVersionInstalled(VC_2017_REDIST_X64_MIN) or VCVersionInstalled(VC_2019_REDIST_X64_MIN));
 #else
-  Result := not (VCVersionInstalled(VC_2015_REDIST_X86_MIN) or VCVersionInstalled(VC_2017_REDIST_X86_MIN));
+  Result := not (VCVersionInstalled(VC_2015_REDIST_X86_MIN) or VCVersionInstalled(VC_2017_REDIST_X86_MIN) or VCVersionInstalled(VC_2019_REDIST_X86_MIN));
 #endif
 end;
 
