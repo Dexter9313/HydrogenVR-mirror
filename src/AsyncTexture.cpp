@@ -81,23 +81,26 @@ AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
 	});
 }
 
+void AsyncTexture::updateTexture()
+{
+	if(loaded || !future.isFinished())
+	{
+		return;
+	}
+	tex = GLHandler::copyPBOToTex(pbo, sRGB);
+	GLHandler::deletePixelBufferObject(pbo);
+	loaded = true;
+}
+
 GLHandler::Texture AsyncTexture::getTexture()
 {
+	updateTexture();
+
 	if(loaded)
 	{
 		return tex;
 	}
-
-	if(!future.isFinished())
-	{
-		return defaultTex;
-	}
-
-	tex = GLHandler::copyPBOToTex(pbo, sRGB);
-	GLHandler::deletePixelBufferObject(pbo);
-	loaded = true;
-
-	return tex;
+	return defaultTex;
 }
 
 AsyncTexture::~AsyncTexture()

@@ -36,6 +36,7 @@ class AsyncTexture
 	             QColor const& defaultColor, bool sRGB = true);
 	bool isLoaded() const { return loaded; };
 	GLHandler::Texture getDefaultTexture() const { return defaultTex; };
+	void updateTexture();
 	GLHandler::Texture getTexture();
 	~AsyncTexture();
 
