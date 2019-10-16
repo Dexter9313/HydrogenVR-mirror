@@ -16,39 +16,40 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef ASYNCTEXTURE_HPP
-#define ASYNCTEXTURE_HPP
+#ifndef ASYNCMESH_HPP
+#define ASYNCMESH_HPP
 
-#include <QImageReader>
 #include <QtConcurrent>
-#include <cstring>
 
-#include "GLHandler.hpp"
+#include "AssetLoader.hpp"
 
-class AsyncTexture
+class AsyncMesh
 {
   public:
-	AsyncTexture(QString const& path, QColor const& defaultColor,
-	             bool sRGB = true);
-	// will override the file texture size to load more (interpolate) or less
-	// pixels
-	AsyncTexture(QString const& path, unsigned int width, unsigned int height,
-	             QColor const& defaultColor, bool sRGB = true);
+	// grabs ownage of defaultMesh
+	AsyncMesh(QString const& path, GLHandler::Mesh const& defaultMesh,
+	          GLHandler::ShaderProgram shader);
 	bool isLoaded() const { return loaded; };
-	GLHandler::Texture getDefaultTexture() const { return defaultTex; };
-	GLHandler::Texture getTexture();
-	~AsyncTexture();
+	float getBoundingSphereRadius() const { return boundingSphereRadius; };
+	GLHandler::Mesh getDefaultMesh() const { return defaultMesh; };
+	void updateMesh();
+	GLHandler::Mesh getMesh();
+	~AsyncMesh();
 
   private:
-	GLHandler::Texture defaultTex = {};
-	GLHandler::Texture tex        = {};
+	GLHandler::Mesh defaultMesh = {};
+	GLHandler::Mesh mesh        = {};
 
-	GLHandler::PixelBufferObject pbo = {};
-	QFuture<void> future;
+	QFuture<float> future;
 
-	bool loaded    = false;
-	bool emptyPath = false;
-	bool sRGB;
+	bool loaded                = false;
+	bool emptyPath             = false;
+	float boundingSphereRadius = 0.f;
+	std::vector<std::vector<float>> loadedVertices;
+	std::vector<std::vector<unsigned int>> loadedIndices;
+	std::vector<std::string> loadedTexs;
+
+	GLHandler::ShaderProgram shader;
 };
 
-#endif // ASYNCTEXTURE_HPP
+#endif // ASYNCMESH_HPP

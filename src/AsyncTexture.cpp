@@ -29,6 +29,12 @@ AsyncTexture::AsyncTexture(QString const& path, QColor const& defaultColor,
 	color[3]   = defaultColor.alpha();
 	defaultTex = GLHandler::newTexture(1, 1, &(color[0]), sRGB);
 
+	if(path.isEmpty())
+	{
+		emptyPath = true;
+		return;
+	}
+
 	QImageReader imReader(path);
 	QSize size(imReader.size());
 
@@ -62,6 +68,12 @@ AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
 	color[3]   = defaultColor.alpha();
 	defaultTex = GLHandler::newTexture(1, 1, &(color[0]), sRGB);
 
+	if(path.isEmpty())
+	{
+		emptyPath = true;
+		return;
+	}
+
 	pbo = GLHandler::newPixelBufferObject(width, height);
 	unsigned char* data(pbo.mappedData);
 
@@ -81,37 +93,43 @@ AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
 	});
 }
 
-void AsyncTexture::updateTexture()
-{
-	if(loaded || !future.isFinished())
-	{
-		return;
-	}
-	tex = GLHandler::copyPBOToTex(pbo, sRGB);
-	GLHandler::deletePixelBufferObject(pbo);
-	loaded = true;
-}
-
 GLHandler::Texture AsyncTexture::getTexture()
 {
-	updateTexture();
+	if(emptyPath)
+	{
+		return defaultTex;
+	}
 
 	if(loaded)
 	{
 		return tex;
 	}
-	return defaultTex;
+
+	if(!future.isFinished())
+	{
+		return defaultTex;
+	}
+
+	tex = GLHandler::copyPBOToTex(pbo, sRGB);
+	GLHandler::deletePixelBufferObject(pbo);
+	loaded = true;
+
+	return tex;
 }
 
 AsyncTexture::~AsyncTexture()
 {
 	GLHandler::deleteTexture(defaultTex);
-	if(loaded)
+	if(!emptyPath)
 	{
-		GLHandler::deleteTexture(tex);
-	}
-	else
-	{
-		GLHandler::deletePixelBufferObject(pbo);
+		if(loaded)
+		{
+			GLHandler::deleteTexture(tex);
+		}
+		else
+		{
+			future.waitForFinished();
+			GLHandler::deletePixelBufferObject(pbo);
+		}
 	}
 }
