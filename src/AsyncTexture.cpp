@@ -18,6 +18,14 @@
 
 #include "AsyncTexture.hpp"
 
+QList<QPair<QFuture<void>, GLHandler::PixelBufferObject>>&
+    AsyncTexture::waitingForDeletion()
+{
+	static QList<QPair<QFuture<void>, GLHandler::PixelBufferObject>>
+	    waitingForDeletion = {};
+	return waitingForDeletion;
+}
+
 AsyncTexture::AsyncTexture(QString const& path, QColor const& defaultColor,
                            bool sRGB)
     : sRGB(sRGB)
@@ -126,10 +134,30 @@ AsyncTexture::~AsyncTexture()
 		{
 			GLHandler::deleteTexture(tex);
 		}
+		else if(future.isFinished())
+		{
+			GLHandler::deletePixelBufferObject(pbo);
+		}
 		else
 		{
-			future.waitForFinished();
-			GLHandler::deletePixelBufferObject(pbo);
+			waitingForDeletion().push_back({future, pbo});
+		}
+	}
+}
+
+void AsyncTexture::garbageCollect(bool force)
+{
+	// go in reverse because of possible deletions
+	for(int i(waitingForDeletion().size() - 1); i >= 0; --i)
+	{
+		if(force)
+		{
+			waitingForDeletion()[i].first.waitForFinished();
+		}
+		if(waitingForDeletion()[i].first.isFinished())
+		{
+			GLHandler::deletePixelBufferObject(waitingForDeletion()[i].second);
+			waitingForDeletion().removeAt(i);
 		}
 	}
 }

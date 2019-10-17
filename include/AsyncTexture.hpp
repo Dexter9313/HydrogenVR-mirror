@@ -39,6 +39,8 @@ class AsyncTexture
 	GLHandler::Texture getTexture();
 	~AsyncTexture();
 
+	static void garbageCollect(bool force = false);
+
   private:
 	GLHandler::Texture defaultTex = {};
 	GLHandler::Texture tex        = {};
@@ -49,6 +51,12 @@ class AsyncTexture
 	bool loaded    = false;
 	bool emptyPath = false;
 	bool sRGB;
+
+	// never wait for futures to finish within destructor ! if you need to
+	// release resources and the future didn't finish, push it here and other
+	// AsyncTextures will take care of it later
+	static QList<QPair<QFuture<void>, GLHandler::PixelBufferObject>>&
+	    waitingForDeletion();
 };
 
 #endif // ASYNCTEXTURE_HPP
