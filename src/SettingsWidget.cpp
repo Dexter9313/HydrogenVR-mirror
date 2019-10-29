@@ -28,6 +28,7 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addUIntSetting("height", 800, tr("Window Height"), 0, 10000);
 	addBoolSetting("fullscreen", false, tr("Window Fullscreen"));
 	addLanguageSetting();
+	addBoolSetting("dithering", true, tr("Enable Dithering"));
 
 	InputManager inputManager;
 	addGroup("controls", tr("Controls"));
