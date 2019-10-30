@@ -47,6 +47,10 @@ class AssetLoader
 	                       std::vector<GLHandler::Mesh>& meshes,
 	                       std::vector<GLHandler::Texture>& textures,
 	                       GLHandler::ShaderProgram const& shader);
+
+  private:
+	static std::string findFilePath(std::string directory,
+	                                std::string fileName);
 };
 
 #endif // ASSETLOADER_H

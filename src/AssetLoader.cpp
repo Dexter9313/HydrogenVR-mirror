@@ -111,9 +111,13 @@ float AssetLoader::loadFile(QString modelName,
 		pos++;
 		if(!texpath.empty())
 		{
-			texpath.append(directory).append("/").append(
-			    texpath.substr(pos, texpath.size() - 1));
+			texpath = findFilePath(directory,
+			                       texpath.substr(pos, texpath.size() - 1));
 			texturesPaths.push_back(texpath);
+		}
+		else
+		{
+			texturesPaths.push_back("");
 		}
 	}
 
@@ -138,6 +142,11 @@ void AssetLoader::loadModel(
 	}
 	for(auto const& texPath : texturesPaths)
 	{
+		if(texPath == "")
+		{
+			textures.push_back(GLHandler::Texture());
+			continue;
+		}
 		textures.push_back(GLHandler::newTexture(texPath.c_str()));
 	}
 }
@@ -159,4 +168,36 @@ float AssetLoader::loadModel(QString const& modelName,
 
 	loadModel(v, ind, tPaths, meshes, textures, shader);
 	return bsRad;
+}
+
+std::string AssetLoader::findFilePath(std::string directory,
+                                      std::string fileName)
+{
+	QDir dir(directory.c_str());
+	QFileInfoList results = dir.entryInfoList();
+	for(auto entry : results)
+	{
+		if(entry.fileName() == "." || entry.fileName() == "..")
+		{
+			continue;
+		}
+		if(!entry.isDir())
+		{
+			if(entry.fileName() == fileName.c_str())
+			{
+				return entry.filePath().toLatin1().data();
+			}
+			else
+			{
+				continue;
+			}
+		}
+		std::string retrieved(
+		    findFilePath(entry.filePath().toLatin1().data(), fileName));
+		if(retrieved != "")
+		{
+			return retrieved;
+		}
+	}
+	return "";
 }
