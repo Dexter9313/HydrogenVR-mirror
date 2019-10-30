@@ -28,8 +28,9 @@ class Model
 {
   public:
 	// takes ownership of shader
-	Model(QString const& modelName, GLHandler::ShaderProgram shader
-	                                = GLHandler::newShader("controllers"));
+	explicit Model(QString const& modelName,
+	               GLHandler::ShaderProgram shader
+	               = GLHandler::newShader("controllers"));
 	GLHandler::ShaderProgram getShader() const { return shader; };
 	float getBoundingSphereRadius() { return boundingSphereRadius; };
 	void render(QMatrix4x4 const& model = QMatrix4x4(),
