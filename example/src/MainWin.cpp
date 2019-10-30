@@ -108,6 +108,8 @@ void MainWin::initScene()
 		                       {{"position", 3}}, indices);
 	}
 
+	model = new Model("models/drone/scene.gltf");
+
 	bill           = new Billboard("data/example/images/cc.png");
 	bill->position = QVector3D(0.f, 0.f, 0.8f);
 
@@ -129,7 +131,7 @@ void MainWin::initScene()
 	widget3d->getModel().rotate(45.f, 1.f, 0.f);
 	widget3d->getModel().translate(0.6f, 0.f, 0.5f);
 
-	getCamera("default").setEyeDistanceFactor(5.0f);
+	getCamera("default").setEyeDistanceFactor(1.0f);
 
 	appendPostProcessingShader("distort", "distort");
 }
@@ -187,9 +189,9 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 		vrHandler.applyHiddenAreaDepth(vrHandler.getCurrentRenderingEye());
 	}
 
-	QMatrix4x4 model;
-	model.translate(-1.5, 0, 0);
-	GLHandler::setUpRender(sphereShader, model,
+	QMatrix4x4 modelSphere;
+	modelSphere.translate(-1.5, 0, 0);
+	GLHandler::setUpRender(sphereShader, modelSphere,
 	                       GLHandler::GeometricSpace::SKYBOX);
 	GLHandler::render(sphere);
 	GLHandler::clearDepthBuffer();
@@ -210,6 +212,22 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	GLHandler::setUpRender(playareaShader, QMatrix4x4(),
 	                       GLHandler::GeometricSpace::STANDINGTRACKED);
 	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
+
+	QMatrix4x4 rescale;
+	rescale.scale(0.01);
+	if(vrHandler)
+	{
+		rescale.translate(0.f, 70.f, 0.f);
+		model->render(rescale, GLHandler::GeometricSpace::STANDINGTRACKED);
+	}
+	else
+	{
+		rescale.translate(0.f, 0.f, -50.f);
+		rescale.rotate(180.f, QVector3D(0.f, 0.f, 1.f));
+		rescale.rotate(120.f, QVector3D(1.f, 1.f, 1.f).normalized());
+		rescale.scale(0.3);
+		model->render(rescale);
+	}
 
 	widget3d->render();
 	bill->render(camera);
@@ -241,6 +259,8 @@ MainWin::~MainWin()
 	GLHandler::deleteShader(playareaShader);
 
 	delete movingCube;
+
+	delete model;
 
 	delete bill;
 	delete text;

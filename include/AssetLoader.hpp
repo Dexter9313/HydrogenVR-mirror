@@ -49,8 +49,8 @@ class AssetLoader
 	                       GLHandler::ShaderProgram const& shader);
 
   private:
-	static std::string findFilePath(std::string directory,
-	                                std::string fileName);
+	static std::string findFilePath(std::string const& directory,
+	                                std::string const& fileName);
 };
 
 #endif // ASSETLOADER_H

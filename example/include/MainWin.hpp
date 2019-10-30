@@ -5,6 +5,7 @@
 
 #include "AbstractMainWin.hpp"
 #include "Billboard.hpp"
+#include "Model.hpp"
 #include "Primitives.hpp"
 #include "Text3D.hpp"
 #include "Widget3D.hpp"
@@ -54,6 +55,8 @@ class MainWin : public AbstractMainWin
 
 	GLHandler::Mesh playarea;
 	GLHandler::ShaderProgram playareaShader;
+
+	Model* model;
 
 	Billboard* bill;
 	Text3D* text;

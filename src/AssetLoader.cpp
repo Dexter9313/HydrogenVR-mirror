@@ -117,7 +117,7 @@ float AssetLoader::loadFile(QString modelName,
 		}
 		else
 		{
-			texturesPaths.push_back("");
+			texturesPaths.emplace_back("");
 		}
 	}
 
@@ -142,9 +142,9 @@ void AssetLoader::loadModel(
 	}
 	for(auto const& texPath : texturesPaths)
 	{
-		if(texPath == "")
+		if(texPath.empty())
 		{
-			textures.push_back(GLHandler::Texture());
+			textures.emplace_back(GLHandler::Texture());
 			continue;
 		}
 		textures.push_back(GLHandler::newTexture(texPath.c_str()));
@@ -170,12 +170,12 @@ float AssetLoader::loadModel(QString const& modelName,
 	return bsRad;
 }
 
-std::string AssetLoader::findFilePath(std::string directory,
-                                      std::string fileName)
+std::string AssetLoader::findFilePath(std::string const& directory,
+                                      std::string const& fileName)
 {
 	QDir dir(directory.c_str());
 	QFileInfoList results = dir.entryInfoList();
-	for(auto entry : results)
+	for(auto const& entry : results)
 	{
 		if(entry.fileName() == "." || entry.fileName() == "..")
 		{
@@ -187,14 +187,11 @@ std::string AssetLoader::findFilePath(std::string directory,
 			{
 				return entry.filePath().toLatin1().data();
 			}
-			else
-			{
-				continue;
-			}
+			continue;
 		}
 		std::string retrieved(
 		    findFilePath(entry.filePath().toLatin1().data(), fileName));
-		if(retrieved != "")
+		if(!retrieved.empty())
 		{
 			return retrieved;
 		}
