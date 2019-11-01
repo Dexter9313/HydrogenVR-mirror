@@ -21,30 +21,52 @@
 Model::Model(QString const& modelName, GLHandler::ShaderProgram shader)
     : shader(shader)
 {
-	boundingSphereRadius
-	    = AssetLoader::loadModel(modelName, meshes, textures, shader);
+	boundingSphereRadius = AssetLoader::loadModel(modelName, meshes, shader);
+
+	GLHandler::setShaderParam(shader, "diffuse", 0);
+	GLHandler::setShaderParam(shader, "specular", 1);
+	GLHandler::setShaderParam(shader, "ambient", 2);
+	GLHandler::setShaderParam(shader, "emissive", 3);
+	GLHandler::setShaderParam(shader, "normals", 4);
+	GLHandler::setShaderParam(shader, "shininess", 5);
+	GLHandler::setShaderParam(shader, "opacity", 6);
+	GLHandler::setShaderParam(shader, "lightmap", 7);
 }
 
-void Model::render(QMatrix4x4 const& model,
+void Model::render(QMatrix4x4 const& model, Light const& light,
                    GLHandler::GeometricSpace geometricSpace)
 {
+	GLHandler::setShaderParam(shader, "lightPosition",
+	                          model.inverted() * light.position);
+	GLHandler::setShaderParam(shader, "lightColor", light.color);
+	GLHandler::setShaderParam(shader, "lightAmbiantFactor",
+	                          light.ambiantFactor);
+
 	GLHandler::setUpRender(shader, model, geometricSpace);
-	for(unsigned int i(0); i < meshes.size(); ++i)
+	for(auto& mesh : meshes)
 	{
-		GLHandler::useTextures({textures[i]});
-		GLHandler::render(meshes[i]);
+		GLHandler::useTextures(
+		    {mesh.textures[AssetLoader::TextureType::DIFFUSE],
+		     mesh.textures[AssetLoader::TextureType::SPECULAR],
+		     mesh.textures[AssetLoader::TextureType::AMBIENT],
+		     mesh.textures[AssetLoader::TextureType::EMISSIVE],
+		     mesh.textures[AssetLoader::TextureType::NORMALS],
+		     mesh.textures[AssetLoader::TextureType::SHININESS],
+		     mesh.textures[AssetLoader::TextureType::OPACITY],
+		     mesh.textures[AssetLoader::TextureType::LIGHTMAP]});
+		GLHandler::render(mesh.mesh);
 	}
 }
 
 Model::~Model()
 {
-	for(auto mesh : meshes)
+	for(auto const& mesh : meshes)
 	{
-		GLHandler::deleteMesh(mesh);
-	}
-	for(auto tex : textures)
-	{
-		GLHandler::deleteTexture(tex);
+		GLHandler::deleteMesh(mesh.mesh);
+		for(auto pair : mesh.textures)
+		{
+			GLHandler::deleteTexture(pair.second);
+		}
 	}
 	GLHandler::deleteShader(shader);
 }

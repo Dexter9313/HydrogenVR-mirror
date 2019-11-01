@@ -108,7 +108,9 @@ void MainWin::initScene()
 		                       {{"position", 3}}, indices);
 	}
 
+	// model = new Model("Intergalactic_Spaceship-(Wavefront).obj");
 	model = new Model("models/drone/scene.gltf");
+	light.ambiantFactor = 0.05f;
 
 	bill           = new Billboard("data/example/images/cc.png");
 	bill->position = QVector3D(0.f, 0.f, 0.8f);
@@ -134,6 +136,8 @@ void MainWin::initScene()
 	getCamera("default").setEyeDistanceFactor(1.0f);
 
 	appendPostProcessingShader("distort", "distort");
+
+	timer.start();
 }
 
 void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
@@ -215,18 +219,24 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 
 	QMatrix4x4 rescale;
 	rescale.scale(0.01);
+	float secs(timer.elapsed() / 1000.f);
+	light.color = QColor(128 + 127 * cos(secs/2.0), 128 + 127*sin(secs/2.0), 0);
+	light.color = QColor(255, 255, 255);
 	if(vrHandler)
 	{
+		light.position = 100.f * QVector3D(cos(secs), 0.f, sin(secs));
 		rescale.translate(0.f, 70.f, 0.f);
-		model->render(rescale, GLHandler::GeometricSpace::STANDINGTRACKED);
+		rescale.rotate(180.f, QVector3D(0.f, 1.f, 0.f));
+		model->render(rescale, light, GLHandler::GeometricSpace::STANDINGTRACKED);
 	}
 	else
 	{
+		light.position = 100.f * QVector3D(cos(secs), sin(secs), 0.f);
 		rescale.translate(0.f, 0.f, -50.f);
 		rescale.rotate(180.f, QVector3D(0.f, 0.f, 1.f));
 		rescale.rotate(120.f, QVector3D(1.f, 1.f, 1.f).normalized());
 		rescale.scale(0.3);
-		model->render(rescale);
+		model->render(rescale, light);
 	}
 
 	widget3d->render();

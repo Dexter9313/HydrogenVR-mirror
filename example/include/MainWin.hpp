@@ -57,12 +57,15 @@ class MainWin : public AbstractMainWin
 	GLHandler::ShaderProgram playareaShader;
 
 	Model* model;
+	Model::Light light;
 
 	Billboard* bill;
 	Text3D* text;
 	Widget3D* widget3d;
 
 	float barrelPower = 1.01f;
+
+	QElapsedTimer timer;
 };
 
 #endif // MAINWIN_H
