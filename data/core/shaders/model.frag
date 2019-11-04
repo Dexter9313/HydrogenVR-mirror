@@ -9,16 +9,45 @@ uniform sampler2D shininess;
 uniform sampler2D opacity;
 uniform sampler2D lightmap;
 
+uniform sampler2D shadowmap;
+
 in vec3 f_position;
 in vec3 f_tangent;
 in vec3 f_normal;
 in vec2 f_texcoord;
+in vec4 f_lightrelpos;
 
 uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform float lightAmbiantFactor;
 
 out vec4 outColor;
+
+float computeShadow(vec3 normal)
+{
+	vec3 projCoords    = f_lightrelpos.xyz / f_lightrelpos.w;
+	projCoords         = projCoords * 0.5 + 0.5;
+	float currentDepth = projCoords.z;
+
+	const int samples = 3;
+	const float diskSize = 1.0;
+	const float factor = 3.0 * diskSize / samples;
+	vec2 texelSize = factor / textureSize(shadowmap, 0);
+
+	float shadow   = 0.0;
+	for(int x = -1 * (samples / 2); x <= (samples / 2); ++x)
+	{
+		for(int y = -1 * (samples / 2); y <= (samples / 2); ++y)
+		{
+			float pcfDepth
+			    = texture(shadowmap, projCoords.xy + vec2(x, y) * texelSize).r;
+			shadow += currentDepth > pcfDepth ? 0.0 : 1.0;
+		}
+	}
+	shadow /= samples*samples;
+
+	return shadow;
+}
 
 void main()
 {
@@ -52,9 +81,13 @@ void main()
 	vec3 normal = normalize(fromtangentspace * (normalColor.rgb * 2.0 - 1.0));
 
 	// todo use normalmap
-	float lightcoeff
-	    = max(lightAmbiantFactor,
-	          dot(normalize(normal), normalize(f_position - lightPosition)));
+	float lightcoeff = max(0.0, dot(normal, -1.0 * lightDirection));
+
+	// shadow map
+	float shadow = computeShadow(normal);
+	lightcoeff *= shadow;
+
+	lightcoeff = max(lightAmbiantFactor, lightcoeff);
 
 	// diffuse
 	outColor.rgb
