@@ -23,8 +23,15 @@ out vec4 outColor;
 void main()
 {
 	mat3 fromtangentspace;
-	fromtangentspace[0] = normalize(f_tangent);
 	fromtangentspace[2] = normalize(f_normal);
+	if(length(f_tangent) == 0.0)
+	{
+		fromtangentspace[0] = cross(vec3(0.0, 0.0, 1.0), fromtangentspace[2]);
+	}
+	else
+	{
+		fromtangentspace[0] = normalize(f_tangent);
+	}
 
 	// Gram-Schmidt re-orthogonalize T with respect to N
 	fromtangentspace[0] = normalize(
@@ -42,7 +49,7 @@ void main()
 	vec4 opacityColor   = texture(opacity, f_texcoord);
 	vec4 lightmapColor  = texture(lightmap, f_texcoord);
 
-	vec3 normal = fromtangentspace * (normalColor.rgb * 2.0 - 1.0);
+	vec3 normal = normalize(fromtangentspace * (normalColor.rgb * 2.0 - 1.0));
 
 	// todo use normalmap
 	float lightcoeff

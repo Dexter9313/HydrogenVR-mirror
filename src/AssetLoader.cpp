@@ -90,9 +90,18 @@ float AssetLoader::loadFile(QString modelName,
 			v.push_back(vertice.x());
 			v.push_back(vertice.y());
 			v.push_back(vertice.z());
-			v.push_back(mesh->mTangents[j].x);
-			v.push_back(mesh->mTangents[j].y);
-			v.push_back(mesh->mTangents[j].z);
+			if(mesh->HasTangentsAndBitangents())
+			{
+				v.push_back(mesh->mTangents[j].x);
+				v.push_back(mesh->mTangents[j].y);
+				v.push_back(mesh->mTangents[j].z);
+			}
+			else
+			{
+				v.push_back(0.f);
+				v.push_back(0.f);
+				v.push_back(0.f);
+			}
 			v.push_back(mesh->mNormals[j].x);
 			v.push_back(mesh->mNormals[j].y);
 			v.push_back(mesh->mNormals[j].z);
@@ -129,8 +138,6 @@ float AssetLoader::loadFile(QString modelName,
 			{
 				material->GetTexture(assimpTextureTypes()[j], k, &str);
 				std::string texpath(str.C_Str());
-				std::cout << "Texture (" << j + 1 << ") : " << texpath
-				          << std::endl;
 				int pos(texpath.size() - 1);
 				while(pos > 0 && texpath[pos] != '\\' && texpath[pos] != '/')
 				{
@@ -142,13 +149,8 @@ float AssetLoader::loadFile(QString modelName,
 				}
 				if(!texpath.empty())
 				{
-					std::cout << "Find file : "
-					          << "\"" << directory << "\""
-					          << " \"" << texpath.substr(pos, texpath.size())
-					          << "\"" << std::endl;
 					texpath = findFilePath(directory,
 					                       texpath.substr(pos, texpath.size()));
-					std::cout << "Found : \"" << texpath << "\"" << std::endl;
 					texturesPathsTypes.emplace_back(
 					    std::pair<TextureType, std::string>{textureTypes()[j],
 					                                        texpath});
