@@ -23,26 +23,17 @@
 
 #include "AssetLoader.hpp"
 #include "GLHandler.hpp"
+#include "Light.hpp"
 
 class Model
 {
   public:
-	struct Light
-	{
-		Light()
-		    : position(0.f, 0.f, 0.f)
-		    , color(255, 255, 255)
-		    , ambiantFactor(1.f){};
-		QVector3D position;
-		QColor color;
-		float ambiantFactor;
-	};
-
 	// takes ownership of shader
 	explicit Model(QString const& modelName, GLHandler::ShaderProgram shader
 	                                         = GLHandler::newShader("model"));
 	GLHandler::ShaderProgram getShader() const { return shader; };
 	float getBoundingSphereRadius() { return boundingSphereRadius; };
+	void generateShadowMap(QMatrix4x4 const& model, Light& light);
 	void render(QMatrix4x4 const& model = QMatrix4x4(),
 	            Light const& light      = Light(),
 	            GLHandler::GeometricSpace geometricSpace

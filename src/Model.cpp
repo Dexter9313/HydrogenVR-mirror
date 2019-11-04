@@ -31,16 +31,23 @@ Model::Model(QString const& modelName, GLHandler::ShaderProgram shader)
 	GLHandler::setShaderParam(shader, "shininess", 5);
 	GLHandler::setShaderParam(shader, "opacity", 6);
 	GLHandler::setShaderParam(shader, "lightmap", 7);
+	GLHandler::setShaderParam(shader, "shadowmap", 8);
+}
+
+void Model::generateShadowMap(QMatrix4x4 const& model, Light& light)
+{
+	std::vector<GLHandler::Mesh> glMeshes;
+	for(auto const& mesh : meshes)
+	{
+		glMeshes.push_back(mesh.mesh);
+	}
+	light.generateShadowMap(glMeshes, boundingSphereRadius, model);
 }
 
 void Model::render(QMatrix4x4 const& model, Light const& light,
                    GLHandler::GeometricSpace geometricSpace)
 {
-	GLHandler::setShaderParam(shader, "lightPosition",
-	                          model.inverted() * light.position);
-	GLHandler::setShaderParam(shader, "lightColor", light.color);
-	GLHandler::setShaderParam(shader, "lightAmbiantFactor",
-	                          light.ambiantFactor);
+	light.setUpShader(shader, boundingSphereRadius, model);
 
 	GLHandler::setUpRender(shader, model, geometricSpace);
 	for(auto& mesh : meshes)
@@ -53,7 +60,8 @@ void Model::render(QMatrix4x4 const& model, Light const& light,
 		     mesh.textures[AssetLoader::TextureType::NORMALS],
 		     mesh.textures[AssetLoader::TextureType::SHININESS],
 		     mesh.textures[AssetLoader::TextureType::OPACITY],
-		     mesh.textures[AssetLoader::TextureType::LIGHTMAP]});
+		     mesh.textures[AssetLoader::TextureType::LIGHTMAP],
+		     light.getShadowMap()});
 		GLHandler::render(mesh.mesh);
 	}
 }

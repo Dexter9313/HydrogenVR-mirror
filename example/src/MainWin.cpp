@@ -108,9 +108,9 @@ void MainWin::initScene()
 		                       {{"position", 3}}, indices);
 	}
 
-	// model = new Model("Intergalactic_Spaceship-(Wavefront).obj");
 	model = new Model("models/drone/scene.gltf");
-	light.ambiantFactor = 0.05f;
+	light                = new Light;
+	light->ambiantFactor = 0.05f;
 
 	bill           = new Billboard("data/example/images/cc.png");
 	bill->position = QVector3D(0.f, 0.f, 0.8f);
@@ -177,6 +177,29 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 	}
 
 	movingCube->update();
+
+	modelModel = QMatrix4x4();
+	modelModel.scale(0.5 / model->getBoundingSphereRadius());
+	float secs(timer.elapsed() / 5000.f);
+	light->color
+	    = QColor(128 + 127 * cos(secs / 2.0), 128 + 127 * sin(secs / 2.0), 0);
+	light->color = QColor(255, 255, 255);
+	if(vrHandler)
+	{
+		modelModel.translate(0.f, 1.4f * model->getBoundingSphereRadius(), 0.f);
+		modelModel.rotate(180.f, QVector3D(0.f, 1.f, 0.f));
+		//light->direction = QVector3D(cos(secs), 0.f, sin(secs));
+	}
+	else
+	{
+		modelModel.translate(0.f, 0.f, -50.f);
+		modelModel.rotate(180.f, QVector3D(0.f, 0.f, 1.f));
+		modelModel.rotate(120.f, QVector3D(1.f, 1.f, 1.f).normalized());
+		modelModel.scale(0.3);
+		//light->direction = QVector3D(sin(secs), cos(secs), 0.f);
+	}
+	modelModel.rotate(100.f*secs, QVector3D(0.f, 1.f, 0.f));
+	model->generateShadowMap(modelModel, *light);
 }
 
 void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
@@ -217,26 +240,14 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	                       GLHandler::GeometricSpace::STANDINGTRACKED);
 	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
 
-	QMatrix4x4 rescale;
-	rescale.scale(0.01);
-	float secs(timer.elapsed() / 1000.f);
-	light.color = QColor(128 + 127 * cos(secs/2.0), 128 + 127*sin(secs/2.0), 0);
-	light.color = QColor(255, 255, 255);
 	if(vrHandler)
 	{
-		light.position = 100.f * QVector3D(cos(secs), 0.f, sin(secs));
-		rescale.translate(0.f, 70.f, 0.f);
-		rescale.rotate(180.f, QVector3D(0.f, 1.f, 0.f));
-		model->render(rescale, light, GLHandler::GeometricSpace::STANDINGTRACKED);
+		model->render(modelModel, *light,
+		              GLHandler::GeometricSpace::STANDINGTRACKED);
 	}
 	else
 	{
-		light.position = 100.f * QVector3D(cos(secs), sin(secs), 0.f);
-		rescale.translate(0.f, 0.f, -50.f);
-		rescale.rotate(180.f, QVector3D(0.f, 0.f, 1.f));
-		rescale.rotate(120.f, QVector3D(1.f, 1.f, 1.f).normalized());
-		rescale.scale(0.3);
-		model->render(rescale, light);
+		model->render(modelModel, *light);
 	}
 
 	widget3d->render();
@@ -271,6 +282,7 @@ MainWin::~MainWin()
 	delete movingCube;
 
 	delete model;
+	delete light;
 
 	delete bill;
 	delete text;

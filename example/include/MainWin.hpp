@@ -57,7 +57,8 @@ class MainWin : public AbstractMainWin
 	GLHandler::ShaderProgram playareaShader;
 
 	Model* model;
-	Model::Light light;
+	Light* light;
+	QMatrix4x4 modelModel;
 
 	Billboard* bill;
 	Text3D* text;

@@ -14,7 +14,7 @@ in vec3 f_tangent;
 in vec3 f_normal;
 in vec2 f_texcoord;
 
-uniform vec3 lightPosition;
+uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform float lightAmbiantFactor;
 
