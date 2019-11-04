@@ -108,7 +108,7 @@ void MainWin::initScene()
 		                       {{"position", 3}}, indices);
 	}
 
-	model = new Model("models/drone/scene.gltf");
+	model                = new Model("models/drone/scene.gltf");
 	light                = new Light;
 	light->ambiantFactor = 0.05f;
 
@@ -188,7 +188,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 	{
 		modelModel.translate(0.f, 1.4f * model->getBoundingSphereRadius(), 0.f);
 		modelModel.rotate(180.f, QVector3D(0.f, 1.f, 0.f));
-		//light->direction = QVector3D(cos(secs), 0.f, sin(secs));
+		// light->direction = QVector3D(cos(secs), 0.f, sin(secs));
 	}
 	else
 	{
@@ -196,9 +196,9 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 		modelModel.rotate(180.f, QVector3D(0.f, 0.f, 1.f));
 		modelModel.rotate(120.f, QVector3D(1.f, 1.f, 1.f).normalized());
 		modelModel.scale(0.3);
-		//light->direction = QVector3D(sin(secs), cos(secs), 0.f);
+		// light->direction = QVector3D(sin(secs), cos(secs), 0.f);
 	}
-	modelModel.rotate(100.f*secs, QVector3D(0.f, 1.f, 0.f));
+	modelModel.rotate(100.f * secs, QVector3D(0.f, 1.f, 0.f));
 	model->generateShadowMap(modelModel, *light);
 }
 
