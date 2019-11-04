@@ -150,6 +150,31 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 	return result;
 }
 
+GLHandler::RenderTarget GLHandler::newDepthMap(unsigned int width,
+                                               unsigned int height,
+                                               bool /*cubemap*/)
+{
+	++renderTargetCount();
+	RenderTarget result = {width, height};
+	result.isDepthMap   = true;
+
+	glf().glGenFramebuffers(1, &result.frameBuffer);
+
+	result.texColorBuffer = newTexture2D(
+	    width, height, nullptr, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT,
+	    GL_TEXTURE_2D, GL_NEAREST, GL_REPEAT, GL_FLOAT);
+
+	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
+	glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+	                             GL_TEXTURE_2D, result.texColorBuffer.glTexture,
+	                             0);
+	glf().glDrawBuffer(GL_NONE);
+	glf().glReadBuffer(GL_NONE);
+	glf().glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	return result;
+}
+
 GLHandler::Texture
     GLHandler::getColorAttachmentTexture(RenderTarget const& renderTarget)
 {
@@ -202,7 +227,7 @@ void GLHandler::beginRendering(GLbitfield clearMask,
                                RenderTarget const& renderTarget, CubeFace face)
 {
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, renderTarget.frameBuffer);
-	if(renderTarget.frameBuffer != 0)
+	if(renderTarget.frameBuffer != 0 && !renderTarget.isDepthMap)
 	{
 		if(renderTarget.texColorBuffer.glTarget == GL_TEXTURE_CUBE_MAP)
 		{
