@@ -60,7 +60,7 @@ void main()
 	float lightcoeff = max(0.0, dot(normal, -1.0 * lightDirection));
 
 	// shadow map
-	float shadow = computeShadow(normal, f_lightrelpos, shadowmap);
+	float shadow = computeShadow(f_lightrelpos, shadowmap);
 	lightcoeff *= shadow;
 
 	lightcoeff = max(lightAmbiantFactor, lightcoeff);

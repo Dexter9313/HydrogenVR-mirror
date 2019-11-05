@@ -1,4 +1,4 @@
-float computeShadow(vec3 normal, vec4 lightspacepos, sampler2D shadowmap)
+float computeShadow(vec4 lightspacepos, sampler2D shadowmap)
 {
 	vec3 projCoords    = lightspacepos.xyz / lightspacepos.w;
 	projCoords         = projCoords * 0.5 + 0.5;
