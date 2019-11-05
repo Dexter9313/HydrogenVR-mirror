@@ -24,7 +24,7 @@ Light::Light()
     , ambiantFactor(0.05f)
 {
 	unsigned int resolution(
-	    pow(2, 6 + QSettings().value("graphics/shadowsquality").toUInt()));
+	    1 << (6 + QSettings().value("graphics/shadowsquality").toUInt()));
 	shadowMap    = GLHandler::newDepthMap(resolution, resolution);
 	shadowShader = GLHandler::newShader("shadow");
 }
