@@ -8,12 +8,15 @@ in vec2 texcoord;
 uniform mat4 camera;
 
 uniform mat4 lightspace;
+uniform float boundingSphereRadius;
 
 out vec3 f_position;
 out vec3 f_tangent;
 out vec3 f_normal;
 out vec2 f_texcoord;
 out vec4 f_lightrelpos;
+
+#include <shadows.glsl>
 
 void main()
 {
@@ -23,5 +26,6 @@ void main()
 	f_tangent     = tangent;
 	f_normal      = normal;
 	f_texcoord    = texcoord;
-	f_lightrelpos = lightspace * vec4(position, 1.0);
+	f_lightrelpos = computeLightSpacePosition(lightspace, position, normal,
+	                                          boundingSphereRadius);
 }

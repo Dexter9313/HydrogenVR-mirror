@@ -1,3 +1,10 @@
+vec4 computeLightSpacePosition(mat4 lightspace, vec3 position, vec3 normal,
+                               float boundingSphereRadius)
+{
+	return lightspace
+	       * vec4(position + 0.00072 * normal * boundingSphereRadius, 1.0);
+}
+
 float computeShadow(vec4 lightspacepos, sampler2D shadowmap)
 {
 	vec3 projCoords    = lightspacepos.xyz / lightspacepos.w;

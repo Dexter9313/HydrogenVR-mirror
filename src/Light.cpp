@@ -54,6 +54,8 @@ void Light::setUpShader(GLHandler::ShaderProgram const& shader,
 	GLHandler::setShaderParam(shader, "lightAmbiantFactor", ambiantFactor);
 	GLHandler::setShaderParam(shader, "lightspace",
 	                          getTransformation(boundingSphereRadius, model));
+	GLHandler::setShaderParam(shader, "boundingSphereRadius",
+	                          boundingSphereRadius);
 }
 
 GLHandler::Texture Light::getShadowMap() const
