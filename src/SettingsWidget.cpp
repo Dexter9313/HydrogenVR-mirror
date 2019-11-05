@@ -28,6 +28,10 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addUIntSetting("height", 800, tr("Window Height"), 0, 10000);
 	addBoolSetting("fullscreen", false, tr("Window Fullscreen"));
 	addLanguageSetting();
+
+	addGroup("graphics", tr("Graphics"));
+	addUIntSetting("shadowsquality", 1, tr("Shadows Quality"), 1, 8);
+	addBoolSetting("smoothshadows", true, tr("Smooth Shadows"));
 	addBoolSetting("dithering", true, tr("Enable Dithering"));
 
 	InputManager inputManager;
@@ -80,6 +84,8 @@ void SettingsWidget::addGroup(QString const& name, QString const& label)
 	newScrollArea->setWidget(newTab);
 
 	QTabWidget::addTab(newScrollArea, label);
+
+	orderedGroups.append(name);
 }
 
 void SettingsWidget::insertGroup(QString const& name, QString const& label,
@@ -95,6 +101,24 @@ void SettingsWidget::insertGroup(QString const& name, QString const& label,
 	newScrollArea->setWidget(newTab);
 
 	QTabWidget::insertTab(index, newScrollArea, label);
+
+	orderedGroups.insert(index, name);
+}
+
+void SettingsWidget::editGroup(QString const& name)
+{
+	currentGroup = name;
+
+	unsigned int index(orderedGroups.indexOf(name));
+
+	currentForm = dynamic_cast<QFormLayout*>(
+	    dynamic_cast<QScrollArea*>(QTabWidget::widget(index))
+	        ->widget()
+	        ->layout());
+
+	currentForm->insertRow(0, tr("ENGINE"), new QWidget());
+	currentForm->addRow(" ", new QWidget());
+	currentForm->addRow(PROJECT_NAME, new QWidget());
 }
 
 void SettingsWidget::addBoolSetting(QString const& name, bool defaultVal,

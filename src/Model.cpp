@@ -18,6 +18,28 @@
 
 #include "Model.hpp"
 
+Model::Model(QString const& modelName)
+{
+	QMap<QString, QString> defines;
+	if(QSettings().value("graphics/smoothshadows").toBool())
+	{
+		defines["SMOOTHSHADOWS"] = "0";
+	}
+	shader = GLHandler::newShader("model", defines);
+
+	boundingSphereRadius = AssetLoader::loadModel(modelName, meshes, shader);
+
+	GLHandler::setShaderParam(shader, "diffuse", 0);
+	GLHandler::setShaderParam(shader, "specular", 1);
+	GLHandler::setShaderParam(shader, "ambient", 2);
+	GLHandler::setShaderParam(shader, "emissive", 3);
+	GLHandler::setShaderParam(shader, "normals", 4);
+	GLHandler::setShaderParam(shader, "shininess", 5);
+	GLHandler::setShaderParam(shader, "opacity", 6);
+	GLHandler::setShaderParam(shader, "lightmap", 7);
+	GLHandler::setShaderParam(shader, "shadowmap", 8);
+}
+
 Model::Model(QString const& modelName, GLHandler::ShaderProgram shader)
     : shader(shader)
 {

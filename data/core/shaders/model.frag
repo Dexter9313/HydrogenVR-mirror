@@ -23,31 +23,7 @@ uniform float lightAmbiantFactor;
 
 out vec4 outColor;
 
-float computeShadow(vec3 normal)
-{
-	vec3 projCoords    = f_lightrelpos.xyz / f_lightrelpos.w;
-	projCoords         = projCoords * 0.5 + 0.5;
-	float currentDepth = projCoords.z;
-
-	const int samples = 3;
-	const float diskSize = 1.0;
-	const float factor = 3.0 * diskSize / samples;
-	vec2 texelSize = factor / textureSize(shadowmap, 0);
-
-	float shadow   = 0.0;
-	for(int x = -1 * (samples / 2); x <= (samples / 2); ++x)
-	{
-		for(int y = -1 * (samples / 2); y <= (samples / 2); ++y)
-		{
-			float pcfDepth
-			    = texture(shadowmap, projCoords.xy + vec2(x, y) * texelSize).r;
-			shadow += currentDepth > pcfDepth ? 0.0 : 1.0;
-		}
-	}
-	shadow /= samples*samples;
-
-	return shadow;
-}
+#include <shadows.glsl>
 
 void main()
 {
@@ -84,7 +60,7 @@ void main()
 	float lightcoeff = max(0.0, dot(normal, -1.0 * lightDirection));
 
 	// shadow map
-	float shadow = computeShadow(normal);
+	float shadow = computeShadow(normal, f_lightrelpos, shadowmap);
 	lightcoeff *= shadow;
 
 	lightcoeff = max(lightAmbiantFactor, lightcoeff);

@@ -460,7 +460,7 @@ void AbstractMainWin::initializeGL()
 	PythonQtHandler::evalScript("if \"initScene\" in dir():\n\tinitScene()");
 
 	// make sure gamma correction is applied last
-	if(QSettings().value("window/dithering").toBool())
+	if(QSettings().value("graphics/dithering").toBool())
 	{
 		appendPostProcessingShader("colors", "colors", {{"DITHERING", "0"}});
 	}
