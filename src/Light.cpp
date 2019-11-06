@@ -30,9 +30,14 @@ Light::Light()
 }
 
 QMatrix4x4 Light::getTransformation(float boundingSphereRadius,
-                                    QMatrix4x4 const& model) const
+                                    QMatrix4x4 const& model, bool biased) const
 {
 	QMatrix4x4 lightSpace;
+	if(biased)
+	{
+		lightSpace.translate(0.5f, 0.5f, 0.5f);
+		lightSpace.scale(0.5);
+	}
 	lightSpace.ortho(-1.f * boundingSphereRadius, boundingSphereRadius,
 	                 -1.f * boundingSphereRadius, boundingSphereRadius,
 	                 -1.f * boundingSphereRadius, boundingSphereRadius);
@@ -52,8 +57,9 @@ void Light::setUpShader(GLHandler::ShaderProgram const& shader,
 	GLHandler::setShaderParam(shader, "lightDirection", relDir.normalized());
 	GLHandler::setShaderParam(shader, "lightColor", color);
 	GLHandler::setShaderParam(shader, "lightAmbiantFactor", ambiantFactor);
-	GLHandler::setShaderParam(shader, "lightspace",
-	                          getTransformation(boundingSphereRadius, model));
+	GLHandler::setShaderParam(
+	    shader, "lightspace",
+	    getTransformation(boundingSphereRadius, model, true));
 	GLHandler::setShaderParam(shader, "boundingSphereRadius",
 	                          boundingSphereRadius);
 }

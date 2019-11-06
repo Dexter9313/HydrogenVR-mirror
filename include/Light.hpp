@@ -28,7 +28,8 @@ class Light
   public:
 	Light();
 	QMatrix4x4 getTransformation(float boundingSphereRadius,
-	                             QMatrix4x4 const& model) const;
+	                             QMatrix4x4 const& model,
+	                             bool biased = false) const;
 	void setUpShader(GLHandler::ShaderProgram const& shader,
 	                 float boundingSphereRadius, QMatrix4x4 const& model) const;
 	GLHandler::Texture getShadowMap() const;

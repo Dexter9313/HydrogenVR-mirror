@@ -9,7 +9,7 @@ uniform sampler2D shininess;
 uniform sampler2D opacity;
 uniform sampler2D lightmap;
 
-uniform sampler2D shadowmap;
+uniform sampler2DShadow shadowmap;
 
 in vec3 f_position;
 in vec3 f_tangent;

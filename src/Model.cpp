@@ -21,9 +21,11 @@
 Model::Model(QString const& modelName)
 {
 	QMap<QString, QString> defines;
-	if(QSettings().value("graphics/smoothshadows").toBool())
+	unsigned int smoothshadows(
+	    QSettings().value("graphics/smoothshadows").toUInt());
+	if(smoothshadows > 0)
 	{
-		defines["SMOOTHSHADOWS"] = "0";
+		defines["SMOOTHSHADOWS"] = QString::number(smoothshadows * 2 + 1);
 	}
 	shader = GLHandler::newShader("model", defines);
 

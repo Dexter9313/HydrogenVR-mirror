@@ -163,6 +163,11 @@ GLHandler::RenderTarget GLHandler::newDepthMap(unsigned int width,
 	result.texColorBuffer = newTexture2D(
 	    width, height, nullptr, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT,
 	    GL_TEXTURE_2D, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_FLOAT);
+	// add depth specific texture parameters for sampler2DShadow
+	glf().glBindTexture(GL_TEXTURE_2D, result.texColorBuffer.glTexture);
+	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
+	                      GL_COMPARE_REF_TO_TEXTURE);
+	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
 	glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
