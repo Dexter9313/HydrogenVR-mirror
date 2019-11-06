@@ -161,8 +161,8 @@ GLHandler::RenderTarget GLHandler::newDepthMap(unsigned int width,
 	glf().glGenFramebuffers(1, &result.frameBuffer);
 
 	result.texColorBuffer = newTexture2D(
-	    width, height, nullptr, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT,
-	    GL_TEXTURE_2D, GL_NEAREST, GL_REPEAT, GL_FLOAT);
+	    width, height, nullptr, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT,
+	    GL_TEXTURE_2D, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_FLOAT);
 
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
 	glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
