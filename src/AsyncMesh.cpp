@@ -38,7 +38,8 @@ AsyncMesh::AsyncMesh(QString const& path, GLHandler::Mesh const& defaultMesh,
 		return;
 	}
 
-	auto thisMeshDescriptors = &this->meshDescriptors;
+	this->meshDescriptors    = new std::vector<AssetLoader::MeshDescriptor>;
+	auto thisMeshDescriptors = this->meshDescriptors;
 	future                   = QtConcurrent::run([path, thisMeshDescriptors]() {
         return AssetLoader::loadFile(path, *thisMeshDescriptors);
     });
@@ -60,7 +61,7 @@ void AsyncMesh::updateMesh()
 	boundingSphereRadius = future.result();
 
 	std::vector<AssetLoader::TexturedMesh> meshes;
-	AssetLoader::loadModel(meshDescriptors, meshes, shader);
+	AssetLoader::loadModel(*meshDescriptors, meshes, shader);
 
 	if(meshes.size() == 1)
 	{
@@ -83,8 +84,7 @@ void AsyncMesh::updateMesh()
 		}
 	}
 
-	meshDescriptors.resize(0);
-	meshDescriptors.shrink_to_fit();
+	delete meshDescriptors;
 }
 
 GLHandler::Mesh AsyncMesh::getMesh()
@@ -114,7 +114,7 @@ AsyncMesh::~AsyncMesh()
 		}
 		else
 		{
-			waitingForDeletion().push_back({future, &meshDescriptors});
+			waitingForDeletion().push_back({future, meshDescriptors});
 		}
 	}
 }

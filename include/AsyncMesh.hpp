@@ -48,7 +48,7 @@ class AsyncMesh
 	bool emptyPath             = false;
 	float boundingSphereRadius = 0.f;
 
-	std::vector<AssetLoader::MeshDescriptor> meshDescriptors;
+	std::vector<AssetLoader::MeshDescriptor>* meshDescriptors;
 
 	GLHandler::ShaderProgram shader;
 
