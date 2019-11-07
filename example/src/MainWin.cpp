@@ -242,12 +242,14 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 
 	if(vrHandler)
 	{
-		model->render(modelModel, *light,
+		model->render(camera.standingTrackedSpaceToWorldTransform().inverted()
+		                  * camera.getWorldSpacePosition(),
+		              modelModel, *light,
 		              GLHandler::GeometricSpace::STANDINGTRACKED);
 	}
 	else
 	{
-		model->render(modelModel, *light);
+		model->render(camera.getWorldSpacePosition(), modelModel, *light);
 	}
 
 	widget3d->render();

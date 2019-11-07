@@ -20,6 +20,7 @@ in vec4 f_lightrelpos;
 uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform float lightAmbiantFactor;
+uniform vec3 cameraPosition;
 
 out vec4 outColor;
 
@@ -63,11 +64,20 @@ void main()
 	float shadow = computeShadow(f_lightrelpos, shadowmap);
 	lightcoeff *= shadow;
 
-	lightcoeff = max(lightAmbiantFactor, lightcoeff);
-
 	// diffuse
 	outColor.rgb
-	    = lightcoeff * diffuseColor.rgb * lightColor + emissiveColor.rgb;
+	    = max(lightAmbiantFactor, lightcoeff) * diffuseColor.rgb * lightColor;
+
+	// specular
+	vec3 viewDir    = normalize(cameraPosition - f_position);
+	vec3 reflectDir = reflect(lightDirection, normal);
+	float spec      = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+	outColor.rgb
+	    += spec * lightColor * max(0.0, lightcoeff) * specularColor.rgb;
+	outColor /= 2.0;
+
+	outColor.rgb += emissiveColor.rgb;
+
 	// transparency
 	outColor.a = 1.0;
 

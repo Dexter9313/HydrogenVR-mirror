@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "AssetLoader.hpp"
+#include "BasicCamera.hpp"
 #include "GLHandler.hpp"
 #include "Light.hpp"
 
@@ -34,7 +35,9 @@ class Model
 	GLHandler::ShaderProgram getShader() const { return shader; };
 	float getBoundingSphereRadius() { return boundingSphereRadius; };
 	void generateShadowMap(QMatrix4x4 const& model, Light& light);
-	void render(QMatrix4x4 const& model = QMatrix4x4(),
+	// cameraPosition : in same space as geometricSpace
+	void render(QVector3D const& cameraPosition,
+	            QMatrix4x4 const& model = QMatrix4x4(),
 	            Light const& light      = Light(),
 	            GLHandler::GeometricSpace geometricSpace
 	            = GLHandler::GeometricSpace::WORLD);

@@ -68,10 +68,12 @@ void Model::generateShadowMap(QMatrix4x4 const& model, Light& light)
 	light.generateShadowMap(glMeshes, boundingSphereRadius, model);
 }
 
-void Model::render(QMatrix4x4 const& model, Light const& light,
-                   GLHandler::GeometricSpace geometricSpace)
+void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
+                   Light const& light, GLHandler::GeometricSpace geometricSpace)
 {
 	light.setUpShader(shader, boundingSphereRadius, model);
+	GLHandler::setShaderParam(shader, "cameraPosition",
+	                          model.inverted() * cameraPosition);
 
 	GLHandler::setUpRender(shader, model, geometricSpace);
 	for(auto& mesh : meshes)
