@@ -18,7 +18,7 @@
 
 #include "Model.hpp"
 
-Model::Model(QString const& modelName)
+Model::Model(QString const& modelName, QColor const& defaultDiffuseColor)
 {
 	QMap<QString, QString> defines;
 	unsigned int smoothshadows(
@@ -29,7 +29,8 @@ Model::Model(QString const& modelName)
 	}
 	shader = GLHandler::newShader("model", defines);
 
-	boundingSphereRadius = AssetLoader::loadModel(modelName, meshes, shader);
+	boundingSphereRadius = AssetLoader::loadModel(modelName, meshes, shader,
+	                                              defaultDiffuseColor);
 
 	GLHandler::setShaderParam(shader, "diffuse", 0);
 	GLHandler::setShaderParam(shader, "specular", 1);
@@ -42,10 +43,12 @@ Model::Model(QString const& modelName)
 	GLHandler::setShaderParam(shader, "shadowmap", 8);
 }
 
-Model::Model(QString const& modelName, GLHandler::ShaderProgram shader)
+Model::Model(QString const& modelName, GLHandler::ShaderProgram shader,
+             QColor const& defaultDiffuseColor)
     : shader(shader)
 {
-	boundingSphereRadius = AssetLoader::loadModel(modelName, meshes, shader);
+	boundingSphereRadius = AssetLoader::loadModel(modelName, meshes, shader,
+	                                              defaultDiffuseColor);
 
 	GLHandler::setShaderParam(shader, "diffuse", 0);
 	GLHandler::setShaderParam(shader, "specular", 1);

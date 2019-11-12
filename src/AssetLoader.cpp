@@ -164,7 +164,8 @@ float AssetLoader::loadFile(QString modelName,
 
 void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
                             std::vector<TexturedMesh>& meshes,
-                            GLHandler::ShaderProgram const& shader)
+                            GLHandler::ShaderProgram const& shader,
+                            QColor const& defaultDiffuseColor)
 {
 	for(auto const& descriptor : meshDescriptors)
 	{
@@ -190,7 +191,7 @@ void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
 		{
 			if(tMesh.textures.count(ttype) == 0)
 			{
-				QColor color(getDefaultColor(ttype));
+				QColor color(getDefaultColor(ttype, defaultDiffuseColor));
 				char data[4];
 				data[0]               = color.red();
 				data[1]               = color.green();
@@ -207,7 +208,8 @@ void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
 
 float AssetLoader::loadModel(QString const& modelName,
                              std::vector<TexturedMesh>& meshes,
-                             GLHandler::ShaderProgram const& shader)
+                             GLHandler::ShaderProgram const& shader,
+                             QColor const& defaultDiffuseColor)
 {
 	std::vector<MeshDescriptor> descriptors;
 
@@ -217,7 +219,7 @@ float AssetLoader::loadModel(QString const& modelName,
 		return 0.f;
 	}
 
-	loadModel(descriptors, meshes, shader);
+	loadModel(descriptors, meshes, shader, defaultDiffuseColor);
 	return bsRad;
 }
 
@@ -250,12 +252,12 @@ std::string AssetLoader::findFilePath(std::string const& directory,
 	return "";
 }
 
-QColor AssetLoader::getDefaultColor(TextureType ttype)
+QColor AssetLoader::getDefaultColor(TextureType ttype, QColor diffuseColor)
 {
 	switch(ttype)
 	{
 		case TextureType::DIFFUSE:
-			return {0xff, 0x09, 0xf7};
+			return diffuseColor;
 		case TextureType::SPECULAR:
 			return {0, 0, 0};
 		case TextureType::AMBIENT:

@@ -30,8 +30,10 @@ class Model
 {
   public:
 	// takes ownership of shader
-	explicit Model(QString const& modelName);
-	Model(QString const& modelName, GLHandler::ShaderProgram shader);
+	explicit Model(QString const& modelName,
+	               QColor const& defaultDiffuseColor = {0xff, 0x09, 0xf7});
+	Model(QString const& modelName, GLHandler::ShaderProgram shader,
+	      QColor const& defaultDiffuseColor = {0xff, 0x09, 0xf7});
 	GLHandler::ShaderProgram getShader() const { return shader; };
 	float getBoundingSphereRadius() { return boundingSphereRadius; };
 	void generateShadowMap(QMatrix4x4 const& model, Light& light);
