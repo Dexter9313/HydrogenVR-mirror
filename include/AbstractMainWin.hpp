@@ -5,9 +5,9 @@
 #include <QElapsedTimer>
 #include <QFileDialog>
 #include <QKeyEvent>
-#include <QOpenGLWindow>
 #include <QProcess>
 #include <QStandardPaths>
+#include <QWindow>
 #include <vector>
 
 #include "AbstractLibrary.hpp"
@@ -79,7 +79,7 @@
  * * Alt+Return : Toggles fullscreen
  * * Escape : Quit
  */
-class AbstractMainWin : public QOpenGLWindow
+class AbstractMainWin : public QWindow
 {
 	Q_OBJECT
 	/**
@@ -248,6 +248,7 @@ class AbstractMainWin : public QOpenGLWindow
 	 * sure you call @ref AbstractMainWin#event if you override it.
 	 */
 	virtual bool event(QEvent* e) override;
+	virtual void exposeEvent(QExposeEvent* event) override;
 	/**
 	 * @brief Captures a Qt keyboard press event.
 	 *
@@ -461,12 +462,12 @@ class AbstractMainWin : public QOpenGLWindow
 	QString pathIdRenderingControllers = "default";
 
   private:
-	void initializeGL() override;
+	void initializeGL();
 	void vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
 	                        bool debug, bool debugInHeadset);
 	void vrRender(Side side, bool debug, bool debugInHeadset);
-	void paintGL() override;
-	void resizeGL(int w, int h) override;
+	void paintGL();
+	void resizeGL(int w, int h);
 
 	float frameTiming_ = 0.f;
 	QElapsedTimer frameTimer;
@@ -479,6 +480,9 @@ class AbstractMainWin : public QOpenGLWindow
 
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
 	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};
+
+	QOpenGLContext m_context;
+	bool initialized = false;
 };
 
 template <class T>

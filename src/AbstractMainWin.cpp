@@ -2,12 +2,17 @@
 
 AbstractMainWin::AbstractMainWin()
 {
+	setSurfaceType(QSurface::OpenGLSurface);
+
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
 	format.setStencilBufferSize(8);
 	format.setVersion(4, 0);
 	format.setSwapInterval(0);
 	setFormat(format);
+
+	m_context.setFormat(format);
+	m_context.create();
 
 	if(hdr)
 	{
@@ -103,11 +108,26 @@ void AbstractMainWin::takeScreenshot(QString path) const
 
 bool AbstractMainWin::event(QEvent* e)
 {
+	if(e->type() == QEvent::UpdateRequest)
+	{
+		paintGL();
+		return true;
+	}
 	if(e->type() == QEvent::Type::Close)
 	{
 		PythonQtHandler::closeConsole();
 	}
-	return QOpenGLWindow::event(e);
+	return QWindow::event(e);
+}
+
+void AbstractMainWin::exposeEvent(QExposeEvent* event)
+{
+	Q_UNUSED(event);
+
+	if(isExposed())
+	{
+		paintGL();
+	}
 }
 
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
@@ -415,6 +435,7 @@ void AbstractMainWin::toggleWireframe()
 
 void AbstractMainWin::initializeGL()
 {
+	m_context.makeCurrent(this);
 	// Init GL
 	GLHandler::init();
 	// Init VR
@@ -470,6 +491,7 @@ void AbstractMainWin::initializeGL()
 	}
 
 	frameTimer.start();
+	initialized = true;
 }
 
 void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
@@ -555,6 +577,12 @@ void AbstractMainWin::vrRender(Side side, bool debug, bool debugInHeadset)
 
 void AbstractMainWin::paintGL()
 {
+	m_context.makeCurrent(this);
+	if(!initialized)
+	{
+		initializeGL();
+	}
+
 	frameTiming_ = frameTimer.restart() / 1000.f;
 
 	setTitle(QString(PROJECT_NAME) + " - " + QString::number(1.f / frameTiming)
@@ -680,7 +708,9 @@ void AbstractMainWin::paintGL()
 	AsyncMesh::garbageCollect();
 
 	// Trigger a repaint immediatly
-	update();
+	m_context.swapBuffers(this);
+	// animate continuously: schedule an update
+	QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
 }
 
 void AbstractMainWin::resizeGL(int w, int h)
