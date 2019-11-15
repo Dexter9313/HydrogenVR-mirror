@@ -538,41 +538,29 @@ void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
 
 void AbstractMainWin::vrRender(Side side, bool debug, bool debugInHeadset)
 {
-	vrHandler.beginRendering(side, !postProcessingPipeline_.empty());
+	vrHandler.beginRendering(side);
 
 	for(auto pair : sceneRenderPipeline_)
 	{
 		vrRenderSinglePath(pair.second, pair.first, debug, debugInHeadset);
 	}
 
-	// do all postprocesses except last one
-	for(int i(0); i < postProcessingPipeline_.size() - 1; ++i)
+	// do all postprocesses including last one
+	int i(0);
+	for(; i < postProcessingPipeline_.size(); ++i)
 	{
 		applyPostProcShaderParams(postProcessingPipeline_[i].first,
 		                          postProcessingPipeline_[i].second);
 		auto texs = getPostProcessingUniformTextures(
 		    postProcessingPipeline_[i].first,
 		    postProcessingPipeline_[i].second);
-		GLHandler::postProcess(postProcessingPipeline_[i].second,
-		                       vrHandler.getPostProcessingTarget(i % 2),
-		                       vrHandler.getPostProcessingTarget((i + 1) % 2),
-		                       texs);
-	}
-	// render last one on true target
-	if(!postProcessingPipeline_.empty())
-	{
-		int i = postProcessingPipeline_.size() - 1;
-		applyPostProcShaderParams(postProcessingPipeline_[i].first,
-		                          postProcessingPipeline_[i].second);
-		auto texs = getPostProcessingUniformTextures(
-		    postProcessingPipeline_[i].first,
-		    postProcessingPipeline_[i].second);
-		GLHandler::postProcess(postProcessingPipeline_[i].second,
-		                       vrHandler.getPostProcessingTarget(i % 2),
-		                       vrHandler.getEyeTarget(side), texs);
+		GLHandler::postProcess(
+		    postProcessingPipeline_[i].second,
+		    vrHandler.getPostProcessingTarget(i % 2, side),
+		    vrHandler.getPostProcessingTarget((i + 1) % 2, side), texs);
 	}
 
-	vrHandler.submitRendering(side);
+	vrHandler.submitRendering(side, i % 2);
 }
 
 void AbstractMainWin::paintGL()

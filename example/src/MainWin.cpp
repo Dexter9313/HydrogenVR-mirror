@@ -211,10 +211,6 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	GLHandler::render(skybox, GLHandler::PrimitiveType::TRIANGLE_STRIP);
 	GLHandler::setBackfaceCulling(true);
 	GLHandler::clearDepthBuffer();
-	if(vrHandler)
-	{
-		vrHandler.applyHiddenAreaDepth(vrHandler.getCurrentRenderingEye());
-	}
 
 	QMatrix4x4 modelSphere;
 	modelSphere.translate(-1.5, 0, 0);
@@ -222,10 +218,6 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	                       GLHandler::GeometricSpace::SKYBOX);
 	GLHandler::render(sphere);
 	GLHandler::clearDepthBuffer();
-	if(vrHandler)
-	{
-		vrHandler.applyHiddenAreaDepth(vrHandler.getCurrentRenderingEye());
-	}
 
 	movingCube->render();
 
