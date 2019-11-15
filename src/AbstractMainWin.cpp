@@ -120,16 +120,6 @@ bool AbstractMainWin::event(QEvent* e)
 	return QWindow::event(e);
 }
 
-void AbstractMainWin::exposeEvent(QExposeEvent* event)
-{
-	Q_UNUSED(event);
-
-	if(isExposed())
-	{
-		paintGL();
-	}
-}
-
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 {
 	QString modifier;
