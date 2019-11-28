@@ -110,7 +110,12 @@ bool AbstractMainWin::event(QEvent* e)
 {
 	if(e->type() == QEvent::UpdateRequest)
 	{
-		paintGL();
+		if(isExposed())
+		{
+			paintGL();
+		}
+		// animate continuously: schedule an update
+		QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
 		return true;
 	}
 	if(e->type() == QEvent::Type::Close)
@@ -687,8 +692,6 @@ void AbstractMainWin::paintGL()
 
 	// Trigger a repaint immediatly
 	m_context.swapBuffers(this);
-	// animate continuously: schedule an update
-	QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
 }
 
 void AbstractMainWin::resizeGL(int w, int h)
