@@ -566,10 +566,11 @@ void AbstractMainWin::paintGL()
 		initializeGL();
 	}
 
-	frameTiming_ = frameTimer.restart() / 1000.f;
+	frameTiming_ = frameTimer.nsecsElapsed() * 1.e-9f;
+	frameTimer.restart();
 
-	setTitle(QString(PROJECT_NAME) + " - " + QString::number(1.f / frameTiming)
-	         + " FPS");
+	setTitle(QString(PROJECT_NAME) + " - "
+	         + QString::number(round(1.f / frameTiming)) + " FPS");
 
 	if(vrHandler)
 	{
