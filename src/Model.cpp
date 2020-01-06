@@ -78,7 +78,6 @@ void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
 	GLHandler::setShaderParam(shader, "cameraPosition",
 	                          model.inverted() * cameraPosition);
 
-	GLHandler::setUpRender(shader, model, geometricSpace);
 	for(auto& mesh : meshes)
 	{
 		GLHandler::useTextures(
@@ -91,6 +90,7 @@ void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
 		     mesh.textures[AssetLoader::TextureType::OPACITY],
 		     mesh.textures[AssetLoader::TextureType::LIGHTMAP],
 		     light.getShadowMap()});
+		GLHandler::setUpRender(shader, model * mesh.transform, geometricSpace);
 		GLHandler::render(mesh.mesh);
 	}
 }
