@@ -64,11 +64,13 @@ Model::Model(QString const& modelName, GLHandler::ShaderProgram shader,
 void Model::generateShadowMap(QMatrix4x4 const& model, Light& light)
 {
 	std::vector<GLHandler::Mesh> glMeshes;
+	std::vector<QMatrix4x4> models;
 	for(auto const& mesh : meshes)
 	{
 		glMeshes.push_back(mesh.mesh);
+		models.push_back(mesh.transform);
 	}
-	light.generateShadowMap(glMeshes, boundingSphereRadius, model);
+	light.generateShadowMap(glMeshes, boundingSphereRadius, models, model);
 }
 
 void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
@@ -90,6 +92,7 @@ void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
 		     mesh.textures[AssetLoader::TextureType::OPACITY],
 		     mesh.textures[AssetLoader::TextureType::LIGHTMAP],
 		     light.getShadowMap()});
+		GLHandler::setShaderParam(shader, "localTransform", mesh.transform);
 		GLHandler::setUpRender(shader, model * mesh.transform, geometricSpace);
 		GLHandler::render(mesh.mesh);
 	}
