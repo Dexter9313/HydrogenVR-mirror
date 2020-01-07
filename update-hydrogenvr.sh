@@ -18,7 +18,7 @@ else
 fi
 git commit -m "Update HydrogenVR to $HASH" -e
 
-if [[ $(cat build.conf.example | grep PROJECT | wc -l) -ne $(cat build.conf | grep PROJECT | wc -l) ]]
+if [[ $(grep PROJECT build.conf.example | wc -l) -ne $(grep PROJECT build.conf | wc -l) ]]
 then
 	echo "WARNING:"
 	echo "Your build.conf seems outdated, please compare it with build.conf.example."
