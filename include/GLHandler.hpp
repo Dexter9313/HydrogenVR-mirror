@@ -803,6 +803,12 @@ class GLHandler : public QObject
 	    GLenum target = GL_TEXTURE_CUBE_MAP, GLint filter = GL_LINEAR,
 	    GLint wrap = GL_CLAMP_TO_EDGE);
 	static GLuint getGLTexture(Texture const& tex) { return tex.glTexture; };
+	// level = level of mipmapping
+	static QSize getTextureSize(Texture const& tex, unsigned int level = 0);
+	static void generateMipmap(Texture const& tex);
+	static unsigned int getHighestMipmapLevel(Texture const& tex);
+	static QImage getTextureContentAsImage(Texture const& tex,
+	                                       unsigned int level = 0);
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);
 

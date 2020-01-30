@@ -1067,6 +1067,68 @@ GLHandler::Texture GLHandler::newTextureCubemap(
 	return tex;
 }
 
+QSize GLHandler::getTextureSize(Texture const& tex, unsigned int level)
+{
+	GLint width, height;
+	glf().glBindTexture(tex.glTarget, tex.glTexture);
+	glf().glGetTexLevelParameteriv(tex.glTarget, level, GL_TEXTURE_WIDTH,
+	                               &width);
+	glf().glGetTexLevelParameteriv(tex.glTarget, level, GL_TEXTURE_HEIGHT,
+	                               &height);
+	glf().glBindTexture(tex.glTarget, 0);
+
+	return {width, height};
+}
+
+void GLHandler::generateMipmap(Texture const& tex)
+{
+	glf().glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+	glf().glBindTexture(tex.glTarget, tex.glTexture);
+	glf().glGenerateMipmap(tex.glTarget);
+	glf().glBindTexture(tex.glTarget, 0);
+}
+
+unsigned int GLHandler::getHighestMipmapLevel(Texture const& tex)
+{
+	QSize size(GLHandler::getTextureSize(tex));
+	return log2(size.width() > size.height() ? size.width() : size.height());
+}
+
+QImage GLHandler::getTextureContentAsImage(Texture const& tex,
+                                           unsigned int level)
+{
+	QSize size(getTextureSize(tex, level));
+
+	GLint internalFormat;
+	glf().glBindTexture(tex.glTarget, tex.glTexture);
+	glf().glGetTexLevelParameteriv(
+	    tex.glTarget, level, GL_TEXTURE_INTERNAL_FORMAT,
+	    &internalFormat); // get internal format type of GL texture
+	GLint numBytes = 0;
+	switch(internalFormat) // determine what type GL texture has...
+	{
+		case GL_RGB:
+			// numBytes = size.width() * size.height() * 3;
+			break;
+		case GL_RGBA:
+			numBytes = size.width() * size.height() * 4;
+			break;
+		case GL_SRGB8_ALPHA8:
+			numBytes = size.width() * size.height() * 4;
+		default: // unsupported type for now
+			break;
+	}
+
+	if(numBytes > 0)
+	{
+		QImage result(size, QImage::Format::Format_RGBA8888);
+		glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_UNSIGNED_BYTE,
+		                    result.bits());
+		return result;
+	}
+	qDebug() << "Unsupported internal format...";
+	throw("");
+}
 void GLHandler::useTextures(std::vector<Texture> const& textures)
 {
 	for(unsigned int i(0); i < textures.size(); ++i)
