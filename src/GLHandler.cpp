@@ -1091,7 +1091,8 @@ void GLHandler::generateMipmap(Texture const& tex)
 unsigned int GLHandler::getHighestMipmapLevel(Texture const& tex)
 {
 	QSize size(GLHandler::getTextureSize(tex));
-	return log2(size.width() > size.height() ? size.width() : size.height());
+	return static_cast<unsigned int>(
+	    log2(size.width() > size.height() ? size.width() : size.height()));
 }
 
 QImage GLHandler::getTextureContentAsImage(Texture const& tex,
