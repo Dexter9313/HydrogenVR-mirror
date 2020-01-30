@@ -881,7 +881,6 @@ GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
 		           << '\n';
 		return {};
 	}
-	qDebug() << img_data.size();
 	return newTexture(img_data, sRGB);
 }
 
@@ -1020,12 +1019,12 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
 	Texture tex  = {};
 	tex.glTarget = target;
 	glf().glGenTextures(1, &tex.glTexture);
-	glf().glActiveTexture(GL_TEXTURE0);
+	// glActiveTexture(GL_TEXTURE0);
 	glf().glBindTexture(target, tex.glTexture);
 	glf().glTexImage2D(target, 0, internalFormat, width, height, 0, format,
 	                   type, data);
 	// GL_UNSIGNED_BYTE, data);
-	// glf().glGenerateMipmap(target);
+	// glGenerateMipmap(target);
 	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
 	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
 	glf().glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
