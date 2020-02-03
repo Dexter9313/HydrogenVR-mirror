@@ -1084,6 +1084,8 @@ void GLHandler::generateMipmap(Texture const& tex)
 {
 	glf().glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 	glf().glBindTexture(tex.glTarget, tex.glTexture);
+	glf().glTexParameteri(tex.glTarget, GL_TEXTURE_MIN_FILTER,
+	                      GL_LINEAR_MIPMAP_LINEAR);
 	glf().glGenerateMipmap(tex.glTarget);
 	glf().glBindTexture(tex.glTarget, 0);
 }
