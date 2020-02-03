@@ -205,6 +205,12 @@ class AbstractMainWin : public QWindow
 	void insertSceneRenderPath(QString const& id, RenderPath path,
 	                           unsigned int pos);
 	void removeSceneRenderPath(QString const& id);
+
+	// in frame units
+	float getLastFrameAverageLuminance() const
+	{
+		return lastFrameAverageLuminance;
+	};
 	/**
 	 * @brief Appends a post-processing shader to the post-processing pipeline.
 	 *
@@ -479,6 +485,7 @@ class AbstractMainWin : public QWindow
 
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
 	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};
+	float lastFrameAverageLuminance                              = 0.f;
 
 	QOpenGLContext m_context;
 	bool initialized = false;

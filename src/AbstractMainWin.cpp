@@ -540,6 +540,9 @@ void AbstractMainWin::vrRender(Side side, bool debug, bool debugInHeadset)
 		vrRenderSinglePath(pair.second, pair.first, debug, debugInHeadset);
 	}
 
+	lastFrameAverageLuminance
+	    += vrHandler.getRenderTargetAverageLuminance(side);
+
 	// do all postprocesses including last one
 	int i(0);
 	for(; i < postProcessingPipeline_.size(); ++i)
@@ -606,8 +609,10 @@ void AbstractMainWin::paintGL()
 	{
 		vrHandler.prepareRendering();
 
+		lastFrameAverageLuminance = 0.f;
 		vrRender(Side::LEFT, debug, debugInHeadset);
 		vrRender(Side::RIGHT, debug, debugInHeadset);
+		lastFrameAverageLuminance *= 0.5f;
 
 		if(!thirdRender && (!debug || debugInHeadset))
 		{
@@ -658,6 +663,21 @@ void AbstractMainWin::paintGL()
 			{
 				GLHandler::endWireframe();
 			}
+		}
+
+		// compute average luminance
+		auto tex
+		    = GLHandler::getColorAttachmentTexture(postProcessingTargets[0]);
+		GLHandler::generateMipmap(tex);
+		unsigned int maxlvl = GLHandler::getHighestMipmapLevel(tex);
+		GLfloat* buff;
+		unsigned int allocated(
+		    GLHandler::getTextureContentAsData(&buff, tex, maxlvl));
+		if(allocated > 0)
+		{
+			lastFrameAverageLuminance
+			    = 0.2126 * buff[0] + 0.7152 * buff[1] + 0.0722 * buff[2];
+			delete buff;
 		}
 
 		// do all postprocesses except last one

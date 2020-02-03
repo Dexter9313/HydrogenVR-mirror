@@ -67,6 +67,7 @@ class VRHandler : public QObject
 	float getFrameTiming() const;
 	const Controller* getController(Side side) const;
 	const Hand* getHand(Side side) const;
+	float getRenderTargetAverageLuminance(Side eye) const;
 	// same order as in HmdQuad_t struct
 	QMatrix4x4 getSeatedToStandingAbsoluteTrackingPos() const;
 	QSizeF getPlayAreaSize() const;

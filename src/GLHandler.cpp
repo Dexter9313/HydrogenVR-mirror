@@ -1106,31 +1106,60 @@ QImage GLHandler::getTextureContentAsImage(Texture const& tex,
 	glf().glBindTexture(tex.glTarget, tex.glTexture);
 	glf().glGetTexLevelParameteriv(
 	    tex.glTarget, level, GL_TEXTURE_INTERNAL_FORMAT,
-	    &internalFormat); // get internal format type of GL texture
-	GLint numBytes = 0;
+	    &internalFormat);  // get internal format type of GL texture
 	switch(internalFormat) // determine what type GL texture has...
 	{
 		case GL_RGB:
-			// numBytes = size.width() * size.height() * 3;
-			break;
+		{
+			QImage result(size, QImage::Format::Format_RGB888);
+			glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_UNSIGNED_BYTE,
+			                    result.bits());
+			return result;
+		}
+		break;
 		case GL_RGBA:
-			numBytes = size.width() * size.height() * 4;
-			break;
+		{
+			QImage result(size, QImage::Format::Format_RGBA8888);
+			glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_UNSIGNED_BYTE,
+			                    result.bits());
+			return result;
+		}
+		break;
 		case GL_SRGB8_ALPHA8:
-			numBytes = size.width() * size.height() * 4;
+		{
+			QImage result(size, QImage::Format::Format_RGBA8888);
+			glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_UNSIGNED_BYTE,
+			                    result.bits());
+			return result;
+		}
 		default: // unsupported type for now
 			break;
 	}
 
-	if(numBytes > 0)
-	{
-		QImage result(size, QImage::Format::Format_RGBA8888);
-		glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_UNSIGNED_BYTE,
-		                    result.bits());
-		return result;
-	}
 	return {};
 }
+
+unsigned int GLHandler::getTextureContentAsData(GLfloat** buff,
+                                                Texture const& tex,
+                                                unsigned int level)
+{
+	QSize size(getTextureSize(tex, level));
+
+	GLint internalFormat;
+	glf().glBindTexture(tex.glTarget, tex.glTexture);
+	glf().glGetTexLevelParameteriv(
+	    tex.glTarget, level, GL_TEXTURE_INTERNAL_FORMAT,
+	    &internalFormat); // get internal format type of GL texture
+	GLint numFloats = 0;
+	if(internalFormat == GL_RGBA16F) // determine what type GL texture has...
+	{
+		numFloats = size.width() * size.height() * 4;
+		*buff     = new GLfloat[numFloats];
+		glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_FLOAT, *buff);
+	}
+	return numFloats;
+}
+
 void GLHandler::useTextures(std::vector<Texture> const& textures)
 {
 	for(unsigned int i(0); i < textures.size(); ++i)

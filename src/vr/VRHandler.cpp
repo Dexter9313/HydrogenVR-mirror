@@ -206,6 +206,29 @@ const Hand* VRHandler::getHand(Side side) const
 	return nullptr;
 }
 
+float VRHandler::getRenderTargetAverageLuminance(Side eye) const
+{
+	auto tex = GLHandler::getColorAttachmentTexture(
+	    eye == Side::LEFT ? postProcessingTargetsLeft[0]
+	                      : postProcessingTargetsRight[0]);
+	GLHandler::generateMipmap(tex);
+
+	unsigned int maxlvl = GLHandler::getHighestMipmapLevel(tex);
+
+	float lastFrameAverageLuminance = 0.f;
+	GLfloat* buff;
+	unsigned int allocated(
+	    GLHandler::getTextureContentAsData(&buff, tex, maxlvl));
+	if(allocated > 0)
+	{
+		lastFrameAverageLuminance
+		    = 0.2126 * buff[0] + 0.7152 * buff[1] + 0.0722 * buff[2];
+		delete buff;
+	}
+	return lastFrameAverageLuminance
+	       * 1.041f; // compensate for hidden area mesh
+}
+
 QMatrix4x4 VRHandler::getSeatedToStandingAbsoluteTrackingPos() const
 {
 	return toQt(vr_pointer->GetSeatedZeroPoseToStandingAbsoluteTrackingPose());

@@ -809,6 +809,11 @@ class GLHandler : public QObject
 	static unsigned int getHighestMipmapLevel(Texture const& tex);
 	static QImage getTextureContentAsImage(Texture const& tex,
 	                                       unsigned int level = 0);
+	// allocates buff ; don't forget to delete ; returns allocated size (zero if
+	// error)
+	static unsigned int getTextureContentAsData(GLfloat** buff,
+	                                            Texture const& tex,
+	                                            unsigned int level = 0);
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);
 
