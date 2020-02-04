@@ -1151,7 +1151,7 @@ unsigned int GLHandler::getTextureContentAsData(GLfloat** buff,
 	    tex.glTarget, level, GL_TEXTURE_INTERNAL_FORMAT,
 	    &internalFormat); // get internal format type of GL texture
 	GLint numFloats = 0;
-	if(internalFormat == GL_RGBA16F) // determine what type GL texture has...
+	if(internalFormat == GL_RGBA32F) // determine what type GL texture has...
 	{
 		numFloats = size.width() * size.height() * 4;
 		*buff     = new GLfloat[numFloats];

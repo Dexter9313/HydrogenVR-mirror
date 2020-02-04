@@ -16,7 +16,7 @@ AbstractMainWin::AbstractMainWin()
 
 	if(hdr)
 	{
-		GLHandler::defaultRenderTargetFormat() = GL_RGBA16F;
+		GLHandler::defaultRenderTargetFormat() = GL_RGBA32F;
 	}
 
 	PythonQtHandler::init();
@@ -399,7 +399,7 @@ std::vector<GLHandler::Texture>
 
 void AbstractMainWin::reloadPostProcessingTargets()
 {
-	GLHandler::defaultRenderTargetFormat() = hdr ? GL_RGBA16F : GL_RGBA;
+	GLHandler::defaultRenderTargetFormat() = hdr ? GL_RGBA32F : GL_RGBA;
 
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargets[1]);

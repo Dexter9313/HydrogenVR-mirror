@@ -257,7 +257,7 @@ class GLHandler : public QObject
 	 * exemple).
 	 *
 	 * By default, if HDR rendering if off, will contain GL_RGBA8, and if HDR
-	 * rendering is on, will contain GL_RGBA16F.
+	 * rendering is on, will contain GL_RGBA32F.
 	 */
 	static GLint& defaultRenderTargetFormat();
 
