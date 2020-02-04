@@ -684,13 +684,13 @@ void AbstractMainWin::paintGL()
 			{
 				for(int j(0); j < size.height(); ++j)
 				{
-					unsigned int id(i * size.height() + j);
+					unsigned int id(j * size.width() + i);
 					float lum(0.2126 * buff[4 * id] + 0.7152 * buff[4 * id + 1]
 					          + 0.0722 * buff[4 * id + 2]);
 					float coeff
-					    = exp(-1 * pow((i - halfWidth) * 1.5 / halfWidth, 2));
+					    = exp(-1 * pow((i - halfWidth) * 2.5 / halfWidth, 2));
 					coeff *= exp(-1
-					             * pow((j - halfHeight) * 1.5 / halfHeight, 2));
+					             * pow((j - halfHeight) * 2.5 / halfHeight, 2));
 					coeffSum += coeff;
 					lastFrameAverageLuminance += coeff * lum;
 				}
