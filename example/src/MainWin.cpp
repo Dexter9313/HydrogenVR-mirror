@@ -249,10 +249,11 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	text->render();
 }
 
-void MainWin::applyPostProcShaderParams(QString const& id,
-                                        GLHandler::ShaderProgram shader) const
+void MainWin::applyPostProcShaderParams(
+    QString const& id, GLHandler::ShaderProgram shader,
+    GLHandler::RenderTarget const& currentTarget) const
 {
-	AbstractMainWin::applyPostProcShaderParams(id, shader);
+	AbstractMainWin::applyPostProcShaderParams(id, shader, currentTarget);
 	if(id == "distort")
 	{
 		GLHandler::setShaderParam(shader, "BarrelPower", barrelPower);

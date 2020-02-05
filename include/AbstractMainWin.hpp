@@ -390,9 +390,9 @@ class AbstractMainWin : public QWindow
 	 * processing.
 	 * @param shader The actual shader program.
 	 */
-	virtual void
-	    applyPostProcShaderParams(QString const& id,
-	                              GLHandler::ShaderProgram shader) const;
+	virtual void applyPostProcShaderParams(
+	    QString const& id, GLHandler::ShaderProgram shader,
+	    GLHandler::RenderTarget const& currentTarget) const;
 	/**
 	 * @brief Override to return textures to use in your post-processing
 	 * shaders.
@@ -404,9 +404,9 @@ class AbstractMainWin : public QWindow
 	 * processing.
 	 * @param shader The actual shader program.
 	 */
-	virtual std::vector<GLHandler::Texture>
-	    getPostProcessingUniformTextures(QString const& id,
-	                                     GLHandler::ShaderProgram shader) const;
+	virtual std::vector<GLHandler::Texture> getPostProcessingUniformTextures(
+	    QString const& id, GLHandler::ShaderProgram shader,
+	    GLHandler::RenderTarget const& currentTarget) const;
 	/**
 	 * @brief Reloads the post-processing targets (2D and VR).
 	 *

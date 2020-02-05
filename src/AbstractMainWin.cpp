@@ -374,7 +374,8 @@ void AbstractMainWin::removePostProcessingShader(QString const& id)
 }
 
 void AbstractMainWin::applyPostProcShaderParams(
-    QString const& id, GLHandler::ShaderProgram shader) const
+    QString const& id, GLHandler::ShaderProgram shader,
+    GLHandler::RenderTarget const& /*currentTarget*/) const
 {
 	if(id == "colors")
 	{
@@ -392,7 +393,8 @@ void AbstractMainWin::applyPostProcShaderParams(
 
 std::vector<GLHandler::Texture>
     AbstractMainWin::getPostProcessingUniformTextures(
-        QString const& /*id*/, GLHandler::ShaderProgram /*shader*/) const
+        QString const& /*id*/, GLHandler::ShaderProgram /*shader*/,
+        GLHandler::RenderTarget const& /*currentTarget*/) const
 {
 	return {};
 }
@@ -547,11 +549,12 @@ void AbstractMainWin::vrRender(Side side, bool debug, bool debugInHeadset)
 	int i(0);
 	for(; i < postProcessingPipeline_.size(); ++i)
 	{
-		applyPostProcShaderParams(postProcessingPipeline_[i].first,
-		                          postProcessingPipeline_[i].second);
+		applyPostProcShaderParams(
+		    postProcessingPipeline_[i].first, postProcessingPipeline_[i].second,
+		    vrHandler.getPostProcessingTarget(i % 2, side));
 		auto texs = getPostProcessingUniformTextures(
-		    postProcessingPipeline_[i].first,
-		    postProcessingPipeline_[i].second);
+		    postProcessingPipeline_[i].first, postProcessingPipeline_[i].second,
+		    vrHandler.getPostProcessingTarget(i % 2, side));
 		GLHandler::postProcess(
 		    postProcessingPipeline_[i].second,
 		    vrHandler.getPostProcessingTarget(i % 2, side),
@@ -703,10 +706,12 @@ void AbstractMainWin::paintGL()
 		for(int i(0); i < postProcessingPipeline_.size() - 1; ++i)
 		{
 			applyPostProcShaderParams(postProcessingPipeline_[i].first,
-			                          postProcessingPipeline_[i].second);
+			                          postProcessingPipeline_[i].second,
+			                          postProcessingTargets.at(i % 2));
 			auto texs = getPostProcessingUniformTextures(
 			    postProcessingPipeline_[i].first,
-			    postProcessingPipeline_[i].second);
+			    postProcessingPipeline_[i].second,
+			    postProcessingTargets.at(i % 2));
 			GLHandler::postProcess(postProcessingPipeline_[i].second,
 			                       postProcessingTargets.at(i % 2),
 			                       postProcessingTargets.at((i + 1) % 2), texs);
@@ -716,10 +721,12 @@ void AbstractMainWin::paintGL()
 		{
 			int i = postProcessingPipeline_.size() - 1;
 			applyPostProcShaderParams(postProcessingPipeline_[i].first,
-			                          postProcessingPipeline_[i].second);
+			                          postProcessingPipeline_[i].second,
+			                          postProcessingTargets.at(i % 2));
 			auto texs = getPostProcessingUniformTextures(
 			    postProcessingPipeline_[i].first,
-			    postProcessingPipeline_[i].second);
+			    postProcessingPipeline_[i].second,
+			    postProcessingTargets.at(i % 2));
 			GLHandler::postProcess(postProcessingPipeline_[i].second,
 			                       postProcessingTargets.at(i % 2),
 			                       GLHandler::getScreenRenderTarget(), texs);
