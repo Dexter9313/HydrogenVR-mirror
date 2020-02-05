@@ -19,7 +19,14 @@
 #include "Text3D.hpp"
 
 Text3D::Text3D(unsigned int width, unsigned int height)
-    : originalSize(width, height)
+    : Text3D(width, height, GLHandler::newShader("billboard"))
+{
+}
+
+Text3D::Text3D(unsigned int width, unsigned int height,
+               GLHandler::ShaderProgram const& shader)
+    : shader(shader)
+    , originalSize(width, height)
 {
 	if(width > height)
 	{
