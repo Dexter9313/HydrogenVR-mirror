@@ -179,6 +179,8 @@ class GLHandler : public QObject
 	{
 		POINTS         = GL_POINTS,
 		LINES          = GL_LINES,
+		LINE_STRIP     = GL_LINE_STRIP,
+		LINE_LOOP      = GL_LINE_LOOP,
 		TRIANGLES      = GL_TRIANGLES,
 		TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
 		AUTO // if no ebo, POINTS, else TRIANGLES
