@@ -6,7 +6,9 @@
 #include <QFileDialog>
 #include <QKeyEvent>
 #include <QProcess>
+#include <QRunnable>
 #include <QStandardPaths>
+#include <QThreadPool>
 #include <QWindow>
 #include <vector>
 
@@ -471,6 +473,10 @@ class AbstractMainWin : public QWindow
 	bool renderControllersBeforeScene  = true;
 	QString pathIdRenderingControllers = "default";
 
+	// OFFSCREEN RENDERING
+	bool videomode                 = false;
+	unsigned int currentVideoFrame = 0;
+
   private:
 	void initializeGL();
 	void initializePythonQt();
@@ -521,4 +527,19 @@ void AbstractMainWin::initLibrary()
 	T lib;
 	lib.setupPythonAPI();
 }
+
+class ImageWriter : public QRunnable
+{
+	QString filename;
+	QImage img;
+
+  public:
+	ImageWriter(QString filename, QImage img)
+	    : filename(filename)
+	    , img(img)
+	{
+	}
+	void run() override { img.save(filename); }
+};
+
 #endif // ABSTRACTMAINWIN_H

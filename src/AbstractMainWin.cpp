@@ -683,14 +683,8 @@ void AbstractMainWin::paintGL()
 	// if no VR or debug not in headset, render 2D
 	if((!vrHandler || thirdRender) || (debug && !debugInHeadset))
 	{
-		if(postProcessingPipeline_.empty())
-		{
-			GLHandler::beginRendering();
-		}
-		else
-		{
-			GLHandler::beginRendering(postProcessingTargets[0]);
-		}
+		GLHandler::setClearColor(QColor(0, 0, 0, 255));
+		GLHandler::beginRendering(postProcessingTargets[0]);
 
 		for(auto pair : sceneRenderPipeline_)
 		{
@@ -756,8 +750,8 @@ void AbstractMainWin::paintGL()
 			delete buff;
 		}
 
-		// do all postprocesses except last one
-		for(int i(0); i < postProcessingPipeline_.size() - 1; ++i)
+		// postprocess
+		for(int i(0); i < postProcessingPipeline_.size(); ++i)
 		{
 			applyPostProcShaderParams(postProcessingPipeline_[i].first,
 			                          postProcessingPipeline_[i].second,
@@ -770,26 +764,30 @@ void AbstractMainWin::paintGL()
 			                       postProcessingTargets.at(i % 2),
 			                       postProcessingTargets.at((i + 1) % 2), texs);
 		}
-		// render last one on screen target
-		if(!postProcessingPipeline_.empty())
-		{
-			int i = postProcessingPipeline_.size() - 1;
-			applyPostProcShaderParams(postProcessingPipeline_[i].first,
-			                          postProcessingPipeline_[i].second,
-			                          postProcessingTargets.at(i % 2));
-			auto texs = getPostProcessingUniformTextures(
-			    postProcessingPipeline_[i].first,
-			    postProcessingPipeline_[i].second,
-			    postProcessingTargets.at(i % 2));
-			GLHandler::postProcess(postProcessingPipeline_[i].second,
-			                       postProcessingTargets.at(i % 2),
-			                       GLHandler::getScreenRenderTarget(), texs);
-		}
+		// blit result on screen
+		GLHandler::blitColorBuffer(
+		    postProcessingTargets.at(postProcessingPipeline_.size() % 2),
+		    GLHandler::getScreenRenderTarget());
 	}
 
 	// garbage collect some resources
 	AsyncTexture::garbageCollect();
 	AsyncMesh::garbageCollect();
+
+	if(videomode)
+	{
+		QImage frame(
+		    GLHandler::generateScreenshot(
+		        postProcessingTargets.at(postProcessingPipeline_.size() % 2))
+		        .mirrored(false, true));
+		QString number
+		    = QString("%1").arg(currentVideoFrame, 5, 10, QChar('0'));
+
+		QThreadPool::globalInstance()->start(
+		    new ImageWriter("frame" + number + ".png", frame));
+
+		currentVideoFrame++;
+	}
 
 	// Trigger a repaint immediatly
 	m_context.swapBuffers(this);
