@@ -176,6 +176,7 @@ class AbstractMainWin : public QWindow
 	virtual ~AbstractMainWin();
 
   public slots:
+	void reloadPythonEngine();
 	/**
 	 * @toggle{fullscreen}
 	 */
@@ -468,6 +469,9 @@ class AbstractMainWin : public QWindow
 
   private:
 	void initializeGL();
+	void initializePythonQt();
+	void reloadPythonQt();
+	void setupPythonScripts();
 	void vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
 	                        bool debug, bool debugInHeadset);
 	void vrRender(Side side, bool debug, bool debugInHeadset);
@@ -489,6 +493,7 @@ class AbstractMainWin : public QWindow
 
 	QOpenGLContext m_context;
 	bool initialized = false;
+	bool reloadPy    = false;
 };
 
 template <class T>

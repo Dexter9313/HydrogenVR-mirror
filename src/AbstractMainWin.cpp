@@ -18,11 +18,6 @@ AbstractMainWin::AbstractMainWin()
 	{
 		GLHandler::defaultRenderTargetFormat() = GL_RGBA32F;
 	}
-
-	PythonQtHandler::init();
-	PythonQtHandler::addClass<int>("Side");
-	PythonQtHandler::addObject("Side", new PySide);
-	PythonQtHandler::addObject("GLHandler", new GLHandler);
 }
 
 bool AbstractMainWin::isFullscreen() const
@@ -51,6 +46,12 @@ void AbstractMainWin::setFullscreen(bool fullscreen)
 	{
 		show();
 	}
+}
+
+void AbstractMainWin::reloadPythonEngine()
+{
+	reloadPy = true;
+	PythonQtHandler::closeConsole();
 }
 
 void AbstractMainWin::toggleFullscreen()
@@ -435,10 +436,10 @@ void AbstractMainWin::initializeGL()
 	m_context.makeCurrent(this);
 	// Init GL
 	GLHandler::init();
+	// Init PythonQt
+	initializePythonQt();
 	// Init VR
 	setVR(QSettings().value("vr/enabled").toBool());
-	// Init Python API
-	setupPythonAPI();
 	// Init libraries
 	initLibraries();
 
@@ -468,14 +469,8 @@ void AbstractMainWin::initializeGL()
 	// let user init
 	initScene();
 
-	QString mainScriptPath(QSettings().value("scripting/rootdir").toString()
-	                       + "/main.py");
-	if(QFile(mainScriptPath).exists())
-	{
-		PythonQtHandler::evalFile(mainScriptPath);
-	}
-
-	PythonQtHandler::evalScript("if \"initScene\" in dir():\n\tinitScene()");
+	// Init Python engine
+	setupPythonScripts();
 
 	// make sure gamma correction is applied last
 	if(QSettings().value("graphics/dithering").toBool())
@@ -489,6 +484,36 @@ void AbstractMainWin::initializeGL()
 
 	frameTimer.start();
 	initialized = true;
+}
+
+void AbstractMainWin::initializePythonQt()
+{
+	PythonQtHandler::init();
+	PythonQtHandler::addClass<int>("Side");
+	PythonQtHandler::addObject("Side", new PySide);
+	PythonQtHandler::addObject("GLHandler", new GLHandler);
+}
+
+void AbstractMainWin::reloadPythonQt()
+{
+	PythonQtHandler::clean();
+	initializePythonQt();
+	setupPythonScripts();
+	reloadPy = false;
+}
+
+void AbstractMainWin::setupPythonScripts()
+{
+	setupPythonAPI();
+
+	QString mainScriptPath(QSettings().value("scripting/rootdir").toString()
+	                       + "/main.py");
+	if(QFile(mainScriptPath).exists())
+	{
+		PythonQtHandler::evalFile(mainScriptPath);
+	}
+
+	PythonQtHandler::evalScript("if \"initScene\" in dir():\n\tinitScene()");
 }
 
 void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
@@ -578,6 +603,10 @@ void AbstractMainWin::paintGL()
 	setTitle(QString(PROJECT_NAME) + " - "
 	         + QString::number(round(1.f / frameTiming)) + " FPS");
 
+	if(reloadPy)
+	{
+		reloadPythonQt();
+	}
 	if(vrHandler)
 	{
 		frameTiming_ = vrHandler.getFrameTiming() / 1000.f;
