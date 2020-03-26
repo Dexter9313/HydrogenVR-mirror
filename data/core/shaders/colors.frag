@@ -27,13 +27,23 @@ vec4 dither()
 }
 #endif
 
+float max3(vec3 v)
+{
+	return max(max(v.x, v.y), v.z);
+}
+
 void main()
 {
 	vec4 result = texture(tex, texCoord);
 	// reinhard tone mapping
-	if(hdr == 1.0)
+	/*if(hdr == 1.0)
 	{
-		result.rgb = result.rgb / (result.rgb + vec3(1.0));
+	    result.rgb = result.rgb / (result.rgb + vec3(1.0));
+	}*/
+	float m = max3(result.rgb);
+	if(m > 1.0)
+	{
+		result.rgb /= m;
 	}
 	result.rgb = pow(result.rgb, vec3(1.0 / gamma));
 
@@ -42,5 +52,6 @@ void main()
 	result += dither();
 #endif
 
-	outColor = result;
+	outColor.rgb = result.rgb;
+	outColor.a   = 1.0;
 }
