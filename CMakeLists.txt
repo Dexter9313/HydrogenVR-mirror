@@ -185,7 +185,13 @@ endif()
 
 #Python
 if((PYTHONQT_FOUND) OR (PYTHONQT_QTALL_FOUND))
-	find_package(PythonLibs)
+	if(PYTHONQT_PYTHON2)
+		find_package(Python2 COMPONENTS Development)
+		set(PYTHON_INCLUDE_DIRS ${Python2_INCLUDE_DIRS})
+		set(PYTHON_LIBRARIES ${Python2_LIBRARIES})
+	else()
+		find_package(PythonLibs)
+	endif()
 endif()
 
 #Additional
