@@ -24,9 +24,13 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	// NOLINTNEXTLINE(hicpp-no-array-decay)
 	qDebug() << QString("Config file :") + QSettings().fileName();
 	addGroup("window", tr("Window"));
-	addUIntSetting("width", 1500, tr("Window Width"), 0, 10000);
-	addUIntSetting("height", 800, tr("Window Height"), 0, 10000);
+	addUIntSetting("width", 1500, tr("Window Width"), 0, 17000);
+	addUIntSetting("height", 800, tr("Window Height"), 0, 17000);
 	addBoolSetting("fullscreen", false, tr("Window Fullscreen"));
+	addBoolSetting("forcerenderresolution", false,
+	               tr("Force Rendering Resolution"));
+	addUIntSetting("forcewidth", 1500, tr("Forced Rendering Width"), 0, 17000);
+	addUIntSetting("forceheight", 800, tr("Forced Rendering Height"), 0, 17000);
 	addLanguageSetting();
 
 	addGroup("graphics", tr("Graphics"));

@@ -73,14 +73,7 @@ bool VRHandler::init()
 		std::cout << "Render models loaded successfully" << std::endl;
 	}
 
-	postProcessingTargetsLeft[0] = GLHandler::newRenderTarget(
-	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
-	postProcessingTargetsLeft[1] = GLHandler::newRenderTarget(
-	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
-	postProcessingTargetsRight[0] = GLHandler::newRenderTarget(
-	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
-	postProcessingTargetsRight[1] = GLHandler::newRenderTarget(
-	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	reloadPostProcessingTargets();
 
 	// render hidden area mesh
 	GLHandler::setBackfaceCulling(false);

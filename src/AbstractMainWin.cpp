@@ -20,6 +20,25 @@ AbstractMainWin::AbstractMainWin()
 	}
 }
 
+QSize AbstractMainWin::getRenderSize() const
+{
+	QSize renderSize(width(), height());
+	if(QSettings().value("window/forcerenderresolution").toBool())
+	{
+		renderSize.setWidth(QSettings().value("window/forcewidth").toInt());
+		renderSize.setHeight(QSettings().value("window/forceheight").toInt());
+	}
+	return renderSize;
+}
+
+float AbstractMainWin::getRenderAspectRatio() const
+{
+	QSize renderSize(getRenderSize());
+	float aspectRatio(static_cast<float>(renderSize.width())
+	                  / static_cast<float>(renderSize.height()));
+	return aspectRatio;
+}
+
 bool AbstractMainWin::isFullscreen() const
 {
 	return QSettings().value("window/fullscreen").toBool();
@@ -124,6 +143,11 @@ bool AbstractMainWin::event(QEvent* e)
 		PythonQtHandler::closeConsole();
 	}
 	return QWindow::event(e);
+}
+
+void AbstractMainWin::resizeEvent(QResizeEvent* ev)
+{
+	resizeGL(ev->size().width(), ev->size().height());
 }
 
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
@@ -402,12 +426,16 @@ std::vector<GLHandler::Texture>
 
 void AbstractMainWin::reloadPostProcessingTargets()
 {
+	QSize newSize(getRenderSize());
+
 	GLHandler::defaultRenderTargetFormat() = hdr ? GL_RGBA32F : GL_RGBA;
 
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
-	postProcessingTargets[0] = GLHandler::newRenderTarget(width(), height());
-	postProcessingTargets[1] = GLHandler::newRenderTarget(width(), height());
+	postProcessingTargets[0]
+	    = GLHandler::newRenderTarget(newSize.width(), newSize.height());
+	postProcessingTargets[1]
+	    = GLHandler::newRenderTarget(newSize.width(), newSize.height());
 
 	if(vrHandler)
 	{
@@ -449,13 +477,11 @@ void AbstractMainWin::initializeGL()
 
 	dbgCamera = new DebugCamera(&vrHandler);
 	dbgCamera->lookAt({2, 0, 2}, {0, 0, 0}, {0, 0, 1});
-	dbgCamera->setPerspectiveProj(70.0f, static_cast<float>(width())
-	                                         / static_cast<float>(height()));
+	dbgCamera->setPerspectiveProj(70.0f, getRenderAspectRatio());
 
 	auto defaultCam = new BasicCamera(&vrHandler);
 	defaultCam->lookAt({1, 1, 1}, {0, 0, 0}, {0, 0, 1});
-	defaultCam->setPerspectiveProj(70.0f, static_cast<float>(width())
-	                                          / static_cast<float>(height()));
+	defaultCam->setPerspectiveProj(70.0f, getRenderAspectRatio());
 	appendSceneRenderPath("default", RenderPath(defaultCam));
 
 	if(vrHandler)
@@ -463,8 +489,7 @@ void AbstractMainWin::initializeGL()
 		vrHandler.resetPos();
 	}
 
-	postProcessingTargets[0] = GLHandler::newRenderTarget(width(), height());
-	postProcessingTargets[1] = GLHandler::newRenderTarget(width(), height());
+	reloadPostProcessingTargets();
 
 	// let user init
 	initScene();
@@ -772,15 +797,23 @@ void AbstractMainWin::paintGL()
 
 void AbstractMainWin::resizeGL(int w, int h)
 {
+	if(dbgCamera == nullptr)
+	{
+		return;
+	}
+
 	QSettings().setValue("window/width", w);
 	QSettings().setValue("window/height", h);
+	if(QSettings().value("window/forcerenderresolution").toBool())
+	{
+		return;
+	}
 	for(auto pair : sceneRenderPipeline_)
 	{
-		pair.second.camera->setPerspectiveProj(
-		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
+		pair.second.camera->setPerspectiveProj(70.0f, getRenderAspectRatio());
 	}
-	dbgCamera->setPerspectiveProj(70.0f, static_cast<float>(width())
-	                                         / static_cast<float>(height()));
+	dbgCamera->setPerspectiveProj(70.0f, getRenderAspectRatio());
+	reloadPostProcessingTargets();
 }
 
 AbstractMainWin::~AbstractMainWin()

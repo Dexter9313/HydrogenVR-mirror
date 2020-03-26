@@ -134,6 +134,9 @@ class AbstractMainWin : public QWindow
 	 * PythonQtHandler then adds some engine related objects to the Python API.
 	 */
 	AbstractMainWin();
+
+	QSize getRenderSize() const;
+	float getRenderAspectRatio() const;
 	/**
 	 * @getter{fullscreen}
 	 */
@@ -255,6 +258,7 @@ class AbstractMainWin : public QWindow
 	 * sure you call @ref AbstractMainWin#event if you override it.
 	 */
 	virtual bool event(QEvent* e) override;
+	virtual void resizeEvent(QResizeEvent* ev) override;
 	/**
 	 * @brief Captures a Qt keyboard press event.
 	 *
