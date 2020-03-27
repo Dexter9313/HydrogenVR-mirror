@@ -117,6 +117,7 @@ class VRHandler : public QObject
 	unsigned int submittedIndex = 0;
 	GLHandler::RenderTarget postProcessingTargetsLeft[2];
 	GLHandler::RenderTarget postProcessingTargetsRight[2];
+	QSize currentTargetSize;
 
 	Side currentRenderingEye = Side::LEFT;
 
