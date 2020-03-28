@@ -38,7 +38,7 @@ QOpenGLFunctions_4_0_Core& GLHandler::glf()
 
 GLint& GLHandler::defaultRenderTargetFormat()
 {
-	static GLint defaultRenderTargetFormat = GL_RGBA8;
+	static GLint defaultRenderTargetFormat = GL_RGBA32F;
 	return defaultRenderTargetFormat;
 }
 

@@ -7,7 +7,6 @@ out vec4 outColor;
 uniform sampler2D tex;
 
 uniform float gamma;
-uniform float hdr;
 
 #ifdef DITHERING
 const int bayer_pattern[64]
@@ -35,11 +34,10 @@ float max3(vec3 v)
 void main()
 {
 	vec4 result = texture(tex, texCoord);
+	/*
 	// reinhard tone mapping
-	/*if(hdr == 1.0)
-	{
-	    result.rgb = result.rgb / (result.rgb + vec3(1.0));
-	}*/
+	result.rgb = result.rgb / (result.rgb + vec3(1.0));
+	*/
 	float m = max3(result.rgb);
 	if(m > 1.0)
 	{

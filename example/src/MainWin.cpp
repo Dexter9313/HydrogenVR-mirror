@@ -18,8 +18,8 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	}
 	else if(a.id == "togglevrorigin")
 	{
-		getCamera("default").seatedVROrigin
-		    = !getCamera("default").seatedVROrigin;
+		renderer.getCamera("default").seatedVROrigin
+		    = !renderer.getCamera("default").seatedVROrigin;
 	}
 	AbstractMainWin::actionEvent(a, pressed);
 }
@@ -133,9 +133,9 @@ void MainWin::initScene()
 	widget3d->getModel().rotate(45.f, 1.f, 0.f);
 	widget3d->getModel().translate(0.6f, 0.f, 0.5f);
 
-	getCamera("default").setEyeDistanceFactor(1.0f);
+	renderer.getCamera("default").setEyeDistanceFactor(1.0f);
 
-	appendPostProcessingShader("distort", "distort");
+	renderer.appendPostProcessingShader("distort", "distort");
 
 	timer.start();
 }

@@ -255,11 +255,9 @@ class GLHandler : public QObject
 	 * This default render target format will be used in
 	 * GLHandler#newRenderTarget if no format is provided. This is mostly used
 	 * to ensure that any part of the engine instantiating a new render target
-	 * uses this particular format (if HDR rendering is enabled or disabled for
-	 * exemple).
+	 * uses this particular format.
 	 *
-	 * By default, if HDR rendering if off, will contain GL_RGBA8, and if HDR
-	 * rendering is on, will contain GL_RGBA32F.
+	 * By default, contains GL_RGBA32F.
 	 */
 	static GLint& defaultRenderTargetFormat();
 

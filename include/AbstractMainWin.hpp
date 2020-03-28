@@ -20,6 +20,7 @@
 #include "GLHandler.hpp"
 #include "InputManager.hpp"
 #include "PythonQtHandler.hpp"
+#include "Renderer.hpp"
 #include "vr/VRHandler.hpp"
 
 /** @ingroup pycall
@@ -91,15 +92,6 @@ class AbstractMainWin : public QWindow
 	 */
 	Q_PROPERTY(bool fullscreen READ isFullscreen WRITE setFullscreen)
 	/**
-	 * @brief Wether the engine uses High Dynamic Range rendering or not.
-	 *
-	 * See : <a
-	 * href="https://en.wikipedia.org/wiki/High-dynamic-range_rendering">High-dynamic-range
-	 * rendering</a>
-	 * @accessors getHDR(), setHDR()
-	 */
-	Q_PROPERTY(bool hdr READ getHDR WRITE setHDR)
-	/**
 	 * @brief Wether the engine renders all meshes as wireframes or not.
 	 *
 	 * @accessors getWireframe(), setWireframe()
@@ -117,18 +109,6 @@ class AbstractMainWin : public QWindow
 	Q_PROPERTY(float gamma MEMBER gamma)
 
   public:
-	struct RenderPath
-	{
-		explicit RenderPath(BasicCamera* camera)
-		    : camera(camera){};
-		RenderPath(GLbitfield clearMask, BasicCamera* camera)
-		    : clearMask(clearMask)
-		    , camera(camera){};
-
-		GLbitfield clearMask = 0x0; // don't clear anything by default
-		BasicCamera* camera;
-	};
-
 	/**
 	 * @brief Constructs an @ref AbstractMainWin.
 	 *
@@ -137,8 +117,6 @@ class AbstractMainWin : public QWindow
 	 */
 	AbstractMainWin();
 
-	QSize getRenderSize() const;
-	float getRenderAspectRatio() const;
 	/**
 	 * @getter{fullscreen}
 	 */
@@ -148,23 +126,13 @@ class AbstractMainWin : public QWindow
 	 */
 	void setFullscreen(bool fullscreen);
 	/**
-	 * @getter{hdr}
-	 */
-	bool getHDR() const { return hdr; };
-	/**
-	 * @setter{hdr, hdr}
-	 *
-	 * This will reload the post-processing render targets.
-	 */
-	void setHDR(bool hdr);
-	/**
 	 * @getter{wireframe}
 	 */
-	bool getWireframe() const { return wireframe; };
+	bool getWireframe() const { return renderer.wireframe; };
 	/**
 	 * @setter{wireframe}
 	 */
-	void setWireframe(bool wireframe) { this->wireframe = wireframe; };
+	void setWireframe(bool wireframe) { renderer.wireframe = wireframe; };
 	/**
 	 * @getter{vr}
 	 */
@@ -187,10 +155,6 @@ class AbstractMainWin : public QWindow
 	 */
 	void toggleFullscreen();
 	/**
-	 * @toggle{hdr}
-	 */
-	void toggleHDR();
-	/**
 	 * @toggle{wireframe}
 	 */
 	void toggleWireframe();
@@ -205,51 +169,6 @@ class AbstractMainWin : public QWindow
 	 *
 	 */
 	void takeScreenshot(QString path = "") const;
-	// /!\ ownership of path.camera
-	void appendSceneRenderPath(QString const& id, RenderPath path);
-	// /!\ ownership of path.camera
-	void insertSceneRenderPath(QString const& id, RenderPath path,
-	                           unsigned int pos);
-	void removeSceneRenderPath(QString const& id);
-
-	// in frame units
-	float getLastFrameAverageLuminance() const
-	{
-		return lastFrameAverageLuminance;
-	};
-	/**
-	 * @brief Appends a post-processing shader to the post-processing pipeline.
-	 *
-	 * The engine will take care of the vertex shader for you as long as you
-	 * follow the post-processing instructions given in the class description.
-	 *
-	 * @param id Identifier to refer to the fragment shader later.
-	 * @param fragment Path to the fragment shader to use. See README for
-	 * informations about data paths.
-	 */
-	void appendPostProcessingShader(QString const& id, QString const& fragment,
-	                                QMap<QString, QString> const& defines = {});
-	/**
-	 * @brief Inserts a post-processing shader into the post-processing
-	 * pipeline.
-	 *
-	 * The engine will take care of the vertex shader for you as long as you
-	 * follow the post-processing instructions given in the class description.
-	 *
-	 * @param id Identifier to refer to the shader later.
-	 * @param fragment Path to the fragment shader to use. See README for
-	 * informations about data paths.
-	 * @param pos Position at which to insert the shader.
-	 */
-	void insertPostProcessingShader(QString const& id, QString const& fragment,
-	                                unsigned int pos);
-	/**
-	 * @brief Removes a post-processing shader from the post-processing
-	 * pipeline.
-	 *
-	 * @param id Identifier given when appending or inserting the shader.
-	 */
-	void removePostProcessingShader(QString const& id);
 
   protected:
 	/**
@@ -335,6 +254,8 @@ class AbstractMainWin : public QWindow
 	 * @param camera The camera used for rendering.
 	 */
 	virtual void updateScene(BasicCamera& camera, QString const& pathId) = 0;
+
+  public:
 	/**
 	 * @brief Gets called in the main loop during each rendering.
 	 *
@@ -347,42 +268,6 @@ class AbstractMainWin : public QWindow
 	virtual void renderScene(BasicCamera const& camera, QString const& pathId)
 	    = 0;
 
-	void renderVRControls() const;
-	/**
-	 * @brief Returns a constant reference to the @ref BasicCamera used for
-	 * rendering during specific scene rendering path.
-	 *
-	 * Can be of polymorphic type if you have your own cameras registered.
-	 */
-	BasicCamera const& getCamera(QString const& pathId) const;
-	/**
-	 * @brief Returns a constant reference to the @ref BasicCamera used for
-	 * rendering during specific scene rendering path.
-	 *
-	 * Can be of polymorphic type if you have your own cameras registered.
-	 */
-	BasicCamera& getCamera(QString const& pathId);
-	/**
-	 * @brief Similar to @e getCamera() but dynamically casts the BasicCamera
-	 * into the specified class.
-	 *
-	 * T must derive from @e BasicCamera.
-	 */
-	template <class T>
-	T const& getCamera(QString const& pathId) const;
-	/**
-	 * @brief Similar to @e getCamera() but dynamically casts the BasicCamera
-	 * into the specified class.
-	 *
-	 * T must derive from @e BasicCamera.
-	 */
-	template <class T>
-	T& getCamera(QString const& pathId);
-	/**
-	 * @brief Returns a reference to the @ref DebugCamera of the engine.
-	 */
-	DebugCamera& getDebugCamera() { return *dbgCamera; };
-
 	/**
 	 * @brief Gets called before applying a specific post-processing shader.
 	 *
@@ -391,7 +276,8 @@ class AbstractMainWin : public QWindow
 	 * pipeline before it is actually used.
 	 *
 	 * @warning Don't forget to call this class version of the method for core
-	 * post-processing (HDR for example) and python post-processing to work !
+	 * post-processing (tone mapping for example) and python post-processing to
+	 * work !
 	 *
 	 * @param id Identifier of the shader that is going to be used for post
 	 * processing.
@@ -414,18 +300,16 @@ class AbstractMainWin : public QWindow
 	virtual std::vector<GLHandler::Texture> getPostProcessingUniformTextures(
 	    QString const& id, GLHandler::ShaderProgram shader,
 	    GLHandler::RenderTarget const& currentTarget) const;
-	/**
-	 * @brief Reloads the post-processing targets (2D and VR).
-	 *
-	 * Mainly used after toggling HDR rendering. The new render targets will use
-	 * @ref GLHandler#defaultRenderTargetFormat. Will also call @ref
-	 * VRHandler#reloadPostProcessingTargets if necessary.
-	 */
-	void reloadPostProcessingTargets();
+
+  protected:
 	/**
 	 * @brief The engine's only @ref BaseInputManager.
 	 */
 	InputManager inputManager;
+	/**
+	 * @brief The engine's only @ref Renderer.
+	 */
+	Renderer renderer;
 	/**
 	 * @brief The engine's only @ref VRHandler.
 	 */
@@ -436,42 +320,10 @@ class AbstractMainWin : public QWindow
 	 * This member is read-only.
 	 */
 	float const& frameTiming = frameTiming_;
-
-	/**
-	 * @brief Ordered list of render passes to apply as scene rendering.
-	 *
-	 * This member is read-only.
-	 *
-	 * For each QPair p :
-	 *
-	 * * p.first is the path identifier set when adding or inserting it in the
-	 * pipeline using the corresponding methods.
-	 * * p.second is the render path itself.
-	 */
-	QList<QPair<QString, RenderPath>> const& sceneRenderPipeline
-	    = sceneRenderPipeline_;
-	/**
-	 * @brief Ordered list of post-processing shaders to apply at the end of
-	 * scene rendering.
-	 *
-	 * This member is read-only.
-	 *
-	 * For each QPair p :
-	 *
-	 * * p.first is the shader identifier set when adding or inserting it in the
-	 * pipeline using the corresponding methods.
-	 * * p.second is the shader itself.
-	 */
-	QList<QPair<QString, GLHandler::ShaderProgram>> const&
-	    postProcessingPipeline
-	    = postProcessingPipeline_;
 	/**
 	 * @brief Gamma value to use for gamma correction
 	 */
 	float gamma = 2.2f;
-
-	bool renderControllersBeforeScene  = true;
-	QString pathIdRenderingControllers = "default";
 
 	// OFFSCREEN RENDERING
 	bool videomode                 = false;
@@ -482,41 +334,15 @@ class AbstractMainWin : public QWindow
 	void initializePythonQt();
 	void reloadPythonQt();
 	void setupPythonScripts();
-	void vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
-	                        bool debug, bool debugInHeadset);
-	void vrRender(Side side, bool debug, bool debugInHeadset);
 	void paintGL();
-	void resizeGL(int w, int h);
 
 	float frameTiming_ = 0.f;
 	QElapsedTimer frameTimer;
-
-	QList<QPair<QString, RenderPath>> sceneRenderPipeline_;
-	DebugCamera* dbgCamera = nullptr;
-
-	bool hdr       = true;
-	bool wireframe = false;
-
-	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
-	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};
-	float lastFrameAverageLuminance                              = 0.f;
 
 	QOpenGLContext m_context;
 	bool initialized = false;
 	bool reloadPy    = false;
 };
-
-template <class T>
-T const& AbstractMainWin::getCamera(QString const& pathId) const
-{
-	return dynamic_cast<T const&>(getCamera(pathId));
-}
-
-template <class T>
-T& AbstractMainWin::getCamera(QString const& pathId)
-{
-	return dynamic_cast<T&>(getCamera(pathId));
-}
 
 template <class T>
 void AbstractMainWin::initLibrary()
