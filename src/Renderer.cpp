@@ -305,6 +305,7 @@ void Renderer::renderFrame()
 
 		for(auto pair : sceneRenderPipeline_)
 		{
+			GLHandler::glf().glClear(renderPath.clearMask);
 			pair.second.camera->update2D();
 			dbgCamera->update();
 			if(renderingCamIsDebug)
