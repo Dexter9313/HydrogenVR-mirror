@@ -28,6 +28,12 @@ class AbstractMainWin;
 class Renderer
 {
   public:
+	enum class Projection
+	{
+		DEFAULT     = 0,
+		PANORAMA360 = 1,
+	};
+
 	struct RenderPath
 	{
 		explicit RenderPath(BasicCamera* camera)
@@ -140,7 +146,8 @@ class Renderer
 	bool renderControllersBeforeScene  = true;
 	QString pathIdRenderingControllers = "default";
 
-	bool wireframe = false;
+	bool wireframe        = false;
+	Projection projection = Projection::DEFAULT;
 	/**
 	 * @brief Ordered list of render passes to apply as scene rendering.
 	 *
@@ -184,6 +191,8 @@ class Renderer
 
 	QList<QPair<QString, RenderPath>> sceneRenderPipeline_;
 
+	bool cubemapTargetInit                = false;
+	GLHandler::RenderTarget cubemapTarget = {};
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
 	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};
 	float lastFrameAverageLuminance                              = 0.f;

@@ -281,12 +281,10 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
 
 void GLHandler::generateEnvironmentMap(
     GLHandler::RenderTarget const& renderTarget,
-    std::function<void()> const& renderFunction, QVector3D const& position)
+    std::function<void(bool, QMatrix4x4, QMatrix4x4)> const& renderFunction)
 {
-	QMatrix4x4 translation;
-	translation.translate(-1.f * position);
 	QMatrix4x4 perspective;
-	perspective.perspective(90.f, 1.f, 0.1f, 10.f);
+	perspective.perspective(90.f, 1.f, 0.1f, 10000.f);
 
 	std::vector<QVector3D> vecs = {
 	    QVector3D(1, 0, 0),  QVector3D(0, -1, 0), QVector3D(-1, 0, 0),
@@ -301,14 +299,17 @@ void GLHandler::generateEnvironmentMap(
 	    GLHandler::CubeFace::BOTTOM, GLHandler::CubeFace::TOP,
 	};
 
+	std::vector<QColor> colors
+	    = {QColor(255, 0, 0),   QColor(0, 255, 0),   QColor(0, 0, 255),
+	       QColor(0, 255, 255), QColor(255, 0, 255), QColor(255, 255, 0)};
+
 	for(unsigned int i(0); i < 6; ++i)
 	{
 		QMatrix4x4 cubeCamera;
 		cubeCamera.lookAt(QVector3D(0, 0, 0), vecs[2 * i], vecs[(2 * i) + 1]);
-		QMatrix4x4 c = perspective * cubeCamera * translation;
-		GLHandler::setUpTransforms(c, c, c, c, c, c);
+		GLHandler::setClearColor(colors[i]);
 		GLHandler::beginRendering(renderTarget, faces[i]);
-		renderFunction();
+		renderFunction(true, cubeCamera, perspective);
 	}
 }
 

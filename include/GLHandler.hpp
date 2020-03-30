@@ -371,11 +371,10 @@ class GLHandler : public QObject
 		        QSettings().value("window/height").toUInt()};
 	};
 
-	static void
-	    generateEnvironmentMap(GLHandler::RenderTarget const& renderTarget,
-	                           std::function<void()> const& renderFunction,
-	                           QVector3D const& position
-	                           = QVector3D(0.f, 0.f, 0.f));
+	static void generateEnvironmentMap(
+	    GLHandler::RenderTarget const& renderTarget,
+	    std::function<void(bool, QMatrix4x4, QMatrix4x4)> const&
+	        renderFunction);
 	/**
 	 * @brief Shows a @p renderTarget content on screen
 	 *

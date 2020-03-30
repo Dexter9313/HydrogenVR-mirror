@@ -22,7 +22,7 @@
 
 void Renderer::init(AbstractMainWin* window, VRHandler* vrHandler)
 {
-	this->window    = /*dynamic_cast<MainWin*>(window);*/ window;
+	this->window    = window;
 	this->vrHandler = vrHandler;
 	if(initialized)
 	{
@@ -300,38 +300,81 @@ void Renderer::renderFrame()
 	// if no VR or debug not in headset, render 2D
 	if((!(*vrHandler) || thirdRender) || (debug && !debugInHeadset))
 	{
-		GLHandler::setClearColor(QColor(0, 0, 0, 255));
-		GLHandler::beginRendering(postProcessingTargets[0]);
+		auto renderFunc = [=](bool overrideCamera, QMatrix4x4 overrView,
+		                      QMatrix4x4 overrProj) {
+			for(auto pair : sceneRenderPipeline_)
+			{
+				GLHandler::glf().glClear(pair.second.clearMask);
+				QMatrix4x4 viewBack(pair.second.camera->getView()),
+				    projBack(pair.second.camera->getProj());
+				if(overrideCamera)
+				{
+					pair.second.camera->setProj(overrProj);
+					pair.second.camera->setView(overrView * viewBack);
+				}
+				pair.second.camera->update2D();
+				dbgCamera->update();
+				if(renderingCamIsDebug)
+				{
+					dbgCamera->uploadMatrices();
+				}
+				else
+				{
+					pair.second.camera->uploadMatrices();
+				}
+				// render scene
+				if(wireframe)
+				{
+					GLHandler::beginWireframe();
+				}
 
-		for(auto pair : sceneRenderPipeline_)
+				window->renderScene(*pair.second.camera, pair.first);
+				PythonQtHandler::evalScript(
+				    "if \"renderScene\" in dir():\n\trenderScene()");
+				if(debug)
+				{
+					dbgCamera->renderCamera(pair.second.camera);
+				}
+				if(wireframe)
+				{
+					GLHandler::endWireframe();
+				}
+				if(overrideCamera)
+				{
+					pair.second.camera->setProj(projBack);
+					pair.second.camera->setView(viewBack);
+				}
+			}
+		};
+
+		if(projection == Projection::DEFAULT)
 		{
-			GLHandler::glf().glClear(renderPath.clearMask);
-			pair.second.camera->update2D();
-			dbgCamera->update();
-			if(renderingCamIsDebug)
+			if(cubemapTargetInit)
 			{
-				dbgCamera->uploadMatrices();
+				GLHandler::deleteRenderTarget(cubemapTarget);
+				cubemapTargetInit = false;
 			}
-			else
+			GLHandler::beginRendering(postProcessingTargets[0]);
+			renderFunc(false, QMatrix4x4(), QMatrix4x4());
+		}
+		else if(projection == Projection::PANORAMA360)
+		{
+			if(!cubemapTargetInit)
 			{
-				pair.second.camera->uploadMatrices();
+				cubemapTarget = GLHandler::newRenderTarget(4096, 4096, true);
+				cubemapTargetInit = true;
 			}
-			// render scene
-			if(wireframe)
-			{
-				GLHandler::beginWireframe();
-			}
-			window->renderScene(*pair.second.camera, pair.first);
-			PythonQtHandler::evalScript(
-			    "if \"renderScene\" in dir():\n\trenderScene()");
-			if(debug)
-			{
-				dbgCamera->renderCamera(pair.second.camera);
-			}
-			if(wireframe)
-			{
-				GLHandler::endWireframe();
-			}
+			GLHandler::generateEnvironmentMap(cubemapTarget, renderFunc);
+
+			auto shader = GLHandler::newShader("postprocess", "panorama360");
+			GLHandler::postProcess(shader, cubemapTarget,
+			                       postProcessingTargets[0]);
+			GLHandler::deleteShader(shader);
+		}
+		else
+		{
+			// NOLINTNEXTLINE(hicpp-no-array-decay)
+			qDebug() << "Invalid RenderTarget::Projection";
 		}
 
 		// compute average luminance
@@ -407,6 +450,10 @@ void Renderer::clean()
 	}
 	delete dbgCamera;
 
+	if(cubemapTargetInit)
+	{
+		GLHandler::deleteRenderTarget(cubemapTarget);
+	}
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
 
