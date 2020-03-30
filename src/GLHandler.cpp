@@ -299,15 +299,10 @@ void GLHandler::generateEnvironmentMap(
 	    GLHandler::CubeFace::BOTTOM, GLHandler::CubeFace::TOP,
 	};
 
-	std::vector<QColor> colors
-	    = {QColor(255, 0, 0),   QColor(0, 255, 0),   QColor(0, 0, 255),
-	       QColor(0, 255, 255), QColor(255, 0, 255), QColor(255, 255, 0)};
-
 	for(unsigned int i(0); i < 6; ++i)
 	{
 		QMatrix4x4 cubeCamera;
 		cubeCamera.lookAt(QVector3D(0, 0, 0), vecs[2 * i], vecs[(2 * i) + 1]);
-		GLHandler::setClearColor(colors[i]);
 		GLHandler::beginRendering(renderTarget, faces[i]);
 		renderFunction(true, cubeCamera, perspective);
 	}
