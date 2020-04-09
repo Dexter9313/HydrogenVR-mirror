@@ -288,7 +288,8 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
 
 void GLHandler::generateEnvironmentMap(
     GLHandler::RenderTarget const& renderTarget,
-    std::function<void(bool, QMatrix4x4, QMatrix4x4)> const& renderFunction)
+    std::function<void(bool, QMatrix4x4, QMatrix4x4)> const& renderFunction,
+    QVector3D const& shift)
 {
 	QMatrix4x4 perspective;
 	perspective.perspective(90.f, 1.f, 0.1f, 10000.f);
@@ -310,6 +311,7 @@ void GLHandler::generateEnvironmentMap(
 	{
 		QMatrix4x4 cubeCamera;
 		cubeCamera.lookAt(QVector3D(0, 0, 0), vecs[2 * i], vecs[(2 * i) + 1]);
+		cubeCamera.translate(-1.f * shift);
 		GLHandler::beginRendering(renderTarget, faces[i]);
 		renderFunction(true, cubeCamera, perspective);
 	}

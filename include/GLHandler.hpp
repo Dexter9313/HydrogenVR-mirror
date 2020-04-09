@@ -378,8 +378,8 @@ class GLHandler : public QObject
 
 	static void generateEnvironmentMap(
 	    GLHandler::RenderTarget const& renderTarget,
-	    std::function<void(bool, QMatrix4x4, QMatrix4x4)> const&
-	        renderFunction);
+	    std::function<void(bool, QMatrix4x4, QMatrix4x4)> const& renderFunction,
+	    QVector3D const& shift = QVector3D(0, 0, 0));
 	/**
 	 * @brief Shows a @p renderTarget content on screen
 	 *
