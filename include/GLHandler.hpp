@@ -799,6 +799,13 @@ class GLHandler : public QObject
 	    GLint internalFormat = GL_SRGB8_ALPHA8, GLenum format = GL_RGBA,
 	    GLenum target = GL_TEXTURE_2D, GLint filter = GL_LINEAR,
 	    GLint wrap = GL_CLAMP_TO_EDGE, GLenum type = GL_UNSIGNED_BYTE);
+	static Texture
+	    newTexture3D(unsigned int width, unsigned int height,
+	                 unsigned int depth, GLvoid const* data = nullptr,
+	                 GLint internalFormat = GL_SRGB8_ALPHA8,
+	                 GLenum format = GL_RGBA, GLenum target = GL_TEXTURE_3D,
+	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE,
+	                 GLenum type = GL_UNSIGNED_BYTE);
 	static Texture newTextureCubemap(
 	    unsigned int side,
 	    std::array<GLvoid const*, 6> data

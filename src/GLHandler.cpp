@@ -1039,6 +1039,34 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
 
 	return tex;
 }
+GLHandler::Texture
+    GLHandler::newTexture3D(unsigned int width, unsigned int height,
+                            unsigned int depth, GLvoid const* data,
+                            GLint internalFormat, GLenum format, GLenum target,
+                            GLint filter, GLint wrap, GLenum type)
+{
+	++texCount();
+	Texture tex  = {};
+	tex.glTarget = target;
+	glf().glGenTextures(1, &tex.glTexture);
+	// glActiveTexture(GL_TEXTURE0);
+	glf().glBindTexture(target, tex.glTexture);
+	glf().glTexImage3D(target, 0, internalFormat, width, height, depth, 0,
+	                   format, type, data);
+	// GL_UNSIGNED_BYTE, data);
+	// glGenerateMipmap(target);
+	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
+	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
+	glf().glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
+	glf().glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
+	glf().glTexParameteri(target, GL_TEXTURE_WRAP_R, wrap);
+	/*GLfloat fLargest;
+	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
+	glTexParameterf( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/
+	glf().glBindTexture(target, 0);
+
+	return tex;
+}
 
 GLHandler::Texture GLHandler::newTextureCubemap(
     unsigned int side, std::array<GLvoid const*, 6> data, GLint internalFormat,
