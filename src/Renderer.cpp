@@ -371,6 +371,36 @@ void Renderer::renderFrame()
 			                       postProcessingTargets[0]);
 			GLHandler::deleteShader(shader);
 		}
+		else if(projection == Projection::VR360)
+		{
+			if(!cubemapTargetInit)
+			{
+				cubemapTarget = GLHandler::newRenderTarget(4096, 4096, true);
+				cubemapTargetInit = true;
+			}
+			int tgtWidth(postProcessingTargets[0].getSize().width()),
+			    tgtHeight(postProcessingTargets[0].getSize().height());
+			QVector3D shift(0.065, 0.0, 0.0);
+
+			GLHandler::generateEnvironmentMap(cubemapTarget, renderFunc, shift);
+			auto shader = GLHandler::newShader("postprocess", "panorama360");
+			GLHandler::postProcess(shader, cubemapTarget,
+			                       postProcessingTargets[0]);
+			GLHandler::blitColorBuffer(
+			    postProcessingTargets[0], postProcessingTargets[1], 0, 0,
+			    tgtWidth, tgtHeight, 0, 0, tgtWidth, tgtHeight / 2);
+
+			GLHandler::generateEnvironmentMap(cubemapTarget, renderFunc,
+			                                  -shift);
+			GLHandler::postProcess(shader, cubemapTarget,
+			                       postProcessingTargets[0]);
+			GLHandler::deleteShader(shader);
+			GLHandler::blitColorBuffer(
+			    postProcessingTargets[0], postProcessingTargets[1], 0, 0,
+			    tgtWidth, tgtHeight, 0, tgtHeight / 2, tgtWidth, tgtHeight);
+			GLHandler::blitColorBuffer(postProcessingTargets[1],
+			                           postProcessingTargets[0]);
+		}
 		else
 		{
 			// NOLINTNEXTLINE(hicpp-no-array-decay)

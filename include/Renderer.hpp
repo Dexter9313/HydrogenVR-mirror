@@ -32,6 +32,7 @@ class Renderer
 	{
 		DEFAULT     = 0,
 		PANORAMA360 = 1,
+		VR360       = 2,
 	};
 
 	struct RenderPath
