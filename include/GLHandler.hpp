@@ -155,6 +155,7 @@ class GLHandler : public QObject
 		 * @brief Assignment operator.
 		 */
 		RenderTarget& operator=(RenderTarget const&) = default;
+		QSize getSize() const { return QSize(width, height); };
 	};
 
 	/** @ingroup pywrap
@@ -313,6 +314,10 @@ class GLHandler : public QObject
 	 */
 	static void blitColorBuffer(RenderTarget const& from,
 	                            RenderTarget const& to);
+	static void blitColorBuffer(RenderTarget const& from,
+	                            RenderTarget const& to, int srcX0, int srcY0,
+	                            int srcX1, int srcY1, int dstX0, int dstY0,
+	                            int dstX1, int dstY1);
 	/**
 	 * @brief Blits one depth buffer from a render target to another one's.
 	 */
