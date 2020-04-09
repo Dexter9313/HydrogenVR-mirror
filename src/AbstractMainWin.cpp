@@ -445,7 +445,9 @@ void AbstractMainWin::paintGL()
 		    = QString("%1").arg(currentVideoFrame, 5, 10, QChar('0'));
 
 		QThreadPool::globalInstance()->start(
-		    new ImageWriter("frame" + number + ".png", frame));
+		    new ImageWriter(QSettings().value("window/viddir").toString()
+		                        + "/frame" + number + ".png",
+		                    frame));
 
 		currentVideoFrame++;
 	}

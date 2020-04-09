@@ -32,6 +32,11 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addUIntSetting("forcewidth", 1500, tr("Forced Rendering Width"), 0, 17000);
 	addUIntSetting("forceheight", 800, tr("Forced Rendering Height"), 0, 17000);
 	addLanguageSetting();
+	addDirPathSetting(
+	    "viddir",
+	    QFileInfo(QSettings().fileName()).absoluteDir().absolutePath()
+	        + "/systems/",
+	    tr("Video Frames Output Directory"));
 
 	addGroup("graphics", tr("Graphics"));
 	addUIntSetting("shadowsquality", 1, tr("Shadows Quality"), 1, 5);
