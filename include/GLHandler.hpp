@@ -388,6 +388,11 @@ class GLHandler : public QObject
 	                        = {QSettings().value("window/width").toUInt(),
 	                           QSettings().value("window/height").toUInt()},
 	                        std::vector<Texture> const& uniformTextures = {});
+	static void
+	    renderFromScratch(ShaderProgram shader,
+	                      RenderTarget const& to
+	                      = {QSettings().value("window/width").toUInt(),
+	                         QSettings().value("window/height").toUInt()});
 
 	static RenderTarget getScreenRenderTarget()
 	{

@@ -350,6 +350,36 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
 	deleteMesh(quad);
 }
 
+void GLHandler::renderFromScratch(ShaderProgram shader, RenderTarget const& to)
+{
+	Mesh quad(newMesh());
+	setVertices(quad, {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
+	            {{"position", 2}});
+
+	if(to.depth == 1)
+	{
+		beginRendering(to);
+		useShader(shader);
+		setBackfaceCulling(false);
+		render(quad, PrimitiveType::TRIANGLE_STRIP);
+		setBackfaceCulling(true);
+	}
+	else
+	{
+		for(unsigned int i(0); i < to.depth; ++i)
+		{
+			GLHandler::beginRendering(to, GLHandler::CubeFace::FRONT, i);
+			GLHandler::setShaderParam(shader, "z",
+			                          i / static_cast<float>(to.depth));
+			GLHandler::setBackfaceCulling(false);
+			GLHandler::render(quad, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+			GLHandler::setBackfaceCulling(true);
+		}
+	}
+
+	deleteMesh(quad);
+}
+
 void GLHandler::generateEnvironmentMap(
     GLHandler::RenderTarget const& renderTarget,
     std::function<void(bool, QMatrix4x4, QMatrix4x4)> const& renderFunction,
