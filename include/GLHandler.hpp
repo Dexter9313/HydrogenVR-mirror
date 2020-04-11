@@ -120,20 +120,28 @@ class GLHandler : public QObject
 		friend GLHandler;
 		RenderTarget(unsigned int width, unsigned int height)
 		    : width(width)
-		    , height(height){};
+		    , height(height)
+		    , depth(1){};
+		RenderTarget(unsigned int width, unsigned int height,
+		             unsigned int depth)
+		    : width(width)
+		    , height(height)
+		    , depth(depth){};
 		RenderTarget(GLuint _0, Texture _1, GLuint _2, unsigned int _3,
-		             unsigned int _4)
+		             unsigned int _4, unsigned int _5 = 1)
 		    : frameBuffer(_0)
 		    , texColorBuffer(_1)
 		    , renderBuffer(_2)
 		    , width(_3)
-		    , height(_4){};
+		    , height(_4)
+		    , depth(_5){};
 		GLuint frameBuffer = 0;
 		// if depth map, will be the depth buffer instead
 		Texture texColorBuffer = {};
 		GLuint renderBuffer    = 0;
 		unsigned int width;
 		unsigned int height;
+		unsigned int depth;
 		bool isDepthMap = false;
 
 	  public:
@@ -280,6 +288,8 @@ class GLHandler : public QObject
 	static void setPointSize(unsigned int size);
 
 	// RENDERING
+	static RenderTarget newRenderTarget1D(unsigned int width);
+	static RenderTarget newRenderTarget1D(unsigned int width, GLint format);
 	/**
 	 * @brief Calls @ref newRenderTarget(@p width, @p height, @ref
 	 * defaultRenderTargetFormat()).
@@ -298,6 +308,13 @@ class GLHandler : public QObject
 	 */
 	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
 	                                    GLint format, bool cubemap = false);
+
+	static RenderTarget newRenderTarget3D(unsigned int width,
+	                                      unsigned int height,
+	                                      unsigned int depth);
+	static RenderTarget newRenderTarget3D(unsigned int width,
+	                                      unsigned int height,
+	                                      unsigned int depth, GLint format);
 
 	static RenderTarget newDepthMap(unsigned int width, unsigned int height,
 	                                bool cubemap = false);
@@ -338,12 +355,14 @@ class GLHandler : public QObject
 	static void beginRendering(GLHandler::RenderTarget const& renderTarget
 	                           = {QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()},
-	                           CubeFace face = CubeFace::FRONT);
+	                           CubeFace face = CubeFace::FRONT,
+	                           GLint layer   = 0);
 	static void beginRendering(GLbitfield clearMask,
 	                           GLHandler::RenderTarget const& renderTarget
 	                           = {QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()},
-	                           CubeFace face = CubeFace::FRONT);
+	                           CubeFace face = CubeFace::FRONT,
+	                           GLint layer   = 0);
 	/**
 	 * @brief Renders @p from's color attachment onto a quad using a
 	 * post-processing @p shader. The final rendering gets stored on the @p to

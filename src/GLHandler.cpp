@@ -104,6 +104,28 @@ void GLHandler::setPointSize(unsigned int size)
 	glf().glPointSize(size);
 }
 
+GLHandler::RenderTarget GLHandler::newRenderTarget1D(unsigned int width)
+{
+	return newRenderTarget1D(width, defaultRenderTargetFormat());
+}
+
+GLHandler::RenderTarget GLHandler::newRenderTarget1D(unsigned int width,
+                                                     GLint format)
+{
+	++renderTargetCount();
+	RenderTarget result = {width, 1};
+
+	glf().glGenFramebuffers(1, &result.frameBuffer);
+	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
+
+	// generate texture
+	result.texColorBuffer
+	    = newTexture1D(width, nullptr, format, GL_RGBA, GL_TEXTURE_1D,
+	                   GL_LINEAR, GL_MIRRORED_REPEAT);
+
+	return result;
+}
+
 GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
                                                    unsigned int height,
                                                    bool cubemap)
@@ -146,6 +168,32 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 	// attach it to currently bound framebuffer object
 	glf().glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
 	                                GL_RENDERBUFFER, result.renderBuffer);
+
+	return result;
+}
+
+GLHandler::RenderTarget GLHandler::newRenderTarget3D(unsigned int width,
+                                                     unsigned int height,
+                                                     unsigned int depth)
+{
+	return newRenderTarget3D(width, height, depth, defaultRenderTargetFormat());
+}
+
+GLHandler::RenderTarget GLHandler::newRenderTarget3D(unsigned int width,
+                                                     unsigned int height,
+                                                     unsigned int depth,
+                                                     GLint format)
+{
+	++renderTargetCount();
+	RenderTarget result = {width, height, depth};
+
+	glf().glGenFramebuffers(1, &result.frameBuffer);
+	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
+
+	// generate texture
+	result.texColorBuffer
+	    = newTexture3D(width, height, depth, nullptr, format, GL_RGBA,
+	                   GL_TEXTURE_3D, GL_LINEAR, GL_MIRRORED_REPEAT);
 
 	return result;
 }
@@ -228,15 +276,17 @@ void GLHandler::setClearColor(QColor const& color)
 	                   color.alphaF());
 }
 
-void GLHandler::beginRendering(RenderTarget const& renderTarget, CubeFace face)
+void GLHandler::beginRendering(RenderTarget const& renderTarget, CubeFace face,
+                               GLint layer)
 {
 	beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
 	                   | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT),
-	               renderTarget, face);
+	               renderTarget, face, layer);
 }
 
 void GLHandler::beginRendering(GLbitfield clearMask,
-                               RenderTarget const& renderTarget, CubeFace face)
+                               RenderTarget const& renderTarget, CubeFace face,
+                               GLint layer)
 {
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, renderTarget.frameBuffer);
 	if(renderTarget.frameBuffer != 0 && !renderTarget.isDepthMap)
@@ -248,6 +298,20 @@ void GLHandler::beginRendering(GLbitfield clearMask,
 			                                 + GL_TEXTURE_CUBE_MAP_POSITIVE_X,
 			                             renderTarget.texColorBuffer.glTexture,
 			                             0);
+		}
+		else if(renderTarget.texColorBuffer.glTarget == GL_TEXTURE_1D)
+		{
+			glf().glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			                             renderTarget.texColorBuffer.glTarget,
+			                             renderTarget.texColorBuffer.glTexture,
+			                             0);
+		}
+		else if(renderTarget.texColorBuffer.glTarget == GL_TEXTURE_3D)
+		{
+			glf().glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			                             renderTarget.texColorBuffer.glTarget,
+			                             renderTarget.texColorBuffer.glTexture,
+			                             0, layer);
 		}
 		else
 		{
