@@ -793,7 +793,8 @@ class GLHandler : public QObject
 	    newTexture1D(unsigned int width, GLvoid const* data = nullptr,
 	                 GLint internalFormat = GL_SRGB8_ALPHA8,
 	                 GLenum format = GL_RGBA, GLenum target = GL_TEXTURE_1D,
-	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE);
+	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE,
+	                 GLenum type = GL_UNSIGNED_BYTE);
 	static Texture newTexture2D(
 	    unsigned int width, unsigned int height, GLvoid const* data = nullptr,
 	    GLint internalFormat = GL_SRGB8_ALPHA8, GLenum format = GL_RGBA,
