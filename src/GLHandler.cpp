@@ -172,6 +172,33 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 	return result;
 }
 
+GLHandler::RenderTarget GLHandler::newRenderTargetMultisample(
+    unsigned int width, unsigned int height, unsigned int samples, GLint format)
+{
+	++renderTargetCount();
+	RenderTarget result = {width, height};
+
+	glf().glGenFramebuffers(1, &result.frameBuffer);
+	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
+
+	// generate texture
+	result.texColorBuffer = newTextureMultisample(
+	    width, height, samples, format, GL_LINEAR, GL_MIRRORED_REPEAT);
+
+	// render buffer for depth and stencil
+	glf().glGenRenderbuffers(1, &result.renderBuffer);
+	glf().glBindRenderbuffer(GL_RENDERBUFFER, result.renderBuffer);
+	glf().glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
+	                                       GL_DEPTH24_STENCIL8, width, height);
+	glf().glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	// attach it to currently bound framebuffer object
+	glf().glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+	                                GL_RENDERBUFFER, result.renderBuffer);
+
+	return result;
+}
+
 GLHandler::RenderTarget GLHandler::newRenderTarget3D(unsigned int width,
                                                      unsigned int height,
                                                      unsigned int depth)
@@ -1134,6 +1161,35 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
 
 	return tex;
 }
+
+GLHandler::Texture GLHandler::newTextureMultisample(unsigned int width,
+                                                    unsigned int height,
+                                                    unsigned int samples,
+                                                    GLint internalFormat,
+                                                    GLint filter, GLint wrap)
+{
+	++texCount();
+	Texture tex  = {};
+	tex.glTarget = GL_TEXTURE_2D_MULTISAMPLE;
+	glf().glGenTextures(1, &tex.glTexture);
+	// glActiveTexture(GL_TEXTURE0);
+	glf().glBindTexture(tex.glTarget, tex.glTexture);
+	glf().glTexImage2DMultisample(tex.glTarget, samples, internalFormat, width,
+	                              height, GL_TRUE);
+	// GL_UNSIGNED_BYTE, data);
+	// glGenerateMipmap(target);
+	glf().glTexParameteri(tex.glTarget, GL_TEXTURE_MIN_FILTER, filter);
+	glf().glTexParameteri(tex.glTarget, GL_TEXTURE_MAG_FILTER, filter);
+	glf().glTexParameteri(tex.glTarget, GL_TEXTURE_WRAP_S, wrap);
+	glf().glTexParameteri(tex.glTarget, GL_TEXTURE_WRAP_T, wrap);
+	/*GLfloat fLargest;
+	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
+	glTexParameterf( tex.glTarget, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/
+	glf().glBindTexture(tex.glTarget, 0);
+
+	return tex;
+}
+
 GLHandler::Texture
     GLHandler::newTexture3D(unsigned int width, unsigned int height,
                             unsigned int depth, GLvoid const* data,

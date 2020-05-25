@@ -195,6 +195,7 @@ class Renderer
 	bool cubemapTargetInit                = false;
 	GLHandler::RenderTarget cubemapTarget = {};
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
+	GLHandler::RenderTarget multisampledTarget                   = {};
 	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};
 	float lastFrameAverageLuminance                              = 0.f;
 };

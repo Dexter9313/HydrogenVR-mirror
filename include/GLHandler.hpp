@@ -309,6 +309,11 @@ class GLHandler : public QObject
 	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
 	                                    GLint format, bool cubemap = false);
 
+	static RenderTarget newRenderTargetMultisample(unsigned int width,
+	                                               unsigned int height,
+	                                               unsigned int samples,
+	                                               GLint format);
+
 	static RenderTarget newRenderTarget3D(unsigned int width,
 	                                      unsigned int height,
 	                                      unsigned int depth);
@@ -824,6 +829,12 @@ class GLHandler : public QObject
 	    GLint internalFormat = GL_SRGB8_ALPHA8, GLenum format = GL_RGBA,
 	    GLenum target = GL_TEXTURE_2D, GLint filter = GL_LINEAR,
 	    GLint wrap = GL_CLAMP_TO_EDGE, GLenum type = GL_UNSIGNED_BYTE);
+	static Texture newTextureMultisample(unsigned int width,
+	                                     unsigned int height,
+	                                     unsigned int samples,
+	                                     GLint internalFormat = GL_SRGB8_ALPHA8,
+	                                     GLint filter         = GL_LINEAR,
+	                                     GLint wrap = GL_CLAMP_TO_EDGE);
 	static Texture
 	    newTexture3D(unsigned int width, unsigned int height,
 	                 unsigned int depth, GLvoid const* data = nullptr,

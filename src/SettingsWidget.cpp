@@ -39,6 +39,7 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	    tr("Video Frames Output Directory"));
 
 	addGroup("graphics", tr("Graphics"));
+	addUIntSetting("antialiasing", 0, tr("Anti-aliasing"), 0, 3);
 	addUIntSetting("shadowsquality", 1, tr("Shadows Quality"), 1, 5);
 	addUIntSetting("smoothshadows", 0, tr("Shadow Smoothing Quality"), 0, 5);
 	addBoolSetting("dithering", true, tr("Enable Dithering"));

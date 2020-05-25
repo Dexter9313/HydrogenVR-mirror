@@ -182,6 +182,16 @@ void Renderer::reloadPostProcessingTargets()
 	postProcessingTargets[1]
 	    = GLHandler::newRenderTarget(newSize.width(), newSize.height());
 
+	if(QSettings().value("graphics/antialiasing").toUInt() > 0)
+	{
+		GLHandler::deleteRenderTarget(multisampledTarget);
+		multisampledTarget = GLHandler::newRenderTargetMultisample(
+		    newSize.width(), newSize.height(),
+		    static_cast<unsigned int>(1)
+		        << QSettings().value("graphics/antialiasing").toUInt(),
+		    GL_RGBA32F);
+	}
+
 	if(*vrHandler)
 	{
 		vrHandler->reloadPostProcessingTargets();
@@ -354,8 +364,18 @@ void Renderer::renderFrame()
 				GLHandler::deleteRenderTarget(cubemapTarget);
 				cubemapTargetInit = false;
 			}
-			GLHandler::beginRendering(postProcessingTargets[0]);
-			renderFunc(false, QMatrix4x4(), QMatrix4x4());
+			if(QSettings().value("graphics/antialiasing").toUInt() == 0)
+			{
+				GLHandler::beginRendering(postProcessingTargets[0]);
+				renderFunc(false, QMatrix4x4(), QMatrix4x4());
+			}
+			else
+			{
+				GLHandler::beginRendering(multisampledTarget);
+				renderFunc(false, QMatrix4x4(), QMatrix4x4());
+				GLHandler::blitColorBuffer(multisampledTarget,
+				                           postProcessingTargets[0]);
+			}
 		}
 		else if(projection == Projection::PANORAMA360)
 		{
@@ -484,6 +504,7 @@ void Renderer::clean()
 	{
 		GLHandler::deleteRenderTarget(cubemapTarget);
 	}
+	GLHandler::deleteRenderTarget(multisampledTarget);
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
 
