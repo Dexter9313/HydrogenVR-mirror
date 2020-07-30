@@ -444,10 +444,34 @@ void AbstractMainWin::paintGL()
 		QString number
 		    = QString("%1").arg(currentVideoFrame, 5, 10, QChar('0'));
 
-		QThreadPool::globalInstance()->start(
-		    new ImageWriter(QSettings().value("window/viddir").toString()
-		                        + "/frame" + number + ".png",
-		                    frame));
+		QString subdir;
+		switch(renderer.projection)
+		{
+			case Renderer::Projection::DEFAULT:
+				subdir = "2D";
+				break;
+			case Renderer::Projection::PANORAMA360:
+				subdir = "PANORAMA360";
+				break;
+			case Renderer::Projection::VR360:
+				subdir = "VR360";
+				break;
+		}
+
+		QString res = QString::number(renderer.getSize().width()) + "x"
+		              + QString::number(renderer.getSize().height());
+		if(currentVideoFrame == 0)
+		{
+			QDir viddir(QSettings().value("window/viddir").toString());
+			viddir.mkdir(subdir);
+			QDir projdir(QSettings().value("window/viddir").toString() + "/"
+			             + subdir);
+			projdir.mkdir(res);
+		}
+
+		QString framePath(QSettings().value("window/viddir").toString() + "/"
+		                  + subdir + "/" + res + "/frame" + number + ".png");
+		QThreadPool::globalInstance()->start(new ImageWriter(framePath, frame));
 
 		currentVideoFrame++;
 	}
