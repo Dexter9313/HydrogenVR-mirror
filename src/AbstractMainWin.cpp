@@ -91,7 +91,7 @@ void AbstractMainWin::toggleVR()
 
 void AbstractMainWin::takeScreenshot(QString path) const
 {
-	QImage screenshot(GLHandler::generateScreenshot());
+	QImage screenshot(renderer.getLastFrame());
 	if(path == "")
 	{
 		path = QFileDialog::getSaveFileName(
@@ -99,7 +99,7 @@ void AbstractMainWin::takeScreenshot(QString path) const
 		    QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
 		    tr("Images (*.png *.xpm *.jpg)"));
 	}
-	screenshot.mirrored(false, true).save(path);
+	screenshot.save(path);
 }
 
 bool AbstractMainWin::event(QEvent* e)
