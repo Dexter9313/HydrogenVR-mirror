@@ -381,7 +381,8 @@ void Renderer::renderFrame()
 		{
 			if(!cubemapTargetInit)
 			{
-				cubemapTarget = GLHandler::newRenderTarget(4096, 4096, true);
+				unsigned int side(getSize().width() / 3);
+				cubemapTarget = GLHandler::newRenderTarget(side, side, true);
 				cubemapTargetInit = true;
 			}
 			GLHandler::generateEnvironmentMap(cubemapTarget, renderFunc);
@@ -395,7 +396,8 @@ void Renderer::renderFrame()
 		{
 			if(!cubemapTargetInit)
 			{
-				cubemapTarget = GLHandler::newRenderTarget(4096, 4096, true);
+				unsigned int side(getSize().width() / 3);
+				cubemapTarget = GLHandler::newRenderTarget(side, side, true);
 				cubemapTargetInit = true;
 			}
 			int tgtWidth(postProcessingTargets[0].getSize().width()),

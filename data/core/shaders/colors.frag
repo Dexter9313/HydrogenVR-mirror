@@ -52,4 +52,7 @@ void main()
 
 	outColor.rgb = result.rgb;
 	outColor.a   = 1.0;
+
+	// contrast
+	// outColor.rgb = clamp(1.2*(outColor.rgb - 0.5) + 0.5, vec3(0.0), vec3(1.0));
 }
