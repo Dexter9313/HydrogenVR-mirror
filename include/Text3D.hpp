@@ -38,6 +38,7 @@ class Text3D
 	QImage const getImage() const { return image; };
 	QString getText() const { return text; };
 	QColor getColor() const { return color; };
+	float getAlpha() const { return alpha; };
 	QFont getFont() const { return font; };
 	QColor getBackgroundColor() const { return backgroundColor; };
 	QRect getRectangle() const { return rectangle; };
@@ -46,6 +47,7 @@ class Text3D
 	GLHandler::ShaderProgram getShader() { return shader; };
 	void setText(QString const& text);
 	void setColor(QColor const& color);
+	void setAlpha(float alpha);
 	void setFont(QFont const& font);
 	void setBackgroundColor(QColor const& backgroundColor);
 	void setRectangle(QRect const& rectangle);
@@ -78,6 +80,7 @@ class Text3D
 
 	QString text = "";
 	QColor color = QColor(0, 0, 0, 255);
+	float alpha  = 1.f;
 	QFont font   = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
 	QColor backgroundColor = QColor(0, 0, 0, 0);
 	QRect rectangle        = QRect();

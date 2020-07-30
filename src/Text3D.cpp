@@ -51,6 +51,12 @@ void Text3D::setColor(QColor const& color)
 	updateTex();
 }
 
+void Text3D::setAlpha(float alpha)
+{
+	this->alpha = alpha;
+	GLHandler::setShaderParam(shader, "alpha", alpha);
+}
+
 void Text3D::setFont(QFont const& font)
 {
 	this->font = font;
@@ -83,6 +89,11 @@ void Text3D::setSuperSampling(float superSampling)
 
 void Text3D::render(GLHandler::GeometricSpace geometricSpace)
 {
+	if(alpha < 0.01)
+	{
+		return;
+	}
+
 	GLHandler::beginTransparent();
 	GLHandler::setUpRender(shader, model * aspectratio, geometricSpace);
 	GLHandler::useTextures({tex});
