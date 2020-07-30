@@ -1,4 +1,10 @@
 #!/bin/bash
+
+#to start profiling :
+#callgrind_control -i on
+#to stop profiling :
+#callgrind_control -i off
+
 if [ ! -f "./build.conf" ]; then
 	. ./build.conf.example
 else
