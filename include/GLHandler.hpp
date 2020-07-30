@@ -206,6 +206,7 @@ class GLHandler : public QObject
 	 */
 	enum class GeometricSpace
 	{
+		CLIP,
 		WORLD,
 		CAMERA,
 		SEATEDTRACKED,

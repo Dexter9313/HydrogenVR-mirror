@@ -916,6 +916,9 @@ void GLHandler::setUpRender(ShaderProgram shader, QMatrix4x4 const& model,
 {
 	switch(space)
 	{
+		case GeometricSpace::CLIP:
+			setShaderParam(shader, "camera", model);
+			break;
 		case GeometricSpace::WORLD:
 			setShaderParam(shader, "camera", fullTransform() * model);
 			break;
