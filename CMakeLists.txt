@@ -74,6 +74,7 @@ endif()
 add_definitions(-DPROJECT_NAME="${PROJECT_NAME}")
 add_definitions(-DPROJECT_DIRECTORY="${PROJECT_DIRECTORY}")
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
+add_definitions(-DBUILD_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 message(STATUS "Project name: ${PROJECT_NAME}")
 message(STATUS "Project dir: ${PROJECT_DIRECTORY}")
