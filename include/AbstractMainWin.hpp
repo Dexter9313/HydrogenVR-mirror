@@ -21,6 +21,7 @@
 #include "InputManager.hpp"
 #include "PythonQtHandler.hpp"
 #include "Renderer.hpp"
+#include "ShaderProgram.hpp"
 #include "vr/VRHandler.hpp"
 
 /** @ingroup pycall
@@ -158,6 +159,10 @@ class AbstractMainWin : public QWindow
 	 * @toggle{wireframe}
 	 */
 	void toggleWireframe();
+	/**
+	 * @brief Reloads all shaders managed by ShadersLoader.
+	 */
+	void reloadAllShaders() { ShaderProgram::reloadAllShaderPrograms(); };
 	/**
 	 * @toggle{vr}
 	 */
