@@ -82,6 +82,8 @@ void AbstractMainWin::setVR(bool vr)
 		    "if \"VRHandler\" in dir():\n\tdel VRHandler");
 	}
 	QSettings().setValue("vr/enabled", vrIsEnabled());
+
+	reloadBloomTargets();
 }
 
 void AbstractMainWin::toggleVR()
@@ -266,6 +268,67 @@ void AbstractMainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	{
 		toggleFullscreen();
 	}
+	else if(a.id == "autoexposure")
+	{
+		toneMappingModel->autoexposure = !toneMappingModel->autoexposure;
+		if(toneMappingModel->autoexposure)
+		{
+			toneMappingModel->dynamicrange      = 1e4f;
+			toneMappingModel->autoexposurecoeff = 1.f;
+		}
+	}
+	else if(a.id == "exposureup")
+	{
+		if(toneMappingModel->autoexposure)
+		{
+			toneMappingModel->autoexposurecoeff *= 1.5f;
+		}
+		else
+		{
+			toneMappingModel->exposure *= 1.5f;
+		}
+	}
+	else if(a.id == "exposuredown")
+	{
+		if(toneMappingModel->autoexposure)
+		{
+			toneMappingModel->autoexposurecoeff /= 1.5f;
+		}
+		else
+		{
+			toneMappingModel->exposure /= 1.5f;
+		}
+	}
+	else if(a.id == "dynamicrangeup")
+	{
+		if(toneMappingModel->dynamicrange < 1e37)
+		{
+			toneMappingModel->dynamicrange *= 10.f;
+			if(toneMappingModel->autoexposure)
+			{
+				toneMappingModel->autoexposurecoeff *= 10.f;
+			}
+			else
+			{
+				toneMappingModel->exposure *= 10.f;
+			}
+		}
+	}
+	else if(a.id == "dynamicrangedown")
+	{
+		if(toneMappingModel->dynamicrange > 1.f)
+		{
+			toneMappingModel->dynamicrange /= 10.f;
+			if(toneMappingModel->autoexposure)
+			{
+				toneMappingModel->autoexposurecoeff /= 10.f;
+			}
+			else
+			{
+				toneMappingModel->exposure /= 10.f;
+			}
+		}
+	}
 	else if(a.id == "quit")
 	{
 		close();
@@ -294,6 +357,19 @@ void AbstractMainWin::applyPostProcShaderParams(
 	{
 		GLHandler::setShaderParam(shader, "gamma", gamma);
 	}
+	else if(id == "exposure")
+	{
+		GLHandler::setShaderParam(shader, "exposure",
+		                          toneMappingModel->exposure);
+		GLHandler::setShaderParam(shader, "dynamicrange",
+		                          toneMappingModel->dynamicrange);
+		GLHandler::setShaderParam(shader, "purkinje",
+		                          toneMappingModel->purkinje ? 1.f : 0.f);
+	}
+	else if(id == "bloom")
+	{
+		GLHandler::setShaderParam(shader, "highlumtex", 1);
+	}
 	else
 	{
 		QString pyCmd("if \"applyPostProcShaderParams\" in "
@@ -305,9 +381,36 @@ void AbstractMainWin::applyPostProcShaderParams(
 
 std::vector<GLHandler::Texture>
     AbstractMainWin::getPostProcessingUniformTextures(
-        QString const& /*id*/, GLHandler::ShaderProgram /*shader*/,
-        GLHandler::RenderTarget const& /*currentTarget*/) const
+        QString const& id, GLHandler::ShaderProgram /*shader*/,
+        GLHandler::RenderTarget const& currentTarget) const
 {
+	if(id == "bloom")
+	{
+		if(bloom)
+		{
+			// high luminosity pass
+			GLHandler::ShaderProgram hlshader(
+			    GLHandler::newShader("postprocess", "highlumpass"));
+			GLHandler::postProcess(hlshader, currentTarget, bloomTargets[0]);
+			GLHandler::deleteShader(hlshader);
+
+			// blurring
+			GLHandler::ShaderProgram blurshader(
+			    GLHandler::newShader("postprocess", "blur"));
+			for(unsigned int i = 0; i < 6; i++)
+			{
+				GLHandler::setShaderParam(blurshader, "horizontal",
+				                          static_cast<float>(i % 2));
+				GLHandler::postProcess(blurshader, bloomTargets.at(i % 2),
+				                       bloomTargets.at((i + 1) % 2));
+			}
+			GLHandler::deleteShader(blurshader);
+
+			return {GLHandler::getColorAttachmentTexture(bloomTargets[0])};
+		}
+		GLHandler::beginRendering(bloomTargets[0]);
+		return {GLHandler::getColorAttachmentTexture(bloomTargets[0])};
+	}
 	return {};
 }
 
@@ -323,6 +426,8 @@ void AbstractMainWin::initializeGL()
 	GLHandler::init();
 	// Init Renderer
 	renderer.init(this, &vrHandler);
+	// Init ToneMappingModel
+	toneMappingModel = new ToneMappingModel(&vrHandler);
 	// Init PythonQt
 	initializePythonQt();
 	// Init VR
@@ -339,12 +444,31 @@ void AbstractMainWin::initializeGL()
 		vrHandler.resetPos();
 	}
 
+	// BLOOM
+	if(!vrHandler)
+	{
+		bloomTargets[0]
+		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
+		bloomTargets[1]
+		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
+	}
+	else
+	{
+		QSize size(vrHandler.getEyeRenderTargetSize());
+		bloomTargets[0] = GLHandler::newRenderTarget(size.width(),
+		                                             size.height(), GL_RGBA32F);
+		bloomTargets[1] = GLHandler::newRenderTarget(size.width(),
+		                                             size.height(), GL_RGBA32F);
+	}
+
 	// let user init
 	initScene();
 
 	// Init Python engine
 	setupPythonScripts();
 
+	renderer.appendPostProcessingShader("exposure", "exposure");
+	renderer.appendPostProcessingShader("bloom", "bloom");
 	// make sure gamma correction is applied last
 	if(QSettings().value("graphics/dithering").toBool())
 	{
@@ -366,6 +490,7 @@ void AbstractMainWin::initializePythonQt()
 	PythonQtHandler::addClass<int>("Side");
 	PythonQtHandler::addObject("Side", new PySide);
 	PythonQtHandler::addObject("GLHandler", new GLHandler);
+	PythonQtHandler::addObject("ToneMappingModel", toneMappingModel);
 }
 
 void AbstractMainWin::reloadPythonQt()
@@ -412,6 +537,9 @@ void AbstractMainWin::paintGL()
 	{
 		frameTiming_ = vrHandler.getFrameTiming() / 1000.f;
 	}
+
+	toneMappingModel->autoUpdateExposure(
+	    renderer.getLastFrameAverageLuminance(), frameTiming);
 
 	// handle VR events if any
 	if(vrHandler)
@@ -482,6 +610,10 @@ void AbstractMainWin::paintGL()
 
 AbstractMainWin::~AbstractMainWin()
 {
+	delete toneMappingModel;
+	GLHandler::deleteRenderTarget(bloomTargets[0]);
+	GLHandler::deleteRenderTarget(bloomTargets[1]);
+
 	// force garbage collect some resources
 	AsyncTexture::garbageCollect(true);
 	AsyncMesh::garbageCollect(true);
@@ -491,4 +623,25 @@ AbstractMainWin::~AbstractMainWin()
 	renderer.clean();
 	vrHandler.close();
 	PythonQtHandler::clean();
+}
+
+void AbstractMainWin::reloadBloomTargets()
+{
+	GLHandler::deleteRenderTarget(bloomTargets[0]);
+	GLHandler::deleteRenderTarget(bloomTargets[1]);
+	if(!vrHandler)
+	{
+		bloomTargets[0]
+		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
+		bloomTargets[1]
+		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
+	}
+	else
+	{
+		QSize size(vrHandler.getEyeRenderTargetSize());
+		bloomTargets[0] = GLHandler::newRenderTarget(size.width(),
+		                                             size.height(), GL_RGBA32F);
+		bloomTargets[1] = GLHandler::newRenderTarget(size.width(),
+		                                             size.height(), GL_RGBA32F);
+	}
 }

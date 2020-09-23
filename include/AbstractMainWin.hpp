@@ -22,6 +22,7 @@
 #include "PythonQtHandler.hpp"
 #include "Renderer.hpp"
 #include "ShaderProgram.hpp"
+#include "ToneMappingModel.hpp"
 #include "vr/VRHandler.hpp"
 
 /** @ingroup pycall
@@ -334,6 +335,9 @@ class AbstractMainWin : public QWindow
 	bool videomode                 = false;
 	unsigned int currentVideoFrame = 0;
 
+	// Postprocessing
+	ToneMappingModel* toneMappingModel = nullptr;
+
   private:
 	void initializeGL();
 	void initializePythonQt();
@@ -347,6 +351,11 @@ class AbstractMainWin : public QWindow
 	QOpenGLContext m_context;
 	bool initialized = false;
 	bool reloadPy    = false;
+
+	// BLOOM
+	bool bloom = QSettings().value("graphics/bloom").toBool();
+	std::array<GLHandler::RenderTarget, 2> bloomTargets;
+	void reloadBloomTargets();
 };
 
 template <class T>

@@ -43,6 +43,7 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addUIntSetting("shadowsquality", 1, tr("Shadows Quality"), 1, 5);
 	addUIntSetting("smoothshadows", 0, tr("Shadow Smoothing Quality"), 0, 5);
 	addBoolSetting("dithering", true, tr("Enable Dithering"));
+	addBoolSetting("bloom", true, tr("Bloom"));
 
 	InputManager inputManager;
 	addGroup("controls", tr("Controls"));
