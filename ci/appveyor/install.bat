@@ -4,7 +4,7 @@
 IF NOT EXIST openvr\ (
 	mkdir openvr
 	cd openvr
-	set OPENVR_COMMIT=0eb70325a4ea3edca2a0ff8aefa631f2529e6eb7
+	set OPENVR_COMMIT="0eb70325a4ea3edca2a0ff8aefa631f2529e6eb7"
 	appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/%OPENVR_COMMIT%/headers/openvr.h -FileName openvr.h
 	IF "%BUILD_TYPE%" == "64bit" (
 		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/%OPENVR_COMMIT%/lib/win64/openvr_api.lib -FileName openvr_api.lib
