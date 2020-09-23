@@ -214,7 +214,8 @@ std::vector<QVector3D> VRHandler::getPlayAreaQuad() const
 
 void VRHandler::resetPos()
 {
-	vr_pointer->ResetSeatedZeroPose();
+	vr::VRChaperone()->ResetZeroPose(
+	    vr::ETrackingUniverseOrigin::TrackingUniverseSeated);
 	vr_compositor->SetTrackingSpace(
 	    vr::ETrackingUniverseOrigin::TrackingUniverseSeated);
 }
