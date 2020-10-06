@@ -254,6 +254,7 @@ void Renderer::vrRender(Side side, bool debug, bool debugInHeadset)
 
 	for(auto pair : sceneRenderPipeline_)
 	{
+		pair.second.camera->setWindowSize(getSize());
 		vrRenderSinglePath(pair.second, pair.first, debug, debugInHeadset);
 	}
 
@@ -314,6 +315,7 @@ void Renderer::renderFrame()
 		                      QMatrix4x4 overrProj) {
 			for(auto pair : sceneRenderPipeline_)
 			{
+				pair.second.camera->setWindowSize(getSize());
 				GLHandler::glf().glClear(pair.second.clearMask);
 				QMatrix4x4 viewBack(pair.second.camera->getView()),
 				    projBack(pair.second.camera->getProj());
