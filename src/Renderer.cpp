@@ -439,36 +439,7 @@ void Renderer::renderFrame()
 		// compute average luminance
 		auto tex
 		    = GLHandler::getColorAttachmentTexture(postProcessingTargets[0]);
-		GLHandler::generateMipmap(tex);
-		unsigned int lvl = GLHandler::getHighestMipmapLevel(tex) - 3;
-		auto size        = GLHandler::getTextureSize(tex, lvl);
-		GLfloat* buff;
-		unsigned int allocated(
-		    GLHandler::getTextureContentAsData(&buff, tex, lvl));
-		if(allocated > 0)
-		{
-			lastFrameAverageLuminance = 0.f;
-			float coeffSum            = 0.f;
-			float halfWidth((size.width() - 1) / 2.f);
-			float halfHeight((size.height() - 1) / 2.f);
-			for(int i(0); i < size.width(); ++i)
-			{
-				for(int j(0); j < size.height(); ++j)
-				{
-					unsigned int id(j * size.width() + i);
-					float lum(0.2126 * buff[4 * id] + 0.7152 * buff[4 * id + 1]
-					          + 0.0722 * buff[4 * id + 2]);
-					float coeff
-					    = exp(-1 * pow((i - halfWidth) * 2.5 / halfWidth, 2));
-					coeff *= exp(-1
-					             * pow((j - halfHeight) * 2.5 / halfHeight, 2));
-					coeffSum += coeff;
-					lastFrameAverageLuminance += coeff * lum;
-				}
-			}
-			lastFrameAverageLuminance /= coeffSum;
-			delete buff;
-		}
+		lastFrameAverageLuminance = GLHandler::getTextureAverageLuminance(tex);
 
 		// postprocess
 		for(int i(0); i < postProcessingPipeline_.size(); ++i)

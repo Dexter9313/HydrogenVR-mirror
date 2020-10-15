@@ -1345,6 +1345,39 @@ unsigned int GLHandler::getTextureContentAsData(GLfloat** buff,
 	return numFloats;
 }
 
+float GLHandler::getTextureAverageLuminance(Texture const& tex)
+{
+	GLHandler::generateMipmap(tex);
+	unsigned int lvl = GLHandler::getHighestMipmapLevel(tex) - 3;
+	auto size        = GLHandler::getTextureSize(tex, lvl);
+	GLfloat* buff;
+	unsigned int allocated(GLHandler::getTextureContentAsData(&buff, tex, lvl));
+	float lastFrameAverageLuminance = 0.f;
+	if(allocated > 0)
+	{
+		float coeffSum = 0.f;
+		float halfWidth((size.width() - 1) / 2.f);
+		float halfHeight((size.height() - 1) / 2.f);
+		for(int i(0); i < size.width(); ++i)
+		{
+			for(int j(0); j < size.height(); ++j)
+			{
+				unsigned int id(j * size.width() + i);
+				float lum(0.2126 * buff[4 * id] + 0.7152 * buff[4 * id + 1]
+				          + 0.0722 * buff[4 * id + 2]);
+				float coeff
+				    = exp(-1 * pow((i - halfWidth) * 4.5 / halfWidth, 2));
+				coeff *= exp(-1 * pow((j - halfHeight) * 4.5 / halfHeight, 2));
+				coeffSum += coeff;
+				lastFrameAverageLuminance += coeff * lum;
+			}
+		}
+		lastFrameAverageLuminance /= coeffSum;
+		delete buff;
+	}
+	return lastFrameAverageLuminance;
+}
+
 void GLHandler::useTextures(std::vector<Texture> const& textures)
 {
 	for(unsigned int i(0); i < textures.size(); ++i)
