@@ -174,6 +174,26 @@ void SettingsWidget::addUIntSetting(QString const& name,
 	currentForm->addRow(label + " :", sbox);
 }
 
+void SettingsWidget::addIntSetting(QString const& name, int defaultVal,
+                                   QString const& label, int minVal, int maxVal)
+{
+	QString fullName(currentGroup + '/' + name);
+
+	if(!settings.contains(fullName))
+	{
+		settings.setValue(fullName, defaultVal);
+	}
+
+	auto sbox = new QSpinBox(this);
+	sbox->setRange(minVal, maxVal);
+	sbox->setValue(settings.value(fullName).toInt());
+
+	connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+	        this, [this, fullName](int v) { updateValue(fullName, v); });
+
+	currentForm->addRow(label + " :", sbox);
+}
+
 void SettingsWidget::addStringSetting(QString const& name,
                                       QString const& defaultVal,
                                       QString const& label)
