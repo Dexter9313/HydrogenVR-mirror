@@ -66,6 +66,7 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 
 	addGroup("vr", tr("Virtual Reality"));
 	addBoolSetting("enabled", true, tr("Enable VR"));
+	addBoolSetting("mode", true, tr("OpenVR (Stereo Beamer Mode if no)"));
 	addBoolSetting(
 	    "thirdrender", false,
 	    tr("Force 2D render on screen\n(will decrease performance !)"));

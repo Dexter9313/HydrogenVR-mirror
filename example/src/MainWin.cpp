@@ -93,9 +93,9 @@ void MainWin::initScene()
 	playareaShader.setUniform("color", QColor(255, 0, 0));
 	playareaShader.setUniform("alpha", 1.f);
 	playarea = GLHandler::newMesh();
-	if(vrHandler.isEnabled())
+	if(vrHandler->isEnabled())
 	{
-		auto playareaquad(vrHandler.getPlayAreaQuad());
+		auto playareaquad(vrHandler->getPlayAreaQuad());
 		vertices = {
 		    playareaquad[0].x(), playareaquad[0].y(), playareaquad[0].z(),
 		    playareaquad[1].x(), playareaquad[1].y(), playareaquad[1].z(),
@@ -141,10 +141,10 @@ void MainWin::initScene()
 
 void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 {
-	Controller const* cont(vrHandler.getController(Side::LEFT));
+	Controller const* cont(vrHandler->getController(Side::LEFT));
 	if(cont == nullptr)
 	{
-		cont = vrHandler.getController(Side::RIGHT);
+		cont = vrHandler->getController(Side::RIGHT);
 	}
 	if(cont != nullptr)
 	{
@@ -160,7 +160,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 		}
 	}
 
-	Hand const* leftHand(vrHandler.getHand(Side::LEFT));
+	Hand const* leftHand(vrHandler->getHand(Side::LEFT));
 	if(leftHand != nullptr)
 	{
 		if(leftHand->isClosed())
@@ -183,7 +183,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 	light->color
 	    = QColor(128 + 127 * cos(secs / 2.0), 128 + 127 * sin(secs / 2.0), 0);
 	light->color = QColor(255, 255, 255);
-	if(vrHandler.isEnabled())
+	if(vrHandler->isEnabled())
 	{
 		modelModel.translate(0.f, 1.4f * model->getBoundingSphereRadius(), 0.f);
 		modelModel.rotate(180.f, QVector3D(0.f, 1.f, 0.f));
@@ -231,7 +231,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	                       GLHandler::GeometricSpace::STANDINGTRACKED);
 	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
 
-	if(vrHandler.isEnabled())
+	if(vrHandler->isEnabled())
 	{
 		model->render(camera.standingTrackedSpaceToWorldTransform().inverted()
 		                  * camera.getWorldSpacePosition(),

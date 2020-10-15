@@ -1,7 +1,7 @@
 #include "AbstractMainWin.hpp"
 
 AbstractMainWin::AbstractMainWin()
-    : renderer(*this, vrHandler)
+    : renderer(*this, *vrHandler)
 {
 	setSurfaceType(QSurface::OpenGLSurface);
 
@@ -57,25 +57,25 @@ void AbstractMainWin::toggleFullscreen()
 
 bool AbstractMainWin::vrIsEnabled() const
 {
-	return vrHandler.isEnabled();
+	return vrHandler->isEnabled();
 }
 
 void AbstractMainWin::setVR(bool vr)
 {
-	if(vrHandler.isEnabled() && !vr)
+	if(vrHandler->isEnabled() && !vr)
 	{
-		vrHandler.close();
+		vrHandler->close();
 	}
-	else if(!vrHandler.isEnabled() && vr)
+	else if(!vrHandler->isEnabled() && vr)
 	{
-		if(vrHandler.init())
+		if(vrHandler->init())
 		{
-			vrHandler.resetPos();
+			vrHandler->resetPos();
 		}
 	}
 	if(vrIsEnabled())
 	{
-		PythonQtHandler::addObject("VRHandler", &vrHandler);
+		PythonQtHandler::addObject("VRHandler", vrHandler);
 	}
 	else
 	{
@@ -428,7 +428,7 @@ void AbstractMainWin::initializeGL()
 	// Init Renderer
 	renderer.init();
 	// Init ToneMappingModel
-	toneMappingModel = new ToneMappingModel(vrHandler);
+	toneMappingModel = new ToneMappingModel(*vrHandler);
 	// Init PythonQt
 	initializePythonQt();
 	// Init VR
@@ -440,13 +440,13 @@ void AbstractMainWin::initializeGL()
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
 	         << format().minorVersion() << '\n';
 
-	if(vrHandler.isEnabled())
+	if(vrHandler->isEnabled())
 	{
-		vrHandler.resetPos();
+		vrHandler->resetPos();
 	}
 
 	// BLOOM
-	if(!vrHandler.isEnabled())
+	if(!vrHandler->isEnabled())
 	{
 		bloomTargets[0]
 		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
@@ -455,7 +455,7 @@ void AbstractMainWin::initializeGL()
 	}
 	else
 	{
-		QSize size(vrHandler.getEyeRenderTargetSize());
+		QSize size(vrHandler->getEyeRenderTargetSize());
 		bloomTargets[0] = GLHandler::newRenderTarget(size.width(),
 		                                             size.height(), GL_RGBA32F);
 		bloomTargets[1] = GLHandler::newRenderTarget(size.width(),
@@ -534,19 +534,23 @@ void AbstractMainWin::paintGL()
 	{
 		reloadPythonQt();
 	}
-	if(vrHandler.isEnabled())
+	if(vrHandler->isEnabled())
 	{
-		frameTiming_ = vrHandler.getFrameTiming() / 1000.f;
+		float vrFT(vrHandler->getFrameTiming());
+		if(vrFT >= 0.f)
+		{
+			frameTiming_ = vrFT / 1000.f;
+		}
 	}
 
 	toneMappingModel->autoUpdateExposure(
 	    renderer.getLastFrameAverageLuminance(), frameTiming);
 
 	// handle VR events if any
-	if(vrHandler.isEnabled())
+	if(vrHandler->isEnabled())
 	{
 		auto e = new VRHandler::Event;
-		while(vrHandler.pollEvent(e))
+		while(vrHandler->pollEvent(e))
 		{
 			vrEvent(*e);
 		}
@@ -622,15 +626,16 @@ AbstractMainWin::~AbstractMainWin()
 	PythonQtHandler::evalScript(
 	    "if \"cleanUpScene\" in dir():\n\tcleanUpScene()");
 	renderer.clean();
-	vrHandler.close();
+	vrHandler->close();
 	PythonQtHandler::clean();
+	delete vrHandler;
 }
 
 void AbstractMainWin::reloadBloomTargets()
 {
 	GLHandler::deleteRenderTarget(bloomTargets[0]);
 	GLHandler::deleteRenderTarget(bloomTargets[1]);
-	if(!vrHandler.isEnabled())
+	if(!vrHandler->isEnabled())
 	{
 		bloomTargets[0]
 		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
@@ -639,7 +644,7 @@ void AbstractMainWin::reloadBloomTargets()
 	}
 	else
 	{
-		QSize size(vrHandler.getEyeRenderTargetSize());
+		QSize size(vrHandler->getEyeRenderTargetSize());
 		bloomTargets[0] = GLHandler::newRenderTarget(size.width(),
 		                                             size.height(), GL_RGBA32F);
 		bloomTargets[1] = GLHandler::newRenderTarget(size.width(),

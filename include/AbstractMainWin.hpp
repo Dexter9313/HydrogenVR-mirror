@@ -23,7 +23,8 @@
 #include "Renderer.hpp"
 #include "ShaderProgram.hpp"
 #include "ToneMappingModel.hpp"
-#include "vr/VRHandler.hpp"
+#include "vr/OpenVRHandler.hpp"
+#include "vr/StereoBeamerHandler.hpp"
 
 /** @ingroup pycall
  *
@@ -315,7 +316,10 @@ class AbstractMainWin : public QWindow
 	/**
 	 * @brief The engine's only @ref VRHandler.
 	 */
-	VRHandler vrHandler;
+	VRHandler* vrHandler
+	    = QSettings().value("vr/mode").toBool()
+	          ? static_cast<VRHandler*>(new OpenVRHandler)
+	          : static_cast<VRHandler*>(new StereoBeamerHandler);
 	/**
 	 * @brief The engine's only @ref Renderer.
 	 */
