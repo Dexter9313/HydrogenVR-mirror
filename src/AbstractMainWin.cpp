@@ -1,6 +1,7 @@
 #include "AbstractMainWin.hpp"
 
 AbstractMainWin::AbstractMainWin()
+    : renderer(vrHandler)
 {
 	setSurfaceType(QSurface::OpenGLSurface);
 
@@ -56,16 +57,16 @@ void AbstractMainWin::toggleFullscreen()
 
 bool AbstractMainWin::vrIsEnabled() const
 {
-	return static_cast<bool>(vrHandler);
+	return vrHandler.isEnabled();
 }
 
 void AbstractMainWin::setVR(bool vr)
 {
-	if(vrHandler && !vr)
+	if(vrHandler.isEnabled() && !vr)
 	{
 		vrHandler.close();
 	}
-	else if(!vrHandler && vr)
+	else if(!vrHandler.isEnabled() && vr)
 	{
 		if(vrHandler.init())
 		{
@@ -425,9 +426,9 @@ void AbstractMainWin::initializeGL()
 	// Init GL
 	GLHandler::init();
 	// Init Renderer
-	renderer.init(this, &vrHandler);
+	renderer.init(this);
 	// Init ToneMappingModel
-	toneMappingModel = new ToneMappingModel(&vrHandler);
+	toneMappingModel = new ToneMappingModel(vrHandler);
 	// Init PythonQt
 	initializePythonQt();
 	// Init VR
@@ -439,13 +440,13 @@ void AbstractMainWin::initializeGL()
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
 	         << format().minorVersion() << '\n';
 
-	if(vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		vrHandler.resetPos();
 	}
 
 	// BLOOM
-	if(!vrHandler)
+	if(!vrHandler.isEnabled())
 	{
 		bloomTargets[0]
 		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
@@ -533,7 +534,7 @@ void AbstractMainWin::paintGL()
 	{
 		reloadPythonQt();
 	}
-	if(vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		frameTiming_ = vrHandler.getFrameTiming() / 1000.f;
 	}
@@ -542,7 +543,7 @@ void AbstractMainWin::paintGL()
 	    renderer.getLastFrameAverageLuminance(), frameTiming);
 
 	// handle VR events if any
-	if(vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		auto e = new VRHandler::Event;
 		while(vrHandler.pollEvent(e))
@@ -629,7 +630,7 @@ void AbstractMainWin::reloadBloomTargets()
 {
 	GLHandler::deleteRenderTarget(bloomTargets[0]);
 	GLHandler::deleteRenderTarget(bloomTargets[1]);
-	if(!vrHandler)
+	if(!vrHandler.isEnabled())
 	{
 		bloomTargets[0]
 		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);

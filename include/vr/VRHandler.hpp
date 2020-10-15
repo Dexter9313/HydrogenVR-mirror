@@ -59,7 +59,7 @@ class VRHandler : public QObject
 
   public:
 	VRHandler() = default;
-	explicit operator bool() const { return vr_pointer != nullptr; }
+	bool isEnabled() const { return vr_pointer != nullptr; }
 	bool init();
 	QSize getEyeRenderTargetSize() const;
 	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };

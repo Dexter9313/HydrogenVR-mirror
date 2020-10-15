@@ -93,7 +93,7 @@ void MainWin::initScene()
 	playareaShader.setUniform("color", QColor(255, 0, 0));
 	playareaShader.setUniform("alpha", 1.f);
 	playarea = GLHandler::newMesh();
-	if(vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		auto playareaquad(vrHandler.getPlayAreaQuad());
 		vertices = {
@@ -183,7 +183,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 	light->color
 	    = QColor(128 + 127 * cos(secs / 2.0), 128 + 127 * sin(secs / 2.0), 0);
 	light->color = QColor(255, 255, 255);
-	if(vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		modelModel.translate(0.f, 1.4f * model->getBoundingSphereRadius(), 0.f);
 		modelModel.rotate(180.f, QVector3D(0.f, 1.f, 0.f));
@@ -231,7 +231,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	                       GLHandler::GeometricSpace::STANDINGTRACKED);
 	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
 
-	if(vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		model->render(camera.standingTrackedSpaceToWorldTransform().inverted()
 		                  * camera.getWorldSpacePosition(),

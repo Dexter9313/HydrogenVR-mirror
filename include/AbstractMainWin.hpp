@@ -313,13 +313,13 @@ class AbstractMainWin : public QWindow
 	 */
 	InputManager inputManager;
 	/**
-	 * @brief The engine's only @ref Renderer.
-	 */
-	Renderer renderer;
-	/**
 	 * @brief The engine's only @ref VRHandler.
 	 */
 	VRHandler vrHandler;
+	/**
+	 * @brief The engine's only @ref Renderer.
+	 */
+	Renderer renderer;
 	/**
 	 * @brief Last frame time to render in seconds.
 	 *

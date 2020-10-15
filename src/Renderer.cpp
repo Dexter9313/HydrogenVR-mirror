@@ -20,10 +20,14 @@
 
 #include "AbstractMainWin.hpp"
 
-void Renderer::init(AbstractMainWin* window, VRHandler* vrHandler)
+Renderer::Renderer(VRHandler& vrHandler)
+    : vrHandler(vrHandler)
 {
-	this->window    = window;
-	this->vrHandler = vrHandler;
+}
+
+void Renderer::init(AbstractMainWin* window)
+{
+	this->window = window;
 	if(initialized)
 	{
 		clean();
@@ -192,18 +196,18 @@ void Renderer::reloadPostProcessingTargets()
 		    GL_RGBA32F);
 	}
 
-	if(*vrHandler)
+	if(vrHandler.isEnabled())
 	{
-		vrHandler->reloadPostProcessingTargets();
+		vrHandler.reloadPostProcessingTargets();
 	}
 }
 
 void Renderer::renderVRControls() const
 {
-	if(*vrHandler)
+	if(vrHandler.isEnabled())
 	{
-		vrHandler->renderControllers();
-		vrHandler->renderHands();
+		vrHandler.renderControllers();
+		vrHandler.renderHands();
 	}
 }
 
@@ -250,7 +254,7 @@ void Renderer::vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
 
 void Renderer::vrRender(Side side, bool debug, bool debugInHeadset)
 {
-	vrHandler->beginRendering(side);
+	vrHandler.beginRendering(side);
 
 	for(auto pair : sceneRenderPipeline_)
 	{
@@ -259,7 +263,7 @@ void Renderer::vrRender(Side side, bool debug, bool debugInHeadset)
 	}
 
 	lastFrameAverageLuminance
-	    += vrHandler->getRenderTargetAverageLuminance(side);
+	    += vrHandler.getRenderTargetAverageLuminance(side);
 
 	// do all postprocesses including last one
 	int i(0);
@@ -267,31 +271,32 @@ void Renderer::vrRender(Side side, bool debug, bool debugInHeadset)
 	{
 		window->applyPostProcShaderParams(
 		    postProcessingPipeline_[i].first, postProcessingPipeline_[i].second,
-		    vrHandler->getPostProcessingTarget(i % 2, side));
+		    vrHandler.getPostProcessingTarget(i % 2, side));
 		auto texs = window->getPostProcessingUniformTextures(
 		    postProcessingPipeline_[i].first, postProcessingPipeline_[i].second,
-		    vrHandler->getPostProcessingTarget(i % 2, side));
+		    vrHandler.getPostProcessingTarget(i % 2, side));
 		GLHandler::postProcess(
 		    postProcessingPipeline_[i].second,
-		    vrHandler->getPostProcessingTarget(i % 2, side),
-		    vrHandler->getPostProcessingTarget((i + 1) % 2, side), texs);
+		    vrHandler.getPostProcessingTarget(i % 2, side),
+		    vrHandler.getPostProcessingTarget((i + 1) % 2, side), texs);
 	}
 
-	vrHandler->submitRendering(side, i % 2);
+	vrHandler.submitRendering(side, i % 2);
 }
 
 void Renderer::renderFrame()
 {
 	bool debug(dbgCamera->isEnabled());
 	bool debugInHeadset(dbgCamera->debugInHeadset());
-	bool renderingCamIsDebug(
-	    debug && ((debugInHeadset && *vrHandler) || !(*vrHandler)));
+	bool renderingCamIsDebug(debug
+	                         && ((debugInHeadset && vrHandler.isEnabled())
+	                             || !vrHandler.isEnabled()));
 	bool thirdRender(QSettings().value("vr/thirdrender").toBool());
 
 	// main render logic
-	if(*vrHandler)
+	if(vrHandler.isEnabled())
 	{
-		vrHandler->prepareRendering();
+		vrHandler.prepareRendering();
 
 		lastFrameAverageLuminance = 0.f;
 		vrRender(Side::LEFT, debug, debugInHeadset);
@@ -300,8 +305,8 @@ void Renderer::renderFrame()
 
 		if(!thirdRender && (!debug || debugInHeadset))
 		{
-			vrHandler->displayOnCompanion(window->size().width(),
-			                              window->size().height());
+			vrHandler.displayOnCompanion(window->size().width(),
+			                             window->size().height());
 		}
 		else if(debug && !debugInHeadset)
 		{
@@ -309,7 +314,7 @@ void Renderer::renderFrame()
 		}
 	}
 	// if no VR or debug not in headset, render 2D
-	if((!(*vrHandler) || thirdRender) || (debug && !debugInHeadset))
+	if((!vrHandler.isEnabled() || thirdRender) || (debug && !debugInHeadset))
 	{
 		auto renderFunc = [=](bool overrideCamera, QMatrix4x4 overrView,
 		                      QMatrix4x4 overrProj) {
