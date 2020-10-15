@@ -1,7 +1,7 @@
 #include "AbstractMainWin.hpp"
 
 AbstractMainWin::AbstractMainWin()
-    : renderer(vrHandler)
+    : renderer(*this, vrHandler)
 {
 	setSurfaceType(QSurface::OpenGLSurface);
 
@@ -426,7 +426,7 @@ void AbstractMainWin::initializeGL()
 	// Init GL
 	GLHandler::init();
 	// Init Renderer
-	renderer.init(this);
+	renderer.init();
 	// Init ToneMappingModel
 	toneMappingModel = new ToneMappingModel(vrHandler);
 	// Init PythonQt

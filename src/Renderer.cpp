@@ -20,14 +20,14 @@
 
 #include "AbstractMainWin.hpp"
 
-Renderer::Renderer(VRHandler& vrHandler)
-    : vrHandler(vrHandler)
+Renderer::Renderer(AbstractMainWin& window, VRHandler& vrHandler)
+    : window(window)
+    , vrHandler(vrHandler)
 {
 }
 
-void Renderer::init(AbstractMainWin* window)
+void Renderer::init()
 {
-	this->window = window;
 	if(initialized)
 	{
 		clean();
@@ -54,8 +54,8 @@ void Renderer::windowResized()
 		return;
 	}
 
-	QSettings().setValue("window/width", window->size().width());
-	QSettings().setValue("window/height", window->size().height());
+	QSettings().setValue("window/width", window.size().width());
+	QSettings().setValue("window/height", window.size().height());
 	if(QSettings().value("window/forcerenderresolution").toBool())
 	{
 		return;
@@ -70,7 +70,7 @@ void Renderer::windowResized()
 
 QSize Renderer::getSize() const
 {
-	QSize renderSize(window->size().width(), window->size().height());
+	QSize renderSize(window.size().width(), window.size().height());
 	if(QSettings().value("window/forcerenderresolution").toBool())
 	{
 		renderSize.setWidth(QSettings().value("window/forcewidth").toInt());
@@ -235,7 +235,7 @@ void Renderer::vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
 	{
 		GLHandler::beginWireframe();
 	}
-	window->renderScene(*renderPath.camera, pathId);
+	window.renderScene(*renderPath.camera, pathId);
 	if(pathIdRenderingControllers == pathId && !renderControllersBeforeScene)
 	{
 		renderVRControls();
@@ -269,10 +269,10 @@ void Renderer::vrRender(Side side, bool debug, bool debugInHeadset)
 	int i(0);
 	for(; i < postProcessingPipeline_.size(); ++i)
 	{
-		window->applyPostProcShaderParams(
+		window.applyPostProcShaderParams(
 		    postProcessingPipeline_[i].first, postProcessingPipeline_[i].second,
 		    vrHandler.getPostProcessingTarget(i % 2, side));
-		auto texs = window->getPostProcessingUniformTextures(
+		auto texs = window.getPostProcessingUniformTextures(
 		    postProcessingPipeline_[i].first, postProcessingPipeline_[i].second,
 		    vrHandler.getPostProcessingTarget(i % 2, side));
 		GLHandler::postProcess(
@@ -305,8 +305,8 @@ void Renderer::renderFrame()
 
 		if(!thirdRender && (!debug || debugInHeadset))
 		{
-			vrHandler.displayOnCompanion(window->size().width(),
-			                             window->size().height());
+			vrHandler.displayOnCompanion(window.size().width(),
+			                             window.size().height());
 		}
 		else if(debug && !debugInHeadset)
 		{
@@ -345,7 +345,7 @@ void Renderer::renderFrame()
 					GLHandler::beginWireframe();
 				}
 
-				window->renderScene(*pair.second.camera, pair.first);
+				window.renderScene(*pair.second.camera, pair.first);
 				PythonQtHandler::evalScript(
 				    "if \"renderScene\" in dir():\n\trenderScene()");
 				if(debug)
@@ -473,10 +473,10 @@ void Renderer::renderFrame()
 		// postprocess
 		for(int i(0); i < postProcessingPipeline_.size(); ++i)
 		{
-			window->applyPostProcShaderParams(postProcessingPipeline_[i].first,
-			                                  postProcessingPipeline_[i].second,
-			                                  postProcessingTargets.at(i % 2));
-			auto texs = window->getPostProcessingUniformTextures(
+			window.applyPostProcShaderParams(postProcessingPipeline_[i].first,
+			                                 postProcessingPipeline_[i].second,
+			                                 postProcessingTargets.at(i % 2));
+			auto texs = window.getPostProcessingUniformTextures(
 			    postProcessingPipeline_[i].first,
 			    postProcessingPipeline_[i].second,
 			    postProcessingTargets.at(i % 2));
