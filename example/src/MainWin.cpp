@@ -24,6 +24,44 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	AbstractMainWin::actionEvent(a, pressed);
 }
 
+void MainWin::mousePressEvent(QMouseEvent* e)
+{
+	if(e->button() == Qt::MouseButton::LeftButton)
+	{
+		moveView = true;
+		QCursor c(cursor());
+		c.setShape(Qt::CursorShape::BlankCursor);
+		cursorPosBackup = QCursor::pos();
+		QCursor::setPos(width() / 2, height() / 2);
+		setCursor(c);
+	}
+}
+
+void MainWin::mouseReleaseEvent(QMouseEvent* e)
+{
+	if(e->button() == Qt::MouseButton::LeftButton)
+	{
+		moveView = false;
+		QCursor c(cursor());
+		c.setShape(Qt::CursorShape::ArrowCursor);
+		QCursor::setPos(cursorPosBackup);
+		setCursor(c);
+	}
+}
+
+void MainWin::mouseMoveEvent(QMouseEvent* e)
+{
+	if(!isActive() || /*vrHandler->isEnabled() ||*/ !moveView)
+	{
+		return;
+	}
+	float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
+	float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();
+	yaw += dx * 3.14f / 3.f;
+	pitch += dy * 3.14f / 3.f;
+	QCursor::setPos(width() / 2, height() / 2);
+}
+
 void MainWin::initScene()
 {
 	// SKYBOX
@@ -141,6 +179,13 @@ void MainWin::initScene()
 
 void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 {
+	if(networkManager.isServer())
+	{
+		QVector3D lookDir(-cosf(yaw) * cosf(pitch), -sinf(yaw) * cosf(pitch),
+		                  sinf(pitch));
+		camera.setView({1, 1, 1}, lookDir, {0, 0, 1});
+	}
+
 	Controller const* cont(vrHandler->getController(Side::LEFT));
 	if(cont == nullptr)
 	{
