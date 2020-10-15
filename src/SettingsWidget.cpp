@@ -169,7 +169,8 @@ void SettingsWidget::addUIntSetting(QString const& name,
 	sbox->setValue(settings.value(fullName).toUInt());
 
 	connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-	        this, [this, fullName](int v) { updateValue(fullName, v); });
+	        this,
+	        [this, fullName](unsigned int v) { updateValue(fullName, v); });
 
 	currentForm->addRow(label + " :", sbox);
 }
@@ -190,6 +191,30 @@ void SettingsWidget::addIntSetting(QString const& name, int defaultVal,
 
 	connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 	        this, [this, fullName](int v) { updateValue(fullName, v); });
+
+	currentForm->addRow(label + " :", sbox);
+}
+
+void SettingsWidget::addDoubleSetting(QString const& name, double defaultVal,
+                                      QString const& label, double minVal,
+                                      double maxVal, unsigned int decimals)
+{
+	QString fullName(currentGroup + '/' + name);
+
+	if(!settings.contains(fullName))
+	{
+		settings.setValue(fullName, defaultVal);
+	}
+
+	auto sbox = new QDoubleSpinBox(this);
+	sbox->setRange(minVal, maxVal);
+	sbox->setDecimals(decimals);
+	sbox->setValue(settings.value(fullName).toDouble());
+
+	connect(sbox,
+	        static_cast<void (QDoubleSpinBox::*)(double)>(
+	            &QDoubleSpinBox::valueChanged),
+	        this, [this, fullName](double v) { updateValue(fullName, v); });
 
 	currentForm->addRow(label + " :", sbox);
 }
