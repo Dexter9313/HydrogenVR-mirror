@@ -18,12 +18,12 @@ float StereoBeamerHandler::getFrameTiming() const
 	return -1.f;
 }
 
-const Controller* StereoBeamerHandler::getController(Side side) const
+const Controller* StereoBeamerHandler::getController(Side /*side*/) const
 {
 	return nullptr;
 }
 
-const Hand* StereoBeamerHandler::getHand(Side side) const
+const Hand* StereoBeamerHandler::getHand(Side /*side*/) const
 {
 	return nullptr;
 }
@@ -38,6 +38,7 @@ float StereoBeamerHandler::getRenderTargetAverageLuminance(Side eye) const
 
 QMatrix4x4 StereoBeamerHandler::getSeatedToStandingAbsoluteTrackingPos() const
 {
+	return {};
 }
 
 QSizeF StereoBeamerHandler::getPlayAreaSize() const
@@ -48,10 +49,10 @@ QSizeF StereoBeamerHandler::getPlayAreaSize() const
 std::vector<QVector3D> StereoBeamerHandler::getPlayAreaQuad() const
 {
 	std::vector<QVector3D> result;
-	result.push_back(QVector3D());
-	result.push_back(QVector3D());
-	result.push_back(QVector3D());
-	result.push_back(QVector3D());
+	result.emplace_back();
+	result.emplace_back();
+	result.emplace_back();
+	result.emplace_back();
 
 	return result;
 }
@@ -95,7 +96,7 @@ void StereoBeamerHandler::reloadPostProcessingTargets()
 	    currentTargetSize.width(), currentTargetSize.height());
 }
 
-void StereoBeamerHandler::submitRendering(Side eye, unsigned int i) {}
+void StereoBeamerHandler::submitRendering(Side /*eye*/, unsigned int /*i*/) {}
 
 void StereoBeamerHandler::displayOnCompanion(unsigned int companionWidth,
                                              unsigned int companionHeight) const
@@ -109,7 +110,7 @@ void StereoBeamerHandler::displayOnCompanion(unsigned int companionWidth,
 	    static_cast<int>(companionWidth), static_cast<int>(companionHeight));
 }
 
-bool StereoBeamerHandler::pollEvent(Event* e)
+bool StereoBeamerHandler::pollEvent(Event* /*e*/)
 {
 	return false;
 }
@@ -131,7 +132,8 @@ QMatrix4x4 StereoBeamerHandler::getEyeViewMatrix(Side eye) const
 	return res;
 }
 
-QMatrix4x4 StereoBeamerHandler::getProjectionMatrix(Side eye, float nearPlan,
+QMatrix4x4 StereoBeamerHandler::getProjectionMatrix(Side /*eye*/,
+                                                    float nearPlan,
                                                     float farPlan) const
 {
 	const float fovV(40.f), fovH(36.f);

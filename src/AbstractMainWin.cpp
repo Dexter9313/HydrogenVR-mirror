@@ -436,7 +436,6 @@ void AbstractMainWin::initializeGL()
 	// Init libraries
 	initLibraries();
 
-	// NOLINTNEXTLINE(hicpp-no-array-decay)
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
 	         << format().minorVersion() << '\n';
 

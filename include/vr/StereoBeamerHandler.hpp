@@ -56,9 +56,8 @@ class StereoBeamerHandler : public VRHandler
 
   public slots:
 	virtual QMatrix4x4 getEyeViewMatrix(Side eye) const override;
-	virtual QMatrix4x4 getProjectionMatrix(Side eye, float nearPlan = 0.1f,
-	                                       float farPlan
-	                                       = 100.0f) const override;
+	virtual QMatrix4x4 getProjectionMatrix(Side eye, float nearPlan,
+	                                       float farPlan) const override;
 	virtual void resetPos() override;
 
   private:

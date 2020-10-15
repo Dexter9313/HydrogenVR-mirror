@@ -432,7 +432,6 @@ void Renderer::renderFrame()
 		}
 		else
 		{
-			// NOLINTNEXTLINE(hicpp-no-array-decay)
 			qDebug() << "Invalid RenderTarget::Projection";
 		}
 

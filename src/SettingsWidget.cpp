@@ -21,7 +21,6 @@
 SettingsWidget::SettingsWidget(QWidget* parent)
     : QTabWidget(parent)
 {
-	// NOLINTNEXTLINE(hicpp-no-array-decay)
 	qDebug() << QString("Config file :") + QSettings().fileName();
 	addGroup("window", tr("Window"));
 	addUIntSetting("width", 1500, tr("Window Width"), 0, 17000);

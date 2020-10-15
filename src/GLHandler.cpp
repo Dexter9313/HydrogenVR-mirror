@@ -795,7 +795,6 @@ GLuint GLHandler::loadShader(QString const& path, GLenum shaderType,
 	glf().glGetShaderInfoLog(shader, 512, nullptr, &buffer[0]);
 	if(status != GL_TRUE)
 	{
-		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		qWarning() << "SHADER ERROR (" << path << "-" << shader
 		           << ") :" << &buffer[0] << '\n';
 	}
@@ -1005,7 +1004,6 @@ GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
 	QImage img_data;
 	if(!img_data.load(texturePath))
 	{
-		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		qWarning() << "Could not load Texture \"" << texturePath << "\""
 		           << '\n';
 		return {};
@@ -1036,7 +1034,6 @@ GLHandler::Texture
 	{
 		if(!images.at(i).load(texturesPaths.at(i)))
 		{
-			// NOLINTNEXTLINE(hicpp-no-array-decay)
 			qWarning() << "Could not load Texture \"" << texturesPaths.at(i)
 			           << "\"" << '\n';
 			return {};
@@ -1373,7 +1370,7 @@ float GLHandler::getTextureAverageLuminance(Texture const& tex)
 			}
 		}
 		lastFrameAverageLuminance /= coeffSum;
-		delete buff;
+		delete[] buff;
 	}
 	return lastFrameAverageLuminance;
 }

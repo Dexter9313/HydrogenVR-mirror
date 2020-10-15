@@ -19,15 +19,12 @@ bool OpenVRHandler::init()
 	{
 		char rtPath[1024];
 		uint32_t unRequiredSize;
-		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		if(vr::VR_GetRuntimePath(rtPath, sizeof(rtPath), &unRequiredSize)
 		   && unRequiredSize < sizeof(rtPath))
 		{
 			qDebug() << "Starting SteamVR...";
-			// NOLINTNEXTLINE(hicpp-no-array-decay)
 			qDebug() << QString("Runtime path : ") + rtPath;
 			QProcess vrstartup;
-			// NOLINTNEXTLINE(hicpp-no-array-decay)
 			cmd = QString(rtPath);
 			if(cmd.at(cmd.length() - 1) != '/')
 			{
