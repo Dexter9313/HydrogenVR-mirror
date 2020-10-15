@@ -70,6 +70,13 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	    "thirdrender", false,
 	    tr("Force 2D render on screen\n(will decrease performance !)"));
 
+	addGroup("network", tr("Network"));
+	addBoolSetting("server", true, tr("Server"));
+	addStringSetting("ip", "127.0.0.1", tr("IP address of server (if client)"));
+	addUIntSetting("port", 5000, tr("IP port"), 1025, 49999);
+	addIntSetting("angleshift", 0,
+	              tr("Angle shift compared to server (degrees)"), -180, 180);
+
 	addGroup("scripting", tr("Scripting"));
 	addDirPathSetting(
 	    "rootdir",

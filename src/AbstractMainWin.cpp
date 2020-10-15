@@ -558,6 +558,10 @@ void AbstractMainWin::paintGL()
 	// let user update before rendering
 	for(auto const& pair : renderer.sceneRenderPipeline)
 	{
+		QMatrix4x4 view(pair.second.camera->getView());
+		networkManager.update(frameTiming, view);
+		pair.second.camera->setView(view);
+
 		updateScene(*pair.second.camera, pair.first);
 	}
 	PythonQtHandler::evalScript(

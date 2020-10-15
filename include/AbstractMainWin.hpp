@@ -19,6 +19,7 @@
 #include "DebugCamera.hpp"
 #include "GLHandler.hpp"
 #include "InputManager.hpp"
+#include "NetworkManager.hpp"
 #include "PythonQtHandler.hpp"
 #include "Renderer.hpp"
 #include "ShaderProgram.hpp"
@@ -324,6 +325,7 @@ class AbstractMainWin : public QWindow
 	 * @brief The engine's only @ref Renderer.
 	 */
 	Renderer renderer;
+	NetworkManager networkManager;
 	/**
 	 * @brief Last frame time to render in seconds.
 	 *
