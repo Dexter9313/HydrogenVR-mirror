@@ -22,7 +22,7 @@
 #include <map>
 #include <unordered_set>
 
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 
 class ShaderProgram
 {

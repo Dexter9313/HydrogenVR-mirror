@@ -20,8 +20,8 @@
 #define BILLBOARD_H
 
 #include "BasicCamera.hpp"
-#include "GLHandler.hpp"
 #include "Primitives.hpp"
+#include "gl/GLHandler.hpp"
 
 class Billboard
 {

@@ -21,7 +21,7 @@
 
 #include <QElapsedTimer>
 
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 
 class MovingCube
 {

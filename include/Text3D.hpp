@@ -23,8 +23,8 @@
 #include <QImage>
 #include <QPainter>
 
-#include "GLHandler.hpp"
 #include "Primitives.hpp"
+#include "gl/GLHandler.hpp"
 
 class Text3D
 {

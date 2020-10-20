@@ -1,4 +1,4 @@
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 
 unsigned int& GLHandler::renderTargetCount()
 {

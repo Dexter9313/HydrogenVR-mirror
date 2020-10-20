@@ -8,7 +8,7 @@
 #include <QVector4D>
 #include <array>
 
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 
 class VRHandler;
 

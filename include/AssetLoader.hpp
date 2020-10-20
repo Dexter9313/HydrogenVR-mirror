@@ -24,7 +24,7 @@
 #include <assimp/scene.h>
 #include <iostream>
 
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 #include "utils.hpp"
 
 class AssetLoader

@@ -23,8 +23,8 @@
 #include <QPainter>
 #include <QWidget>
 
-#include "GLHandler.hpp"
 #include "Primitives.hpp"
+#include "gl/GLHandler.hpp"
 
 class Widget3D
 {

@@ -19,7 +19,7 @@
 #ifndef PRIMITIVES_H
 #define PRIMITIVES_H
 
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 
 class Primitives
 {

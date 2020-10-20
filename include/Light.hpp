@@ -19,8 +19,8 @@
 #ifndef LIGHT_HPP
 #define LIGHT_HPP
 
-#include "GLHandler.hpp"
 #include "Primitives.hpp"
+#include "gl/GLHandler.hpp"
 
 // for now directional only
 class Light
