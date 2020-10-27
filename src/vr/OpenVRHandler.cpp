@@ -328,7 +328,7 @@ void OpenVRHandler::reloadPostProcessingTargets()
 	// Render hidden area mesh
 
 	GLHandler::setBackfaceCulling(false);
-	GLHandler::ShaderProgram s = GLHandler::newShader("hiddenarea");
+	GLShaderProgram s("hiddenarea");
 
 	GLHandler::glf().glClearStencil(0x0);
 	GLHandler::glf().glEnable(GL_STENCIL_TEST);
@@ -348,7 +348,7 @@ void OpenVRHandler::reloadPostProcessingTargets()
 	                              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT)
 	                              | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
 	                          postProcessingTargetsLeft[0]);
-	GLHandler::useShader(s);
+	s.use();
 	GLHandler::render(hiddenAreaMesh, GLHandler::PrimitiveType::TRIANGLES);
 	GLHandler::deleteMesh(hiddenAreaMesh);
 
@@ -364,11 +364,10 @@ void OpenVRHandler::reloadPostProcessingTargets()
 	                              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT)
 	                              | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
 	                          postProcessingTargetsRight[0]);
-	GLHandler::useShader(s);
+	s.use();
 	GLHandler::render(hiddenAreaMesh, GLHandler::PrimitiveType::TRIANGLES);
 	GLHandler::deleteMesh(hiddenAreaMesh);
 
-	GLHandler::deleteShader(s);
 	GLHandler::setBackfaceCulling(true);
 
 	GLHandler::glf().glStencilMask(0x00);

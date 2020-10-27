@@ -1,9 +1,12 @@
+import math
+from time import time
+
 from PythonQt.QtGui import QVector3D
 from PythonQt.QtGui import QColor
 from PythonQt.QtGui import QKeyEvent
 from PythonQt.QtCore import Qt
-import math
-from time import time
+
+from PythonQt.GL import GLShaderProgram
 
 def initScene():
     global mesh
@@ -17,13 +20,13 @@ def initScene():
 
     angle = 0
     mesh = GLHandler.newMesh()
-    shader = GLHandler.newShader("default")
-    GLHandler.setShaderParam(shader, "alpha", 1.0)
-    GLHandler.setShaderParam(shader, "color", QColor(128, 255, 255))
+    shader = GLShaderProgram("default")
+    shader.setUniform("alpha", 1.0)
+    shader.setUniform("color", QColor(128, 255, 255))
 
     GLHandler.setVertices(mesh, [0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5], shader, ["position"], [3], [0, 1, 1, 2, 2, 0])
 
-    HydrogenVR.appendPostProcessingShader("py", "grayscale")
+    #HydrogenVR.appendPostProcessingShader("py", "grayscale")
 
 
 def updateScene():
@@ -35,7 +38,7 @@ def updateScene():
     t += dt
 
     angle = t*math.pi/2
-    camera.lookAt(QVector3D(math.cos(angle), math.sin(angle), 1), QVector3D(0,0,0), QVector3D(0,0,1))
+    #camera.lookAt(QVector3D(math.cos(angle), math.sin(angle), 1), QVector3D(0,0,0), QVector3D(0,0,1))
 
 def renderScene():
     global mesh
@@ -49,11 +52,10 @@ def cleanUpScene():
     global shader
 
     GLHandler.deleteMesh(mesh)
-    GLHandler.deleteShader(shader)
 
 def applyPostProcShaderParams(ppid, shader):
     if ppid == "py":
-        GLHandler.setShaderParam(shader, "lum", 0.5)
+        shader.setUniform("lum", 0.5)
 
 def keyPressEvent(e):
     if e.key() == Qt.Key_A:

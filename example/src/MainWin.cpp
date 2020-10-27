@@ -66,7 +66,7 @@ void MainWin::initScene()
 {
 	// SKYBOX
 	sbShader.load("skybox");
-	skybox = Primitives::newUnitCube(sbShader.toGLHandler());
+	skybox = Primitives::newUnitCube(sbShader.toGLShaderProgram());
 
 	std::array<const char*, 6> paths = {};
 	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::BACK))
@@ -105,10 +105,10 @@ void MainWin::initScene()
 	    1, 2, 3  // second Triangle
 	};
 	mesh = GLHandler::newMesh();
-	GLHandler::setVertices(mesh, vertices, shaderProgram.toGLHandler(),
+	GLHandler::setVertices(mesh, vertices, shaderProgram.toGLShaderProgram(),
 	                       {{"position", 3}}, indices);
-	GLHandler::setShaderUnusedAttributesValues(shaderProgram.toGLHandler(),
-	                                           {{"color", {1.0, 1.0, 0.0}}});
+	shaderProgram.toGLShaderProgram().setUnusedAttributesValues(
+	    {{"color", {1.0, 1.0, 0.0}}});
 
 	// create cube
 	movingCube = new MovingCube;
@@ -119,13 +119,14 @@ void MainWin::initScene()
 	pointsShader.setUniform("alpha", 1.0f);
 	pointsShader.setUniform("color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	std::vector<float> points = {0, 0, 0};
-	GLHandler::setVertices(pointsMesh, points, pointsShader.toGLHandler(),
+	GLHandler::setVertices(pointsMesh, points, pointsShader.toGLShaderProgram(),
 	                       {{"position", 3}});
 
 	sphereShader.load("default");
 	sphereShader.setUniform("alpha", 1.0f);
 	sphereShader.setUniform("color", QColor::fromRgbF(0.5f, 0.5f, 1.0f));
-	sphere = Primitives::newUnitSphere(sphereShader.toGLHandler(), 100, 100);
+	sphere
+	    = Primitives::newUnitSphere(sphereShader.toGLShaderProgram(), 100, 100);
 
 	playareaShader.load("default");
 	playareaShader.setUniform("color", QColor(255, 0, 0));
@@ -141,7 +142,8 @@ void MainWin::initScene()
 		    playareaquad[3].x(), playareaquad[3].y(), playareaquad[3].z(),
 		};
 		indices = {0, 1, 1, 2, 2, 3, 3, 0};
-		GLHandler::setVertices(playarea, vertices, playareaShader.toGLHandler(),
+		GLHandler::setVertices(playarea, vertices,
+		                       playareaShader.toGLShaderProgram(),
 		                       {{"position", 3}}, indices);
 	}
 
@@ -250,7 +252,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 {
 	GLHandler::useTextures({sbTexture});
 	GLHandler::setBackfaceCulling(false);
-	GLHandler::setUpRender(sbShader.toGLHandler(), QMatrix4x4(),
+	GLHandler::setUpRender(sbShader.toGLShaderProgram(), QMatrix4x4(),
 	                       GLHandler::GeometricSpace::SKYBOX);
 	GLHandler::render(skybox, GLHandler::PrimitiveType::TRIANGLE_STRIP);
 	GLHandler::setBackfaceCulling(true);
@@ -258,21 +260,21 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 
 	QMatrix4x4 modelSphere;
 	modelSphere.translate(-1.5, 0, 0);
-	GLHandler::setUpRender(sphereShader.toGLHandler(), modelSphere,
+	GLHandler::setUpRender(sphereShader.toGLShaderProgram(), modelSphere,
 	                       GLHandler::GeometricSpace::SKYBOX);
 	GLHandler::render(sphere);
 	GLHandler::clearDepthBuffer();
 
 	movingCube->render();
 
-	GLHandler::setUpRender(shaderProgram.toGLHandler());
+	GLHandler::setUpRender(shaderProgram.toGLShaderProgram());
 	GLHandler::render(mesh);
-	GLHandler::setUpRender(pointsShader.toGLHandler());
+	GLHandler::setUpRender(pointsShader.toGLShaderProgram());
 	GLHandler::setPointSize(8);
 	GLHandler::render(pointsMesh);
 	GLHandler::setPointSize(1);
 
-	GLHandler::setUpRender(playareaShader.toGLHandler(), QMatrix4x4(),
+	GLHandler::setUpRender(playareaShader.toGLShaderProgram(), QMatrix4x4(),
 	                       GLHandler::GeometricSpace::STANDINGTRACKED);
 	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
 
@@ -294,13 +296,13 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 }
 
 void MainWin::applyPostProcShaderParams(
-    QString const& id, GLHandler::ShaderProgram shader,
+    QString const& id, GLShaderProgram const& shader,
     GLHandler::RenderTarget const& currentTarget) const
 {
 	AbstractMainWin::applyPostProcShaderParams(id, shader, currentTarget);
 	if(id == "distort")
 	{
-		GLHandler::setShaderParam(shader, "BarrelPower", barrelPower);
+		shader.setUniform("BarrelPower", barrelPower);
 	}
 }
 

@@ -20,6 +20,8 @@
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
 
+#include "gl/GLShaderProgram.hpp"
+
 /** @ingroup pycall
  *
  * @brief A convenient wrapper for the OpenGL API. Contains everything related
@@ -41,7 +43,6 @@ class GLHandler : public QObject
 	Q_OBJECT
   public: // useful types
 	static unsigned int& renderTargetCount();
-	static unsigned int& shaderCount();
 	static unsigned int& meshCount();
 	static unsigned int& texCount();
 	static unsigned int& PBOCount();
@@ -166,15 +167,6 @@ class GLHandler : public QObject
 		QSize getSize() const { return QSize(width, height); };
 	};
 
-	/** @ingroup pywrap
-	 * @brief Opaque type that represents a Shader Program. Use the shaders
-	 * related methods to handle it.
-	 *
-	 * A valid shader program is at least composed out of a vertex shader and a
-	 * fragment shader.
-	 */
-	typedef GLuint ShaderProgram;
-
 	/**
 	 * @brief Represents a type of primitive for rasterization.
 	 *
@@ -247,7 +239,7 @@ class GLHandler : public QObject
 	 * @brief Default constructor.
 	 * @warning Should only be used within @ref PythonQtHandler.
 	 *
-	 * Adds Mesh, RenderTarget, #Texture and #ShaderProgram classes to the
+	 * Adds Mesh, RenderTarget and #Texture classes to the
 	 * Python API.
 	 */
 	GLHandler();
@@ -379,7 +371,7 @@ class GLHandler : public QObject
 	 * The quad is defined as a square whose coordinates range from -1 to 1.
 	 * You will have to compute the texture coordinates from those coordinates.
 	 *
-	 * The @ref ShaderProgram @p shader must comply with the following :
+	 * The @ref GLShaderProgram @p shader must comply with the following :
 	 * * Its vertex shader must get a vec2 input named "position" to get the
 	 * quad coordinates.
 	 * * Its fragment shader must have a uniform sampler2D to get the @p from
@@ -388,14 +380,14 @@ class GLHandler : public QObject
 	 * Additional textures can be sent to following sampler2Ds via the @p
 	 * uniformTextures parameter.
 	 */
-	static void postProcess(ShaderProgram shader,
+	static void postProcess(GLShaderProgram const& shader,
 	                        GLHandler::RenderTarget const& from,
 	                        RenderTarget const& to
 	                        = {QSettings().value("window/width").toUInt(),
 	                           QSettings().value("window/height").toUInt()},
 	                        std::vector<Texture> const& uniformTextures = {});
 	static void
-	    renderFromScratch(ShaderProgram shader,
+	    renderFromScratch(GLShaderProgram const& shader,
 	                      RenderTarget const& to
 	                      = {QSettings().value("window/width").toUInt(),
 	                         QSettings().value("window/height").toUInt()});
@@ -484,172 +476,6 @@ class GLHandler : public QObject
 	                    QMatrix4x4 const& fullHmdSpaceTransform,
 	                    QMatrix4x4 const& fullSkyboxSpaceTransform);
 
-	// SHADERS
-	/**
-	 * @brief Convenient shortcut for newShader(@p shadersCommonName, @p
-	 * shadersCommonName, @p shadersCommonName).
-	 */
-	static ShaderProgram newShader(QString const& shadersCommonName,
-	                               QMap<QString, QString> const& defines = {});
-	/**
-	 * @brief Allocates an OpenGL shader program consisting of a vertex shader
-	 * and a fragment shader.
-	 *
-	 * @warning Geometry shaders aren't supported as of now.
-	 *
-	 * @warning If something is wrong with the shader code, you won't be able to
-	 * know in-code as of this version. A qWarning() will be issued, so watch
-	 * the standard output if something doesn't render.
-	 *
-	 * @attention The fragment shader output color must be called "outColor".
-	 *
-	 * The returned shader program isn't shared anywhere so it is safe to set
-	 * its constant uniforms once in its entire lifetime, they won't be
-	 * overriden by any side effect.
-	 *
-	 * You can specify shader names as any path, any data path or only provide
-	 * the file name without its extension if it is stored in the data folder
-	 * data/ * /shaders and has .vert or .frag extension for vertex shader or
-	 * fragment shader respectively. For example, if you want to refer to the
-	 * vertex shader located in data/core/shaders/default.vert, you can pass
-	 * "default" as the @p vertexName parameter or "shaders/default.vertex" or
-	 * its complete path. This allows usage of the convenient function @ref
-	 * newShader(QString const&) when both vertex and fragment shader share the
-	 * same name : newShader("default") will search for both
-	 * "shaders/default.vert" and "shader/default.frag".
-	 *
-	 * As of this version, the vertex and fragment shaders linked in the shader
-	 * program are freed and will have to be compiled again if @ref newShader is
-	 * called another time with the same parameters.
-	 */
-	static ShaderProgram newShader(QString vertexName, QString fragmentName,
-	                               QMap<QString, QString> const& defines = {},
-	                               QString geometryName                  = "");
-
-  public: // doesn't work in PythonQt
-	/** @brief Sets values for vertex attributes that aren't provided by a
-	 * vertex array.
-	 *
-	 * Useful if one shader is used for different rendering methods that
-	 * don't provide the same level of information.
-	 *
-	 * For example, if your shader takes "in float luminosity;" as input but
-	 * your vertex buffer only contains vertex positions, you have to use this
-	 * method to set luminosity to 1.f for example. It will disable the vertex
-	 * attribute array for "luminosity" and use 1.f instead.
-	 *
-	 * @param shader Shader for which to set values.
-	 * @param defaultValues List of pairs of attribute name + default value (ex:
-	 * ("luminosity", {1.f}) or ("normal", {1.f, 0.f, 0.f})). First element of
-	 * the pair is the name of the attribute, and second element is the
-	 * multidimensional value. The size of the given vector will determine the
-	 * type (1 = float, 2 = vec2, 3 = vec3 and 4 = vec4).
-	 */
-	static void setShaderUnusedAttributesValues(
-	    ShaderProgram shader,
-	    std::vector<QPair<const char*, std::vector<float>>> const&
-	        defaultValues);
-  public slots:
-	/**
-	 * @brief Convenient version of the @ref
-	 * setShaderUnusedAttributesValues(ShaderProgram, std::vector<QPair<const
-	 * char*, std::vector<float>>>const&) method to be used in Python.
-	 *
-	 * Behaves the same way as its other version, but the attribute mapping is
-	 * specified differently, as it is harder to construct a QVector<QPair>
-	 * object in Python. Instead of an array of pairs (name, values), the
-	 * mapping is specified by all the ordered names in the @p names
-	 * parameter and all their corresponding values in the same order in the @p
-	 * values parameter.
-	 */
-	static void setShaderUnusedAttributesValues(
-	    ShaderProgram shader, QStringList const& names,
-	    std::vector<std::vector<float>> const& values);
-	/**
-	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
-	 * value.
-	 *
-	 * The uniform must be of type int.
-	 */
-	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           int value);
-	/**
-	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
-	 * value.
-	 *
-	 * The uniform must be of type float.
-	 */
-	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           float value);
-	/**
-	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
-	 * value.
-	 *
-	 * The uniform must be of type vec2.
-	 */
-	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           QVector2D const& value);
-	/**
-	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
-	 * value.
-	 *
-	 * The uniform must be of type vec3.
-	 */
-	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           QVector3D const& value);
-	/**
-	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
-	 * array of values of size @size.
-	 *
-	 * The uniform must be an array of type vec3.
-	 */
-	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           unsigned int size, QVector3D const* values);
-	/**
-	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
-	 * value.
-	 *
-	 * The uniform must be of type vec4.
-	 */
-	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           QVector4D const& value);
-	/**
-	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
-	 * array of values of size @size.
-	 *
-	 * The uniform must be an array of type vec4.
-	 */
-	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           unsigned int size, QVector4D const* values);
-	/**
-	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
-	 * value.
-	 *
-	 * The uniform must be of type mat4.
-	 */
-	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           QMatrix4x4 const& value);
-	/**
-	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
-	 * value.
-	 *
-	 * The uniform must be of type vec3. If the color is from @p sRGB space, it
-	 * will be converted to linear space before being set.
-	 */
-	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           QColor const& value, bool sRGB = true);
-	/**
-	 * @brief Tells OpenGL to use this @p shader program for rendering.
-	 *
-	 * If you exclusively use @ref GLHandler methods, this method will be called
-	 * automatically when necessary and you shouldn't use it.
-	 */
-	static void useShader(ShaderProgram shader);
-	/**
-	 * @brief Frees a @ref ShaderProgram.
-	 */
-	static void deleteShader(ShaderProgram shader);
-
 	// MESHES
 	/**
 	 * @brief Allocates a new @ref Mesh.
@@ -659,7 +485,7 @@ class GLHandler : public QObject
   public: // doesn't work in PythonQt
 	static void setVertices(
 	    GLHandler::Mesh& mesh, float const* vertices, size_t size,
-	    ShaderProgram const& shaderProgram,
+	    GLShaderProgram const& shaderProgram,
 	    std::vector<QPair<const char*, unsigned int>> const& mapping,
 	    std::vector<unsigned int> const& elements = {});
 	/**
@@ -706,13 +532,13 @@ class GLHandler : public QObject
 	 */
 	static void setVertices(
 	    GLHandler::Mesh& mesh, std::vector<float> const& vertices,
-	    ShaderProgram const& shaderProgram,
+	    GLShaderProgram const& shaderProgram,
 	    std::vector<QPair<const char*, unsigned int>> const& mapping,
 	    std::vector<unsigned int> const& elements = {});
   public slots:
 	/**
 	 * @brief Convenient version of the @ref setVertices(GLHandler::Mesh&,
-	 * std::vector<float>const&, ShaderProgram const&, std::vector<QPair<const
+	 * std::vector<float>const&, GLShaderProgram const&, std::vector<QPair<const
 	 * char*, unsigned int>>const&, std::vector<unsigned int>const&) method to
 	 * be used in Python.
 	 *
@@ -725,7 +551,7 @@ class GLHandler : public QObject
 	 */
 	static void setVertices(GLHandler::Mesh& mesh,
 	                        std::vector<float> const& vertices,
-	                        ShaderProgram const& shaderProgram,
+	                        GLShaderProgram const& shaderProgram,
 	                        QStringList const& mappingNames,
 	                        std::vector<unsigned int> const& mappingSizes,
 	                        std::vector<unsigned int> const& elements = {});
@@ -775,7 +601,7 @@ class GLHandler : public QObject
 	 * The @p shader passed as parameter will be used for all the following
 	 * renders before another call with a different shader program replaces it.
 	 */
-	static void setUpRender(ShaderProgram shader,
+	static void setUpRender(GLShaderProgram const& shader,
 	                        QMatrix4x4 const& model = QMatrix4x4(),
 	                        GeometricSpace space    = GeometricSpace::WORLD);
 	/**
@@ -784,7 +610,8 @@ class GLHandler : public QObject
 	 * @attention Make sure you called @ref setUpRender accordingly before
 	 * calling this method.
 	 *
-	 * @attention This rendering will use the last @ref ShaderProgram passed to
+	 * @attention This rendering will use the last @ref GLShaderProgram passed
+	 * to
 	 * @ref setUpRender to draw the mesh. You can override the used shader
 	 * program by usinga @ref useShader. Just make sure the shader you want to
 	 * use has already been passed to @ref setUpRender with the correct
@@ -902,6 +729,5 @@ class GLHandler : public QObject
 Q_DECLARE_METATYPE(GLHandler::Mesh)
 Q_DECLARE_METATYPE(GLHandler::Texture)
 Q_DECLARE_METATYPE(GLHandler::RenderTarget)
-Q_DECLARE_METATYPE(GLuint) // for typedefs Texture and ShaderProgram
 
 #endif // GLHANDLER_H

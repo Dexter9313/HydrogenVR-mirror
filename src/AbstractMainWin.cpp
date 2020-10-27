@@ -351,38 +351,35 @@ void AbstractMainWin::setupPythonAPI()
 }
 
 void AbstractMainWin::applyPostProcShaderParams(
-    QString const& id, GLHandler::ShaderProgram shader,
+    QString const& id, GLShaderProgram const& shader,
     GLHandler::RenderTarget const& /*currentTarget*/) const
 {
 	if(id == "colors")
 	{
-		GLHandler::setShaderParam(shader, "gamma", gamma);
+		shader.setUniform("gamma", gamma);
 	}
 	else if(id == "exposure")
 	{
-		GLHandler::setShaderParam(shader, "exposure",
-		                          toneMappingModel->exposure);
-		GLHandler::setShaderParam(shader, "dynamicrange",
-		                          toneMappingModel->dynamicrange);
-		GLHandler::setShaderParam(shader, "purkinje",
-		                          toneMappingModel->purkinje ? 1.f : 0.f);
+		shader.setUniform("exposure", toneMappingModel->exposure);
+		shader.setUniform("dynamicrange", toneMappingModel->dynamicrange);
+		shader.setUniform("purkinje", toneMappingModel->purkinje ? 1.f : 0.f);
 	}
 	else if(id == "bloom")
 	{
-		GLHandler::setShaderParam(shader, "highlumtex", 1);
+		shader.setUniform("highlumtex", 1);
 	}
 	else
 	{
 		QString pyCmd("if \"applyPostProcShaderParams\" in "
 		              "dir():\n\tapplyPostProcShaderParams(\""
-		              + id + "\"," + QString::number(shader) + ")");
+		              + id + "\"," + shader.toStr() + ")");
 		PythonQtHandler::evalScript(pyCmd);
 	}
 }
 
 std::vector<GLHandler::Texture>
     AbstractMainWin::getPostProcessingUniformTextures(
-        QString const& id, GLHandler::ShaderProgram /*shader*/,
+        QString const& id, GLShaderProgram const& /*shader*/,
         GLHandler::RenderTarget const& currentTarget) const
 {
 	if(id == "bloom")
@@ -390,22 +387,17 @@ std::vector<GLHandler::Texture>
 		if(bloom)
 		{
 			// high luminosity pass
-			GLHandler::ShaderProgram hlshader(
-			    GLHandler::newShader("postprocess", "highlumpass"));
+			GLShaderProgram hlshader("postprocess", "highlumpass");
 			GLHandler::postProcess(hlshader, currentTarget, bloomTargets[0]);
-			GLHandler::deleteShader(hlshader);
 
 			// blurring
-			GLHandler::ShaderProgram blurshader(
-			    GLHandler::newShader("postprocess", "blur"));
+			GLShaderProgram blurshader("postprocess", "blur");
 			for(unsigned int i = 0; i < 6; i++)
 			{
-				GLHandler::setShaderParam(blurshader, "horizontal",
-				                          static_cast<float>(i % 2));
+				blurshader.setUniform("horizontal", static_cast<float>(i % 2));
 				GLHandler::postProcess(blurshader, bloomTargets.at(i % 2),
 				                       bloomTargets.at((i + 1) % 2));
 			}
-			GLHandler::deleteShader(blurshader);
 
 			return {GLHandler::getColorAttachmentTexture(bloomTargets[0])};
 		}
@@ -491,6 +483,7 @@ void AbstractMainWin::initializePythonQt()
 	PythonQtHandler::addObject("Side", new PySide);
 	PythonQtHandler::addObject("GLHandler", new GLHandler);
 	PythonQtHandler::addObject("ToneMappingModel", toneMappingModel);
+	PythonQtHandler::addWrapper<GLShaderProgramWrapper>();
 }
 
 void AbstractMainWin::reloadPythonQt()

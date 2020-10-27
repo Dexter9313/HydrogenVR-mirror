@@ -60,7 +60,7 @@ class Hand : public QObject
 	const Side side;
 
   private:
-	GLHandler::ShaderProgram shaderProgram;
+	GLShaderProgram shaderProgram;
 	GLHandler::Mesh mesh;
 	QMatrix4x4 model;
 

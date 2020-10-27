@@ -24,6 +24,7 @@
 #include "ShaderProgram.hpp"
 #include "ToneMappingModel.hpp"
 #include "gl/GLHandler.hpp"
+#include "gl/GLShaderProgram.hpp"
 #include "vr/OpenVRHandler.hpp"
 #include "vr/StereoBeamerHandler.hpp"
 
@@ -292,7 +293,7 @@ class AbstractMainWin : public QWindow
 	 * @param shader The actual shader program.
 	 */
 	virtual void applyPostProcShaderParams(
-	    QString const& id, GLHandler::ShaderProgram shader,
+	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const;
 	/**
 	 * @brief Override to return textures to use in your post-processing
@@ -306,7 +307,7 @@ class AbstractMainWin : public QWindow
 	 * @param shader The actual shader program.
 	 */
 	virtual std::vector<GLHandler::Texture> getPostProcessingUniformTextures(
-	    QString const& id, GLHandler::ShaderProgram shader,
+	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const;
 
   protected:

@@ -28,9 +28,9 @@ QList<QPair<QFuture<void>, std::vector<AssetLoader::MeshDescriptor>*>>&
 }
 
 AsyncMesh::AsyncMesh(QString const& path, GLHandler::Mesh const& defaultMesh,
-                     GLHandler::ShaderProgram shader)
+                     GLShaderProgram&& shader)
     : defaultMesh(defaultMesh)
-    , shader(shader)
+    , shader(std::move(shader))
 {
 	if(path.isEmpty())
 	{

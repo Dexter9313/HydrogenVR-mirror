@@ -50,7 +50,7 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
     , vr_pointer(vr_pointer)
     , triggerid(getAxisId(vr_pointer, nDevice, vr::k_eControllerAxis_Trigger))
     , padid(getAxisId(vr_pointer, nDevice, vr::k_eControllerAxis_TrackPad))
-    , shaderProgram(GLHandler::newShader("controllers"))
+    , shaderProgram("controllers")
     , mesh(GLHandler::newMesh())
     , tex()
 {
@@ -172,16 +172,14 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 	tex = GLHandler::newTexture(rm_texture->unWidth, rm_texture->unHeight,
 	                            rm_texture->rubTextureMapData);
 
-	GLHandler::setShaderParam(shaderProgram, "alpha", 1.0f);
+	shaderProgram.setUniform("alpha", 1.0f);
 	if(side == Side::LEFT)
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QVector3D(1.0f, 0.0f, 0.0f));
+		shaderProgram.setUniform("color", QVector3D(1.0f, 0.0f, 0.0f));
 	}
 	else
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QVector3D(0.0f, 1.0f, 0.0f));
+		shaderProgram.setUniform("color", QVector3D(0.0f, 1.0f, 0.0f));
 	}
 
 	vr::VRRenderModels()->FreeRenderModel(model);
@@ -217,6 +215,5 @@ void Controller::render() const
 
 Controller::~Controller()
 {
-	GLHandler::deleteShader(shaderProgram);
 	GLHandler::deleteMesh(mesh);
 }

@@ -28,7 +28,7 @@ class AsyncMesh
   public:
 	// grabs ownage of defaultMesh
 	AsyncMesh(QString const& path, GLHandler::Mesh const& defaultMesh,
-	          GLHandler::ShaderProgram shader);
+	          GLShaderProgram&& shader);
 	bool isLoaded() const { return loaded; };
 	float getBoundingSphereRadius() const { return boundingSphereRadius; };
 	GLHandler::Mesh getDefaultMesh() const { return defaultMesh; };
@@ -50,7 +50,7 @@ class AsyncMesh
 
 	std::vector<AssetLoader::MeshDescriptor>* meshDescriptors;
 
-	GLHandler::ShaderProgram shader;
+	GLShaderProgram shader;
 
 	// never wait for futures to finish within destructor ! if you need to
 	// release resources and the future didn't finish, push it here and other

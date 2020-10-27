@@ -120,7 +120,7 @@ class Controller : public QObject
 	QVector2D padCoords;
 	float triggerValue = 0.f;
 
-	GLHandler::ShaderProgram shaderProgram;
+	GLShaderProgram shaderProgram;
 	GLHandler::Mesh mesh;
 	GLHandler::Texture tex;
 	QMatrix4x4 model;

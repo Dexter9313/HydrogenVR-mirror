@@ -68,14 +68,14 @@ class AssetLoader
 	// GLHandler resources in textured meshes are yours to free !
 	static void loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
 	                      std::vector<TexturedMesh>& meshes,
-	                      GLHandler::ShaderProgram const& shader,
+	                      GLShaderProgram const& shader,
 	                      QColor const& defaultDiffuseColor
 	                      = {0xff, 0x09, 0xf7});
 
 	// GLHandler resources in textured meshes are yours to free !
 	static float
 	    loadModel(QString const& modelName, std::vector<TexturedMesh>& meshes,
-	              GLHandler::ShaderProgram const& shader,
+	              GLShaderProgram const& shader,
 	              QColor const& defaultDiffuseColor = {0xff, 0x09, 0xf7});
 
   private:

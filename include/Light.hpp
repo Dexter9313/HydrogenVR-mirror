@@ -30,8 +30,8 @@ class Light
 	QMatrix4x4 getTransformation(float boundingSphereRadius,
 	                             QMatrix4x4 const& model,
 	                             bool biased = false) const;
-	void setUpShader(GLHandler::ShaderProgram const& shader,
-	                 float boundingSphereRadius, QMatrix4x4 const& model) const;
+	void setUpShader(GLShaderProgram const& shader, float boundingSphereRadius,
+	                 QMatrix4x4 const& model) const;
 	GLHandler::Texture getShadowMap() const;
 	void generateShadowMap(std::vector<GLHandler::Mesh> const& meshes,
 	                       float boundingSphereRadius,
@@ -45,7 +45,7 @@ class Light
 
   private:
 	GLHandler::RenderTarget shadowMap;
-	GLHandler::ShaderProgram shadowShader;
+	GLShaderProgram shadowShader;
 };
 
 #endif // LIGHT_HPP

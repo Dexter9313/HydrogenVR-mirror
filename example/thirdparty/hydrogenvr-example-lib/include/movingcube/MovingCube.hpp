@@ -33,11 +33,11 @@ class MovingCube
 
   private:
 	GLHandler::Mesh cube = {};
-	GLHandler::ShaderProgram cubeShader;
+	GLShaderProgram cubeShader;
 	QElapsedTimer cubeTimer;
 
 	static std::vector<float> cubeVertices(uint64_t dt);
-	GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader);
+	GLHandler::Mesh createCube(GLShaderProgram const& shader);
 };
 
 #endif // MOVINGCUBE_HPP

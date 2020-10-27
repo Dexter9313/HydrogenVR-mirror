@@ -131,7 +131,7 @@ class DebugCamera : public BasicCamera
 
   private:
 	GLHandler::Mesh camMesh;
-	GLHandler::ShaderProgram camMeshShader;
+	GLShaderProgram camMeshShader;
 };
 
 #endif // DEBUGCAMERA_H

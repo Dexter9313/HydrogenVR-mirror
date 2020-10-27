@@ -20,7 +20,7 @@
 
 Hand::Hand(Side side)
     : side(side)
-    , shaderProgram(GLHandler::newShader("default"))
+    , shaderProgram("default")
     , mesh(GLHandler::newMesh())
     , _isValid(false)
     , _isFlat(false)
@@ -28,7 +28,7 @@ Hand::Hand(Side side)
     , _palmNormal()
     , _direction()
 {
-	GLHandler::setShaderParam(shaderProgram, "alpha", 1.f);
+	shaderProgram.setUniform("alpha", 1.f);
 	std::vector<unsigned int> ebo = {
 	    2,  3,  3,  4,                                        // thumb
 	    5,  6,  6,  7,  7,  8,                                // index
@@ -84,33 +84,27 @@ void Hand::render() const
 	                       GLHandler::GeometricSpace::HMD);
 	if(isFlat() && side == Side::LEFT)
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(1.0f, 1.0f, 0.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(1.0f, 1.0f, 0.0f));
 	}
 	else if(isFlat())
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(0.0f, 1.0f, 1.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(0.0f, 1.0f, 1.0f));
 	}
 	else if(isClosed() && side == Side::LEFT)
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	}
 	else if(isClosed())
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(1.0f, 0.0f, 1.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(1.0f, 0.0f, 1.0f));
 	}
 	else if(side == Side::LEFT)
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 	}
 	else
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(0.0f, 1.0f, 0.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(0.0f, 1.0f, 0.0f));
 	}
 
 	GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
@@ -162,6 +156,5 @@ std::vector<float> Hand::getHandVBO(Leap::Hand const& hand)
 
 Hand::~Hand()
 {
-	GLHandler::deleteShader(shaderProgram);
 	GLHandler::deleteMesh(mesh);
 }

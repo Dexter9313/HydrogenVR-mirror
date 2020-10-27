@@ -18,7 +18,7 @@
 
 #include "Primitives.hpp"
 
-GLHandler::Mesh Primitives::newQuad(GLHandler::ShaderProgram shader,
+GLHandler::Mesh Primitives::newQuad(GLShaderProgram const& shader,
                                     GLHandler::PrimitiveType primitiveType)
 {
 	std::vector<float> vertices = {
@@ -56,7 +56,7 @@ GLHandler::Mesh Primitives::newQuad(GLHandler::ShaderProgram shader,
 	return result;
 }
 
-GLHandler::Mesh Primitives::newGrid(GLHandler::ShaderProgram shader,
+GLHandler::Mesh Primitives::newGrid(GLShaderProgram const& shader,
                                     unsigned int size,
                                     GLHandler::PrimitiveType primitiveType)
 {
@@ -103,7 +103,7 @@ GLHandler::Mesh Primitives::newGrid(GLHandler::ShaderProgram shader,
 	return result;
 }
 
-GLHandler::Mesh Primitives::newUnitCube(GLHandler::ShaderProgram shader,
+GLHandler::Mesh Primitives::newUnitCube(GLShaderProgram const& shader,
                                         GLHandler::PrimitiveType primitiveType)
 {
 	std::vector<float> vertices = {
@@ -191,7 +191,7 @@ GLHandler::Mesh Primitives::newUnitCube(GLHandler::ShaderProgram shader,
 }
 
 GLHandler::Mesh Primitives::newUnitSphere(
-    GLHandler::ShaderProgram shader, unsigned int latDivisions,
+    GLShaderProgram const& shader, unsigned int latDivisions,
     unsigned int lonDivisions, GLHandler::PrimitiveType primitiveType)
 {
 	std::vector<float> vertices;

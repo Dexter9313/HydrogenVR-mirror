@@ -19,13 +19,13 @@
 #include "Text3D.hpp"
 
 Text3D::Text3D(unsigned int width, unsigned int height)
-    : Text3D(width, height, GLHandler::newShader("billboard"))
+    : Text3D(width, height, GLShaderProgram("billboard"))
 {
 }
 
 Text3D::Text3D(unsigned int width, unsigned int height,
-               GLHandler::ShaderProgram const& shader)
-    : shader(shader)
+               GLShaderProgram&& shader)
+    : shader(std::move(shader))
     , originalSize(width, height)
 {
 	if(width > height)
@@ -54,7 +54,7 @@ void Text3D::setColor(QColor const& color)
 void Text3D::setAlpha(float alpha)
 {
 	this->alpha = alpha;
-	GLHandler::setShaderParam(shader, "alpha", alpha);
+	shader.setUniform("alpha", alpha);
 }
 
 void Text3D::setFont(QFont const& font)
@@ -147,7 +147,6 @@ Text3D::~Text3D()
 {
 	GLHandler::deleteTexture(tex);
 	GLHandler::deleteMesh(quad);
-	GLHandler::deleteShader(shader);
 }
 
 QRect Text3D::paintText(QImage& image, QString const& text, QColor const& color,

@@ -6,12 +6,6 @@ unsigned int& GLHandler::renderTargetCount()
 	return renderTargetCount;
 }
 
-unsigned int& GLHandler::shaderCount()
-{
-	static unsigned int shaderCount = 0;
-	return shaderCount;
-}
-
 unsigned int& GLHandler::meshCount()
 {
 	static unsigned int meshCount = 0;
@@ -83,7 +77,6 @@ GLHandler::GLHandler()
 	PythonQtHandler::addClass<Mesh>("Mesh");
 	PythonQtHandler::addClass<Texture>("Texture");
 	PythonQtHandler::addClass<RenderTarget>("RenderTarget");
-	PythonQtHandler::addClass<ShaderProgram>("ShaderProgram");
 }
 
 bool GLHandler::init()
@@ -352,8 +345,8 @@ void GLHandler::beginRendering(GLbitfield clearMask,
 	glf().glViewport(0, 0, renderTarget.width, renderTarget.height);
 }
 
-void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
-                            RenderTarget const& to,
+void GLHandler::postProcess(GLShaderProgram const& shader,
+                            RenderTarget const& from, RenderTarget const& to,
                             std::vector<Texture> const& uniformTextures)
 {
 	Mesh quad(newMesh());
@@ -361,7 +354,7 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
 	            {{"position", 2}});
 
 	beginRendering(to);
-	useShader(shader);
+	shader.use();
 	std::vector<Texture> texs;
 	texs.push_back(getColorAttachmentTexture(from));
 	// TODO(florian) performance
@@ -377,7 +370,8 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
 	deleteMesh(quad);
 }
 
-void GLHandler::renderFromScratch(ShaderProgram shader, RenderTarget const& to)
+void GLHandler::renderFromScratch(GLShaderProgram const& shader,
+                                  RenderTarget const& to)
 {
 	Mesh quad(newMesh());
 	setVertices(quad, {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
@@ -386,7 +380,7 @@ void GLHandler::renderFromScratch(ShaderProgram shader, RenderTarget const& to)
 	if(to.depth == 1)
 	{
 		beginRendering(to);
-		useShader(shader);
+		shader.use();
 		setBackfaceCulling(false);
 		render(quad, PrimitiveType::TRIANGLE_STRIP);
 		setBackfaceCulling(true);
@@ -396,8 +390,7 @@ void GLHandler::renderFromScratch(ShaderProgram shader, RenderTarget const& to)
 		for(unsigned int i(0); i < to.depth; ++i)
 		{
 			GLHandler::beginRendering(to, GLHandler::CubeFace::FRONT, i);
-			GLHandler::setShaderParam(shader, "z",
-			                          i / static_cast<float>(to.depth));
+			shader.setUniform("z", i / static_cast<float>(to.depth));
 			GLHandler::setBackfaceCulling(false);
 			GLHandler::render(quad, GLHandler::PrimitiveType::TRIANGLE_STRIP);
 			GLHandler::setBackfaceCulling(true);
@@ -523,285 +516,6 @@ void GLHandler::setUpTransforms(
 	GLHandler::fullSkyboxSpaceTransform() = fullSkyboxSpaceTransform;
 }
 
-GLHandler::ShaderProgram
-    GLHandler::newShader(QString const& shadersCommonName,
-                         QMap<QString, QString> const& defines)
-{
-	return newShader(shadersCommonName, shadersCommonName, defines,
-	                 shadersCommonName);
-}
-
-GLHandler::ShaderProgram
-    GLHandler::newShader(QString vertexName, QString fragmentName,
-                         QMap<QString, QString> const& defines,
-                         QString geometryName)
-{
-	++shaderCount();
-	// ignoring geometry shader for now
-	(void) geometryName;
-
-	if(!vertexName.contains('.'))
-	{
-		vertexName = "shaders/" + vertexName + ".vert";
-	}
-	if(!fragmentName.contains('.'))
-	{
-		fragmentName = "shaders/" + fragmentName + ".frag";
-	}
-
-	ShaderProgram result;
-
-	// vertex shader
-	GLuint vertexShader = loadShader(vertexName, GL_VERTEX_SHADER, defines);
-	// fragment shader
-	GLuint fragmentShader
-	    = loadShader(fragmentName, GL_FRAGMENT_SHADER, defines);
-
-	// program
-	result = glf().glCreateProgram();
-	glf().glAttachShader(result, vertexShader);
-	glf().glAttachShader(result, fragmentShader);
-	glf().glDeleteShader(vertexShader);
-	glf().glDeleteShader(fragmentShader);
-
-	glf().glBindFragDataLocation(result, 0,
-	                             "outColor"); // optional for one buffer
-	glf().glLinkProgram(result);
-	glf().glValidateProgram(result);
-
-	return result;
-}
-
-void GLHandler::setShaderUnusedAttributesValues(
-    ShaderProgram shader,
-    std::vector<QPair<const char*, std::vector<float>>> const& defaultValues)
-{
-	for(auto attribute : defaultValues)
-	{
-		GLint posAttrib = glf().glGetAttribLocation(shader, attribute.first);
-		if(posAttrib != -1)
-		{
-			glf().glDisableVertexAttribArray(posAttrib);
-			// special case where we have to do it, see :
-			// https://bugreports.qt.io/browse/QTBUG-40090?jql=text%20~%20%22glvertexattrib%22
-			QOpenGLFunctions glf_base;
-			glf_base.initializeOpenGLFunctions();
-			switch(attribute.second.size())
-			{
-				case 1:
-					glf_base.glVertexAttrib1fv(posAttrib, &attribute.second[0]);
-					break;
-				case 2:
-					glf_base.glVertexAttrib2fv(posAttrib, &attribute.second[0]);
-					break;
-				case 3:
-					glf_base.glVertexAttrib3fv(posAttrib, &attribute.second[0]);
-					break;
-				case 4:
-					glf_base.glVertexAttrib4fv(posAttrib, &attribute.second[0]);
-					break;
-				default:
-					break;
-			}
-		}
-	}
-}
-
-void GLHandler::setShaderUnusedAttributesValues(
-    ShaderProgram shader, QStringList const& names,
-    std::vector<std::vector<float>> const& values)
-{
-	std::vector<QPair<const char*, std::vector<float>>> defaultValues;
-	for(unsigned int i(0); i < values.size(); ++i)
-	{
-		defaultValues.emplace_back(names[i].toLatin1().constData(), values[i]);
-	}
-	setShaderUnusedAttributesValues(shader, defaultValues);
-}
-
-void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               int value)
-{
-	useShader(shader);
-	glf().glUniform1i(glf().glGetUniformLocation(shader, paramName), value);
-}
-
-void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               float value)
-{
-	useShader(shader);
-	glf().glUniform1f(glf().glGetUniformLocation(shader, paramName), value);
-}
-
-void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               QVector2D const& value)
-{
-	useShader(shader);
-	glf().glUniform2f(glf().glGetUniformLocation(shader, paramName), value.x(),
-	                  value.y());
-}
-
-void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               QVector3D const& value)
-{
-	useShader(shader);
-	glf().glUniform3f(glf().glGetUniformLocation(shader, paramName), value.x(),
-	                  value.y(), value.z());
-}
-
-void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               unsigned int size, QVector3D const* values)
-{
-	useShader(shader);
-	auto data = new GLfloat[3 * size];
-	for(unsigned int i(0); i < size; ++i)
-	{
-		for(unsigned int j(0); j < 3; ++j)
-		{
-			data[i * 3 + j] = values[i][j];
-		}
-	}
-	glf().glUniform3fv(glf().glGetUniformLocation(shader, paramName), size,
-	                   &(data[0]));
-	delete[] data;
-}
-
-void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               QVector4D const& value)
-{
-	useShader(shader);
-	glf().glUniform4f(glf().glGetUniformLocation(shader, paramName), value.x(),
-	                  value.y(), value.z(), value.w());
-}
-
-void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               unsigned int size, QVector4D const* values)
-{
-	useShader(shader);
-	auto data = new GLfloat[4 * size];
-	for(unsigned int i(0); i < size; ++i)
-	{
-		for(unsigned int j(0); j < 4; ++j)
-		{
-			data[i * 4 + j] = values[i][j];
-		}
-	}
-	glf().glUniform4fv(glf().glGetUniformLocation(shader, paramName), size,
-	                   &(data[0]));
-	delete[] data;
-}
-
-void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               QMatrix4x4 const& value)
-{
-	useShader(shader);
-	glf().glUniformMatrix4fv(glf().glGetUniformLocation(shader, paramName), 1,
-	                         GL_FALSE, value.data());
-}
-
-void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               QColor const& value, bool sRGB)
-{
-	QColor linVal(sRGB ? sRGBToLinear(value) : value);
-	setShaderParam(shader, paramName,
-	               QVector3D(linVal.redF(), linVal.greenF(), linVal.blueF()));
-}
-void GLHandler::useShader(ShaderProgram shader)
-{
-	glf().glUseProgram(shader);
-}
-
-void GLHandler::deleteShader(ShaderProgram shader)
-{
-	--shaderCount();
-	glf().glUseProgram(0);
-
-	glf().glDeleteProgram(shader);
-}
-
-QString
-    GLHandler::getFullPreprocessedSource(QString const& path,
-                                         QMap<QString, QString> const& defines)
-{
-	// Read source
-	QFile f(getAbsoluteDataPath(path));
-	if(!f.exists())
-	{
-		f.setFileName(getAbsoluteDataPath("shaders/" + path));
-	}
-	f.open(QFile::ReadOnly | QFile::Text);
-	QTextStream in(&f);
-	QString source(in.readAll().toLocal8Bit());
-
-	// Strip comments
-	// One-liners
-	int commentPos(source.indexOf("//"));
-	while(commentPos != -1)
-	{
-		int endOfComment(source.indexOf('\n', commentPos));
-		source.replace(commentPos, endOfComment - commentPos, "");
-		commentPos = source.indexOf("//", commentPos);
-	}
-	// Blocks
-	commentPos = source.indexOf("/*");
-	while(commentPos != -1)
-	{
-		int endOfComment(source.indexOf("*/", commentPos));
-		source.replace(commentPos, endOfComment - commentPos + 2, "");
-		commentPos = source.indexOf("/*", commentPos);
-	}
-
-	// include other preprocessed sources within source
-	int includePos(source.indexOf("#include"));
-	while(includePos != -1)
-	{
-		int beginPath(source.indexOf('<', includePos));
-		int endPath(source.indexOf('>', includePos));
-		int endOfLine(source.indexOf('\n', includePos));
-
-		QString includedSrc(getFullPreprocessedSource(
-		    source.mid(beginPath + 1, endPath - beginPath - 1), defines));
-		source.replace(includePos, endOfLine - includePos, includedSrc);
-
-		includePos = source.indexOf("#include", includePos);
-	}
-
-	// add defines after #version
-	int definesInsertPoint(source.indexOf("#version"));
-	definesInsertPoint = source.indexOf('\n', definesInsertPoint) + 1;
-	for(auto const& key : defines.keys())
-	{
-		source.insert(definesInsertPoint, QString("#define ") + key + " "
-		                                      + defines.value(key) + "\n");
-	}
-
-	return source;
-}
-
-GLuint GLHandler::loadShader(QString const& path, GLenum shaderType,
-                             QMap<QString, QString> const& defines)
-{
-	QString source(getFullPreprocessedSource(path, defines));
-	QByteArray ba     = source.toLatin1();
-	const char* bytes = ba.data();
-
-	GLuint shader = glf().glCreateShader(shaderType);
-	glf().glShaderSource(shader, 1, &bytes, nullptr);
-	glf().glCompileShader(shader);
-	// checks
-	GLint status;
-	glf().glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-	std::array<char, 512> buffer = {};
-	glf().glGetShaderInfoLog(shader, 512, nullptr, &buffer[0]);
-	if(status != GL_TRUE)
-	{
-		qWarning() << "SHADER ERROR (" << path << "-" << shader
-		           << ") :" << &buffer[0] << '\n';
-	}
-
-	return shader;
-}
-
 GLHandler::Mesh GLHandler::newMesh()
 {
 	++meshCount();
@@ -822,7 +536,7 @@ GLHandler::Mesh GLHandler::newMesh()
 
 void GLHandler::setVertices(
     Mesh& mesh, float const* vertices, size_t size,
-    ShaderProgram const& shaderProgram,
+    GLShaderProgram const& shaderProgram,
     std::vector<QPair<const char*, unsigned int>> const& mapping,
     std::vector<unsigned int> const& elements)
 {
@@ -840,7 +554,8 @@ void GLHandler::setVertices(
 	for(auto map : mapping)
 	{
 		// map position
-		GLint posAttrib = glf().glGetAttribLocation(shaderProgram, map.first);
+		GLint posAttrib = glf().glGetAttribLocation(
+		    shaderProgram.glShaderProgram, map.first);
 		if(posAttrib != -1)
 		{
 			glf().glEnableVertexAttribArray(posAttrib);
@@ -870,7 +585,7 @@ void GLHandler::setVertices(
 
 void GLHandler::setVertices(
     Mesh& mesh, std::vector<float> const& vertices,
-    ShaderProgram const& shaderProgram,
+    GLShaderProgram const& shaderProgram,
     std::vector<QPair<const char*, unsigned int>> const& mapping,
     std::vector<unsigned int> const& elements)
 {
@@ -880,7 +595,7 @@ void GLHandler::setVertices(
 
 void GLHandler::setVertices(GLHandler::Mesh& mesh,
                             std::vector<float> const& vertices,
-                            ShaderProgram const& shaderProgram,
+                            GLShaderProgram const& shaderProgram,
                             QStringList const& mappingNames,
                             std::vector<unsigned int> const& mappingSizes,
                             std::vector<unsigned int> const& elements)
@@ -910,35 +625,33 @@ void GLHandler::updateVertices(Mesh& mesh, std::vector<float> const& vertices)
 	updateVertices(mesh, &(vertices[0]), vertices.size());
 }
 
-void GLHandler::setUpRender(ShaderProgram shader, QMatrix4x4 const& model,
-                            GeometricSpace space)
+void GLHandler::setUpRender(GLShaderProgram const& shader,
+                            QMatrix4x4 const& model, GeometricSpace space)
 {
 	switch(space)
 	{
 		case GeometricSpace::CLIP:
-			setShaderParam(shader, "camera", model);
+			shader.setUniform("camera", model);
 			break;
 		case GeometricSpace::WORLD:
-			setShaderParam(shader, "camera", fullTransform() * model);
+			shader.setUniform("camera", fullTransform() * model);
 			break;
 		case GeometricSpace::CAMERA:
-			setShaderParam(shader, "camera",
-			               fullCameraSpaceTransform() * model);
+			shader.setUniform("camera", fullCameraSpaceTransform() * model);
 			break;
 		case GeometricSpace::SEATEDTRACKED:
-			setShaderParam(shader, "camera",
-			               fullSeatedTrackedSpaceTransform() * model);
+			shader.setUniform("camera",
+			                  fullSeatedTrackedSpaceTransform() * model);
 			break;
 		case GeometricSpace::STANDINGTRACKED:
-			setShaderParam(shader, "camera",
-			               fullStandingTrackedSpaceTransform() * model);
+			shader.setUniform("camera",
+			                  fullStandingTrackedSpaceTransform() * model);
 			break;
 		case GeometricSpace::HMD:
-			setShaderParam(shader, "camera", fullHmdSpaceTransform() * model);
+			shader.setUniform("camera", fullHmdSpaceTransform() * model);
 			break;
 		case GeometricSpace::SKYBOX:
-			setShaderParam(shader, "camera",
-			               fullSkyboxSpaceTransform() * model);
+			shader.setUniform("camera", fullSkyboxSpaceTransform() * model);
 			break;
 		default:
 			break;

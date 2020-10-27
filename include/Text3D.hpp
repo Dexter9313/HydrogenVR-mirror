@@ -30,9 +30,7 @@ class Text3D
 {
   public:
 	Text3D(unsigned int width, unsigned int height);
-	// takes ownership of shader
-	Text3D(unsigned int width, unsigned int height,
-	       GLHandler::ShaderProgram const& shader);
+	Text3D(unsigned int width, unsigned int height, GLShaderProgram&& shader);
 	QMatrix4x4 const& getModel() const { return model; };
 	QMatrix4x4& getModel() { return model; };
 	QImage const getImage() const { return image; };
@@ -44,7 +42,7 @@ class Text3D
 	QRect getRectangle() const { return rectangle; };
 	float getSuperSampling() const { return superSampling; };
 	int getFlags() const { return flags; };
-	GLHandler::ShaderProgram getShader() { return shader; };
+	GLShaderProgram const& getShader() { return shader; };
 	void setText(QString const& text);
 	void setColor(QColor const& color);
 	void setAlpha(float alpha);
@@ -67,7 +65,7 @@ class Text3D
   private:
 	void updateTex();
 
-	GLHandler::ShaderProgram shader;
+	GLShaderProgram shader;
 	GLHandler::Mesh quad   = Primitives::newQuad(shader);
 	GLHandler::Texture tex = GLHandler::newTexture(0, 0, nullptr);
 

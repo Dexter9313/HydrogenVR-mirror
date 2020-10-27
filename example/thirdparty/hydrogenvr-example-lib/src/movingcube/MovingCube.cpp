@@ -19,11 +19,10 @@
 #include "movingcube/MovingCube.hpp"
 
 MovingCube::MovingCube()
+    : cubeShader("default")
 {
-	cubeShader = GLHandler::newShader("default");
-	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);
-	GLHandler::setShaderParam(cubeShader, "color",
-	                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
+	cubeShader.setUniform("alpha", 0.5f);
+	cubeShader.setUniform("color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	cube = createCube(cubeShader);
 	cubeTimer.start();
 }
@@ -42,7 +41,6 @@ void MovingCube::render()
 MovingCube::~MovingCube()
 {
 	GLHandler::deleteMesh(cube);
-	GLHandler::deleteShader(cubeShader);
 }
 
 std::vector<float> MovingCube::cubeVertices(uint64_t dt)
@@ -72,7 +70,7 @@ std::vector<float> MovingCube::cubeVertices(uint64_t dt)
 	return result;
 }
 
-GLHandler::Mesh MovingCube::createCube(GLHandler::ShaderProgram const& shader)
+GLHandler::Mesh MovingCube::createCube(GLShaderProgram const& shader)
 {
 	GLHandler::Mesh mesh(GLHandler::newMesh());
 	std::vector<float> vertices = cubeVertices(0);

@@ -19,6 +19,7 @@
 #include "Widget3D.hpp"
 
 Widget3D::Widget3D(QWidget* widget)
+    : shader("billboard")
 {
 	setWidget(widget);
 }
@@ -63,7 +64,6 @@ Widget3D::~Widget3D()
 {
 	GLHandler::deleteTexture(tex);
 	GLHandler::deleteMesh(quad);
-	GLHandler::deleteShader(shader);
 }
 
 void Widget3D::paintWidget(QImage& image, QWidget& widget)

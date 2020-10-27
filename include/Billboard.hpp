@@ -28,8 +28,8 @@ class Billboard
   public:
 	explicit Billboard(const char* texPath);
 	explicit Billboard(QImage const& image);
-	Billboard(const char* texPath, GLHandler::ShaderProgram shader);
-	Billboard(QImage const& image, GLHandler::ShaderProgram shader);
+	Billboard(const char* texPath, GLShaderProgram&& shader);
+	Billboard(QImage const& image, GLShaderProgram&& shader);
 	void render(BasicCamera const& camera);
 	~Billboard();
 
@@ -39,7 +39,7 @@ class Billboard
   private:
 	GLHandler::Texture tex;
 	GLHandler::Mesh quad = {};
-	GLHandler::ShaderProgram shader;
+	GLShaderProgram shader;
 };
 
 #endif // BILLBOARD_H

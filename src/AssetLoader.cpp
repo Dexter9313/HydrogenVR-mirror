@@ -75,7 +75,7 @@ float AssetLoader::loadFile(QString modelName,
 
 void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
                             std::vector<TexturedMesh>& meshes,
-                            GLHandler::ShaderProgram const& shader,
+                            GLShaderProgram const& shader,
                             QColor const& defaultDiffuseColor)
 {
 	for(auto const& descriptor : meshDescriptors)
@@ -119,7 +119,7 @@ void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
 
 float AssetLoader::loadModel(QString const& modelName,
                              std::vector<TexturedMesh>& meshes,
-                             GLHandler::ShaderProgram const& shader,
+                             GLShaderProgram const& shader,
                              QColor const& defaultDiffuseColor)
 {
 	std::vector<MeshDescriptor> descriptors;

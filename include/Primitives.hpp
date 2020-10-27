@@ -26,23 +26,23 @@ class Primitives
   public:
 	Primitives() = delete;
 
-	static GLHandler::Mesh newQuad(GLHandler::ShaderProgram shader,
+	static GLHandler::Mesh newQuad(GLShaderProgram const& shader,
 	                               GLHandler::PrimitiveType primitiveType
 	                               = GLHandler::PrimitiveType::TRIANGLE_STRIP);
 
 	// dim 2
-	static GLHandler::Mesh newGrid(GLHandler::ShaderProgram shader,
+	static GLHandler::Mesh newGrid(GLShaderProgram const& shader,
 	                               unsigned int size = 1024,
 	                               GLHandler::PrimitiveType primitiveType
 	                               = GLHandler::PrimitiveType::TRIANGLE_STRIP);
 
 	static GLHandler::Mesh
-	    newUnitCube(GLHandler::ShaderProgram shader,
+	    newUnitCube(GLShaderProgram const& shader,
 	                GLHandler::PrimitiveType primitiveType
 	                = GLHandler::PrimitiveType::TRIANGLE_STRIP);
 
 	// TRIANGLE_STRIP NOT SUPPORTED !
-	static GLHandler::Mesh newUnitSphere(GLHandler::ShaderProgram shader,
+	static GLHandler::Mesh newUnitSphere(GLShaderProgram const& shader,
 	                                     unsigned int latDivisions = 10,
 	                                     unsigned int lonDivisions = 10,
 	                                     GLHandler::PrimitiveType primitiveType
