@@ -98,12 +98,6 @@ class Controller : public QObject
 	 * @brief Renders the controller.
 	 */
 	void render() const;
-	/**
-	 * @brief Destroys a @ref Controller instance, freeing its resources.
-	 *
-	 * Don't delete a controller yourself, @ref VRHandler will handle it.
-	 */
-	~Controller();
 
 	/**
 	 * @brief Read-only direct access to the @ref side property.
@@ -121,7 +115,7 @@ class Controller : public QObject
 	float triggerValue = 0.f;
 
 	GLShaderProgram shaderProgram;
-	GLHandler::Mesh mesh;
+	GLMesh mesh;
 	GLHandler::Texture tex;
 	QMatrix4x4 model;
 };

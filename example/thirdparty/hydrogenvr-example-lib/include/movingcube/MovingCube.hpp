@@ -29,15 +29,13 @@ class MovingCube
 	MovingCube();
 	void update();
 	void render();
-	~MovingCube();
 
   private:
-	GLHandler::Mesh cube = {};
+	GLMesh cube = {};
 	GLShaderProgram cubeShader;
 	QElapsedTimer cubeTimer;
 
 	static std::vector<float> cubeVertices(uint64_t dt);
-	GLHandler::Mesh createCube(GLShaderProgram const& shader);
 };
 
 #endif // MOVINGCUBE_HPP

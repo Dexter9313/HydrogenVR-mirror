@@ -44,7 +44,7 @@ class Widget3D
 	void updateTex();
 
 	GLShaderProgram shader;
-	GLHandler::Mesh quad   = Primitives::newQuad(shader);
+	GLMesh quad;
 	GLHandler::Texture tex = GLHandler::newTexture(0, 0, nullptr);
 
 	QMatrix4x4 model;

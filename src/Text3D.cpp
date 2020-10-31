@@ -28,6 +28,7 @@ Text3D::Text3D(unsigned int width, unsigned int height,
     : shader(std::move(shader))
     , originalSize(width, height)
 {
+	Primitives::setAsQuad(quad, shader);
 	if(width > height)
 	{
 		aspectratio.scale(1.f, static_cast<float>(height) / width);
@@ -97,7 +98,7 @@ void Text3D::render(GLHandler::GeometricSpace geometricSpace)
 	GLHandler::beginTransparent();
 	GLHandler::setUpRender(shader, model * aspectratio, geometricSpace);
 	GLHandler::useTextures({tex});
-	GLHandler::render(quad, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	quad.render(PrimitiveType::TRIANGLE_STRIP);
 	GLHandler::endTransparent();
 }
 
@@ -146,7 +147,6 @@ void Text3D::updateTex()
 Text3D::~Text3D()
 {
 	GLHandler::deleteTexture(tex);
-	GLHandler::deleteMesh(quad);
 }
 
 QRect Text3D::paintText(QImage& image, QString const& text, QColor const& color,

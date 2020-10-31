@@ -44,21 +44,21 @@ class MainWin : public AbstractMainWin
 
   private:
 	ShaderProgram sbShader;
-	GLHandler::Mesh skybox;
+	GLMesh* skybox;
 	GLHandler::Texture sbTexture;
 
-	GLHandler::Mesh mesh;
+	GLMesh* mesh;
 	ShaderProgram shaderProgram;
 
-	GLHandler::Mesh pointsMesh;
+	GLMesh* pointsMesh;
 	ShaderProgram pointsShader;
 
 	MovingCube* movingCube;
 
-	GLHandler::Mesh sphere;
+	GLMesh* sphere;
 	ShaderProgram sphereShader;
 
-	GLHandler::Mesh playarea;
+	GLMesh* playarea;
 	ShaderProgram playareaShader;
 
 	Model* model;

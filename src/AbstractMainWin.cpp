@@ -481,9 +481,12 @@ void AbstractMainWin::initializePythonQt()
 	PythonQtHandler::init();
 	PythonQtHandler::addClass<int>("Side");
 	PythonQtHandler::addObject("Side", new PySide);
+	PythonQtHandler::addClass<int>("PrimitiveType");
+	PythonQtHandler::addObject("PrimitiveType", new PyPrimitiveType);
 	PythonQtHandler::addObject("GLHandler", new GLHandler);
 	PythonQtHandler::addObject("ToneMappingModel", toneMappingModel);
 	PythonQtHandler::addWrapper<GLShaderProgramWrapper>();
+	PythonQtHandler::addWrapper<GLMeshWrapper>();
 }
 
 void AbstractMainWin::reloadPythonQt()

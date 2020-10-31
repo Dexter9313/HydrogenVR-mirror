@@ -27,9 +27,9 @@ QList<QPair<QFuture<void>, std::vector<AssetLoader::MeshDescriptor>*>>&
 	return waitingForDeletion;
 }
 
-AsyncMesh::AsyncMesh(QString const& path, GLHandler::Mesh const& defaultMesh,
+AsyncMesh::AsyncMesh(QString const& path, GLMesh&& defaultMesh,
                      GLShaderProgram&& shader)
-    : defaultMesh(defaultMesh)
+    : defaultMesh(std::move(defaultMesh))
     , shader(std::move(shader))
 {
 	if(path.isEmpty())
@@ -65,7 +65,6 @@ void AsyncMesh::updateMesh()
 
 	if(meshes.size() == 1)
 	{
-		GLHandler::deleteMesh(mesh);
 		mesh = meshes[0].mesh;
 		for(auto pair : meshes[0].textures)
 		{
@@ -76,7 +75,7 @@ void AsyncMesh::updateMesh()
 	{
 		for(auto const& vMesh : meshes)
 		{
-			GLHandler::deleteMesh(vMesh.mesh);
+			delete vMesh.mesh;
 			for(auto pair : vMesh.textures)
 			{
 				GLHandler::deleteTexture(pair.second);
@@ -87,7 +86,7 @@ void AsyncMesh::updateMesh()
 	delete meshDescriptors;
 }
 
-GLHandler::Mesh AsyncMesh::getMesh()
+GLMesh const& AsyncMesh::getMesh()
 {
 	if(emptyPath)
 	{
@@ -97,7 +96,7 @@ GLHandler::Mesh AsyncMesh::getMesh()
 	updateMesh();
 	if(loaded)
 	{
-		return mesh;
+		return *mesh;
 	}
 	return defaultMesh;
 }
@@ -105,12 +104,11 @@ GLHandler::Mesh AsyncMesh::getMesh()
 AsyncMesh::~AsyncMesh()
 {
 	// future.waitForFinished();
-	GLHandler::deleteMesh(defaultMesh);
 	if(!emptyPath)
 	{
 		if(loaded)
 		{
-			GLHandler::deleteMesh(mesh);
+			delete mesh;
 		}
 		else
 		{

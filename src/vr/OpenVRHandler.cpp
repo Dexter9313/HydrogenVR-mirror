@@ -337,9 +337,8 @@ void OpenVRHandler::reloadPostProcessingTargets()
 	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	// LEFT
-	GLHandler::Mesh hiddenAreaMesh = GLHandler::newMesh();
-	GLHandler::setVertices(
-	    hiddenAreaMesh,
+	auto hiddenAreaMesh = new GLMesh;
+	hiddenAreaMesh->setVertices(
 	    &(vr_pointer->GetHiddenAreaMesh(vr::Eye_Left).pVertexData[0].v[0]),
 	    2 * 3 * vr_pointer->GetHiddenAreaMesh(vr::Eye_Left).unTriangleCount, s,
 	    {{"position", 2}});
@@ -349,13 +348,12 @@ void OpenVRHandler::reloadPostProcessingTargets()
 	                              | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
 	                          postProcessingTargetsLeft[0]);
 	s.use();
-	GLHandler::render(hiddenAreaMesh, GLHandler::PrimitiveType::TRIANGLES);
-	GLHandler::deleteMesh(hiddenAreaMesh);
+	hiddenAreaMesh->render(PrimitiveType::TRIANGLES);
+	delete hiddenAreaMesh;
 
 	// RIGHT
-	hiddenAreaMesh = GLHandler::newMesh();
-	GLHandler::setVertices(
-	    hiddenAreaMesh,
+	hiddenAreaMesh = new GLMesh;
+	hiddenAreaMesh->setVertices(
 	    &(vr_pointer->GetHiddenAreaMesh(vr::Eye_Right).pVertexData[0].v[0]),
 	    2 * 3 * vr_pointer->GetHiddenAreaMesh(vr::Eye_Right).unTriangleCount, s,
 	    {{"position", 2}});
@@ -365,8 +363,8 @@ void OpenVRHandler::reloadPostProcessingTargets()
 	                              | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
 	                          postProcessingTargetsRight[0]);
 	s.use();
-	GLHandler::render(hiddenAreaMesh, GLHandler::PrimitiveType::TRIANGLES);
-	GLHandler::deleteMesh(hiddenAreaMesh);
+	hiddenAreaMesh->render(PrimitiveType::TRIANGLES);
+	delete hiddenAreaMesh;
 
 	GLHandler::setBackfaceCulling(true);
 

@@ -130,7 +130,7 @@ class DebugCamera : public BasicCamera
 	void toggleFollowHMD();
 
   private:
-	GLHandler::Mesh camMesh;
+	GLMesh camMesh;
 	GLShaderProgram camMeshShader;
 };
 

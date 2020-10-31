@@ -31,14 +31,13 @@ class Billboard
 	Billboard(const char* texPath, GLShaderProgram&& shader);
 	Billboard(QImage const& image, GLShaderProgram&& shader);
 	void render(BasicCamera const& camera);
-	~Billboard();
 
 	QVector3D position = QVector3D();
 	float width        = 1.f;
 
   private:
 	GLHandler::Texture tex;
-	GLHandler::Mesh quad = {};
+	GLMesh quad;
 	GLShaderProgram shader;
 };
 

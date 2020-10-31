@@ -26,27 +26,26 @@ class Primitives
   public:
 	Primitives() = delete;
 
-	static GLHandler::Mesh newQuad(GLShaderProgram const& shader,
-	                               GLHandler::PrimitiveType primitiveType
-	                               = GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	static void setAsQuad(GLMesh& mesh, GLShaderProgram const& shader,
+	                      PrimitiveType primitiveType
+	                      = PrimitiveType::TRIANGLE_STRIP);
 
 	// dim 2
-	static GLHandler::Mesh newGrid(GLShaderProgram const& shader,
-	                               unsigned int size = 1024,
-	                               GLHandler::PrimitiveType primitiveType
-	                               = GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	static void setAsGrid(GLMesh& mesh, GLShaderProgram const& shader,
+	                      unsigned int size = 1024,
+	                      PrimitiveType primitiveType
+	                      = PrimitiveType::TRIANGLE_STRIP);
 
-	static GLHandler::Mesh
-	    newUnitCube(GLShaderProgram const& shader,
-	                GLHandler::PrimitiveType primitiveType
-	                = GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	static void setAsUnitCube(GLMesh& mesh, GLShaderProgram const& shader,
+	                          PrimitiveType primitiveType
+	                          = PrimitiveType::TRIANGLE_STRIP);
 
 	// TRIANGLE_STRIP NOT SUPPORTED !
-	static GLHandler::Mesh newUnitSphere(GLShaderProgram const& shader,
-	                                     unsigned int latDivisions = 10,
-	                                     unsigned int lonDivisions = 10,
-	                                     GLHandler::PrimitiveType primitiveType
-	                                     = GLHandler::PrimitiveType::TRIANGLES);
+	static void setAsUnitSphere(GLMesh& mesh, GLShaderProgram const& shader,
+	                            unsigned int latDivisions = 10,
+	                            unsigned int lonDivisions = 10,
+	                            PrimitiveType primitiveType
+	                            = PrimitiveType::TRIANGLES);
 };
 
 #endif // PRIMITIVES_H

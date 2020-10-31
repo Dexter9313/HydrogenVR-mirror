@@ -20,6 +20,7 @@
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
 
+#include "gl/GLMesh.hpp"
 #include "gl/GLShaderProgram.hpp"
 
 /** @ingroup pycall
@@ -46,28 +47,6 @@ class GLHandler : public QObject
 	static unsigned int& meshCount();
 	static unsigned int& texCount();
 	static unsigned int& PBOCount();
-	/** @ingroup pywrap
-	 * @brief Opaque class that represents a mesh. Use the mesh related methods
-	 * to handle it.
-	 *
-	 * A mesh is a set of vertices that can be rendered by the GPU. These
-	 * vertices can be described as positions or by more than that (colors,
-	 * normals, etc...).
-	 *
-	 * To be more specific, a Mesh contains a Vertex Array Object, a Vertex
-	 * Buffer Object and an optional Element Buffer Object along with their
-	 * sizes. It doesn't handle model matrix or shaders, it is a very basic
-	 * vertex data storage class.
-	 */
-	class Mesh
-	{
-		friend GLHandler;
-		GLuint vao;
-		GLuint vbo;
-		GLuint ebo;
-		unsigned int vboSize;
-		unsigned int eboSize;
-	};
 	/** @ingroup pywrap
 	 * @brief Opaque class that represents a Texture. Use the texture related
 	 * methods to handle it.
@@ -168,27 +147,6 @@ class GLHandler : public QObject
 	};
 
 	/**
-	 * @brief Represents a type of primitive for rasterization.
-	 *
-	 * AUTO is set to POINTS if no elements are given when setting the mesh's
-	 * vertices, and TRIANGLES otherwise.
-	 *
-	 * See <a href="https://www.khronos.org/opengl/wiki/Primitive">OpenGL
-	 * Primitive</a>.
-	 */
-	enum class PrimitiveType
-	{
-		POINTS         = GL_POINTS,
-		LINES          = GL_LINES,
-		LINE_STRIP     = GL_LINE_STRIP,
-		LINE_LOOP      = GL_LINE_LOOP,
-		TRIANGLES      = GL_TRIANGLES,
-		TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
-		AUTO // if no ebo, POINTS, else TRIANGLES
-	};
-	Q_ENUM(PrimitiveType)
-
-	/**
 	 * @brief Representing a geometric space.
 	 *
 	 * HMD is not what is called hmd scaled space elsewhere in this
@@ -239,7 +197,7 @@ class GLHandler : public QObject
 	 * @brief Default constructor.
 	 * @warning Should only be used within @ref PythonQtHandler.
 	 *
-	 * Adds Mesh, RenderTarget and #Texture classes to the
+	 * Adds RenderTarget and #Texture classes to the
 	 * Python API.
 	 */
 	GLHandler();
@@ -362,6 +320,35 @@ class GLHandler : public QObject
 	                           CubeFace face = CubeFace::FRONT,
 	                           GLint layer   = 0);
 	/**
+	 * @brief Sets the <code>in mat4 camera;</code> input of a shader program.
+	 *
+	 * The transformation matrix used will depend on the @p space parameter :
+	 * * WORLD : fullTransform : from world space to clip space
+	 * * CAMERA : fullCameraSpaceTransform : from camera space to clip space
+	 * * SEATEDTRACKED : fullSeatedTrackedSpaceTransform : from seated tracked
+	 * space to clip space
+	 * * STANDINGTEDTRACKED : fullStandingTrackedSpaceTransform : from standing
+	 * tracked space to clip space
+	 * * HMD : fullHmdSpaceTransform : from hmd space (not world-scaled) to clip
+	 * * SKYBOX : fullSkyboxSpaceTransform : from skybox space to clip
+	 * space
+	 *
+	 * The @p model matrix (identity by default) will be multiplied to the
+	 * camera matrix before being sent to the shader as a single MVP matrix.
+	 *
+	 * It doesn't have to be called before each @ref render call as long as the
+	 * same shader program is used for all these following renders and that the
+	 * meshes are from the same space with the same model matrix. This method
+	 * isn't particularly heavy to execute but this fact can lead to a small
+	 * optimization by render grouping.
+	 *
+	 * The @p shader passed as parameter will be used for all the following
+	 * renders before another call with a different shader program replaces it.
+	 */
+	static void setUpRender(GLShaderProgram const& shader,
+	                        QMatrix4x4 const& model = QMatrix4x4(),
+	                        GeometricSpace space    = GeometricSpace::WORLD);
+	/**
 	 * @brief Renders @p from's color attachment onto a quad using a
 	 * post-processing @p shader. The final rendering gets stored on the @p to
 	 * @ref RenderTarget.
@@ -476,160 +463,6 @@ class GLHandler : public QObject
 	                    QMatrix4x4 const& fullHmdSpaceTransform,
 	                    QMatrix4x4 const& fullSkyboxSpaceTransform);
 
-	// MESHES
-	/**
-	 * @brief Allocates a new @ref Mesh.
-	 */
-	static Mesh newMesh();
-
-  public: // doesn't work in PythonQt
-	static void setVertices(
-	    GLHandler::Mesh& mesh, float const* vertices, size_t size,
-	    GLShaderProgram const& shaderProgram,
-	    std::vector<QPair<const char*, unsigned int>> const& mapping,
-	    std::vector<unsigned int> const& elements = {});
-	/**
-	 * @brief Sets vertices data for a mesh.
-	 *
-	 * The vertices are specified in the "array of structures" order, "structure
-	 * of arrays" isn't supported as of this version.
-	 *
-	 * @param mesh @ref Mesh for which the vertices are set.
-	 *
-	 * @param vertices Vertices data. Can be any set of floating point numbers.
-	 * Usually, it will at least contain tridimentional positional information.
-	 * The data must be linearized. For example, if a vertex must have two
-	 * attributes, a 3D position p and a 2D texture coordinate tc, one vertex
-	 * will be represented by the 5 values { p0, p1, p2, tc0, tc1 }. Vertices
-	 * are stored in a contiguous way : { vertex 0, vertex 1, ... } or more
-	 * precisely {p0,0, p0,1, p0,2, tc0,0, tc0,1, p1,0, p1,1, p1,2, tc1,0,
-	 * tc1,1} to follow the previous example (where pi,j is j-th component of
-	 * the ith vertex position and tci,j is the j-th component of the ith vertex
-	 * texture coordinates). Therefore @p vertices is a 1D array of size (number
-	 * of vertices) * (sum of the dimensions of one vertex attributes), in our
-	 * example (number of vertices) * 5.
-	 *
-	 * @param shaderProgram Which shader program will be used to render the
-	 * mesh. This is used to get the attributes locations to set in the Vertex
-	 * Array Object.
-	 *
-	 * @param mapping An array of ordered pairs which informs on how to map
-	 * attributes from the @p vertices parameter to the @p shaderProgram inputs.
-	 * Each pair's first element is the name of the attribute as stated in the
-	 * @p shaderProgram and its second element is the dimension of this
-	 * attribute. For the earlier example given, @p mapping should be set as
-	 * {{"position", 3}, {"texcoord", 2}}, if @p shaderProgram's vertex array
-	 * contains the two inputs <code>in vec3 position;</code> and <code>in vec2
-	 * texcoord;</code> and positions are specified in @p vertices before
-	 * texture coordiantes are (which is the case - {p0, tc0, p1, tc1, ...}).
-	 *
-	 * @param elements Optional. Content of the element buffer object that will
-	 * specify vertices rendering order. If none is provided, the order of @p
-	 * vertices will be followed. More technically, glDrawArrays will be called
-	 * if this parameter is empty, and glDrawElements will be called otherwise.
-	 * Also, if this parameter is empty, the automatic @ref PrimitiveType for
-	 * the mesh will be POINTS.
-	 */
-	static void setVertices(
-	    GLHandler::Mesh& mesh, std::vector<float> const& vertices,
-	    GLShaderProgram const& shaderProgram,
-	    std::vector<QPair<const char*, unsigned int>> const& mapping,
-	    std::vector<unsigned int> const& elements = {});
-  public slots:
-	/**
-	 * @brief Convenient version of the @ref setVertices(GLHandler::Mesh&,
-	 * std::vector<float>const&, GLShaderProgram const&, std::vector<QPair<const
-	 * char*, unsigned int>>const&, std::vector<unsigned int>const&) method to
-	 * be used in Python.
-	 *
-	 * Behaves the same way as its other version, but the attribute mapping is
-	 * specified differently, as it is harder to construct a QVector<QPair>
-	 * object in Python. Instead of an array of pairs (name, size), the
-	 * mapping is specified by all the ordered names in the @p mappingNames
-	 * parameter and all their corresponding sizes in the same order in the @p
-	 * mappingSizes parameter.
-	 */
-	static void setVertices(GLHandler::Mesh& mesh,
-	                        std::vector<float> const& vertices,
-	                        GLShaderProgram const& shaderProgram,
-	                        QStringList const& mappingNames,
-	                        std::vector<unsigned int> const& mappingSizes,
-	                        std::vector<unsigned int> const& elements = {});
-	static void updateVertices(GLHandler::Mesh& mesh, float const* vertices,
-	                           size_t size);
-	/**
-	 * @brief Updates a mesh vertices data.
-	 *
-	 * @ref setVertices must have already been called once before to set the
-	 * attributes mapping with the rendering shader. If the attributes mapping
-	 * has to change, use @ref setVertices instead.
-	 *
-	 * The main use case of this method is to update each vertex data for
-	 * animations for example. The data isn't supposed to be too different than
-	 * it was when @ref setVertices was called (same number of vertices with the
-	 * same elements buffer and same way to specify the attributes...).
-	 *
-	 * @param mesh @ref Mesh for which the vertices data are updated.
-	 * @param vertices See @ref setVertices. This parameter must be the same
-	 * format as the @p vertices parameter of @ref setVertices.
-	 */
-	static void updateVertices(GLHandler::Mesh& mesh,
-	                           std::vector<float> const& vertices);
-	/**
-	 * @brief Sets the <code>in mat4 camera;</code> input of a shader program.
-	 *
-	 * The transformation matrix used will depend on the @p space parameter :
-	 * * WORLD : fullTransform : from world space to clip space
-	 * * CAMERA : fullCameraSpaceTransform : from camera space to clip space
-	 * * SEATEDTRACKED : fullSeatedTrackedSpaceTransform : from seated tracked
-	 * space to clip space
-	 * * STANDINGTEDTRACKED : fullStandingTrackedSpaceTransform : from standing
-	 * tracked space to clip space
-	 * * HMD : fullHmdSpaceTransform : from hmd space (not world-scaled) to clip
-	 * * SKYBOX : fullSkyboxSpaceTransform : from skybox space to clip
-	 * space
-	 *
-	 * The @p model matrix (identity by default) will be multiplied to the
-	 * camera matrix before being sent to the shader as a single MVP matrix.
-	 *
-	 * It doesn't have to be called before each @ref render call as long as the
-	 * same shader program is used for all these following renders and that the
-	 * meshes are from the same space with the same model matrix. This method
-	 * isn't particularly heavy to execute but this fact can lead to a small
-	 * optimization by render grouping.
-	 *
-	 * The @p shader passed as parameter will be used for all the following
-	 * renders before another call with a different shader program replaces it.
-	 */
-	static void setUpRender(GLShaderProgram const& shader,
-	                        QMatrix4x4 const& model = QMatrix4x4(),
-	                        GeometricSpace space    = GeometricSpace::WORLD);
-	/**
-	 * @brief Draws a mesh on the current render target.
-	 *
-	 * @attention Make sure you called @ref setUpRender accordingly before
-	 * calling this method.
-	 *
-	 * @attention This rendering will use the last @ref GLShaderProgram passed
-	 * to
-	 * @ref setUpRender to draw the mesh. You can override the used shader
-	 * program by usinga @ref useShader. Just make sure the shader you want to
-	 * use has already been passed to @ref setUpRender with the correct
-	 * parameters before.
-	 *
-	 * @param mesh @ref Mesh to be drawn.
-	 * @param primitiveType @ref PrimitiveType of the mesh. If AUTO and the mesh
-	 * doesn't have elements, POINTS will be assumed, but if the mesh has
-	 * elements, TRIANGLES will be assumed.
-	 */
-	static void render(GLHandler::Mesh const& mesh,
-	                   PrimitiveType primitiveType = PrimitiveType::AUTO);
-	/**
-	 * @brief Frees a @ref Mesh and all the vertex-related OpenGL objects it
-	 * allocated before.
-	 */
-	static void deleteMesh(GLHandler::Mesh const& mesh);
-
 	// TEXTURES
 	static Texture newTexture(unsigned int width, const GLvoid* data,
 	                          bool sRGB = true);
@@ -726,7 +559,6 @@ class GLHandler : public QObject
 	static QMatrix4x4& fullSkyboxSpaceTransform();
 };
 
-Q_DECLARE_METATYPE(GLHandler::Mesh)
 Q_DECLARE_METATYPE(GLHandler::Texture)
 Q_DECLARE_METATYPE(GLHandler::RenderTarget)
 

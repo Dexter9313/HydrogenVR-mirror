@@ -20,7 +20,6 @@
 
 DebugCamera::DebugCamera(VRHandler const& vrHandler)
     : BasicCamera(vrHandler)
-    , camMesh(GLHandler::newMesh())
     , camMeshShader("default")
 {
 	camMeshShader.setUniform("color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
@@ -48,8 +47,7 @@ DebugCamera::DebugCamera(VRHandler const& vrHandler)
 	    4, 6, 4, 5,
 	};
 
-	GLHandler::setVertices(camMesh, vertices, camMeshShader, {{"position", 3}},
-	                       elements);
+	camMesh.setVertices(vertices, camMeshShader, {{"position", 3}}, elements);
 }
 
 void DebugCamera::update()
@@ -72,17 +70,17 @@ void DebugCamera::renderCamera(BasicCamera const* cam)
 		camMeshShader.setUniform("color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader,
 		                       cam->hmdScreenToWorldTransform(Side::LEFT));
-		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
+		camMesh.render(PrimitiveType::LINES);
 		camMeshShader.setUniform("color", QColor::fromRgbF(0.0f, 1.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader,
 		                       cam->hmdScreenToWorldTransform(Side::RIGHT));
-		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
+		camMesh.render(PrimitiveType::LINES);
 	}
 	else
 	{
 		camMeshShader.setUniform("color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader, cam->screenToWorldTransform());
-		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
+		camMesh.render(PrimitiveType::LINES);
 	}
 }
 

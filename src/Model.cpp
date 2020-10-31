@@ -55,7 +55,7 @@ Model::Model(QString const& modelName, GLShaderProgram&& shader,
 
 void Model::generateShadowMap(QMatrix4x4 const& model, Light& light)
 {
-	std::vector<GLHandler::Mesh> glMeshes;
+	std::vector<GLMesh const*> glMeshes;
 	std::vector<QMatrix4x4> models;
 	for(auto const& mesh : meshes)
 	{
@@ -85,7 +85,7 @@ void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
 		     light.getShadowMap()});
 		shader.setUniform("localTransform", mesh.transform);
 		GLHandler::setUpRender(shader, model * mesh.transform, geometricSpace);
-		GLHandler::render(mesh.mesh);
+		mesh.mesh->render();
 	}
 }
 
@@ -93,7 +93,7 @@ Model::~Model()
 {
 	for(auto const& mesh : meshes)
 	{
-		GLHandler::deleteMesh(mesh.mesh);
+		delete mesh.mesh;
 		for(auto pair : mesh.textures)
 		{
 			GLHandler::deleteTexture(pair.second);

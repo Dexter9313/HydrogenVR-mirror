@@ -7,6 +7,7 @@ from PythonQt.QtGui import QKeyEvent
 from PythonQt.QtCore import Qt
 
 from PythonQt.GL import GLShaderProgram
+from PythonQt.GL import GLMesh
 
 def initScene():
     global mesh
@@ -19,12 +20,12 @@ def initScene():
     t = 0
 
     angle = 0
-    mesh = GLHandler.newMesh()
+    mesh = GLMesh()
     shader = GLShaderProgram("default")
     shader.setUniform("alpha", 1.0)
     shader.setUniform("color", QColor(128, 255, 255))
 
-    GLHandler.setVertices(mesh, [0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5], shader, ["position"], [3], [0, 1, 1, 2, 2, 0])
+    mesh.setVertices([0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5], shader, ["position"], [3], [0, 1, 1, 2, 2, 0])
 
     #HydrogenVR.appendPostProcessingShader("py", "grayscale")
 
@@ -45,13 +46,11 @@ def renderScene():
     global shader
 
     GLHandler.setUpRender(shader)
-    GLHandler.render(mesh, GLHandler.LINES)
+    mesh.render(PrimitiveType.LINES)
 
 def cleanUpScene():
     global mesh
     global shader
-
-    GLHandler.deleteMesh(mesh)
 
 def applyPostProcShaderParams(ppid, shader):
     if ppid == "py":

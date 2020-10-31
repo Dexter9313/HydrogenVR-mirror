@@ -21,7 +21,6 @@
 Hand::Hand(Side side)
     : side(side)
     , shaderProgram("default")
-    , mesh(GLHandler::newMesh())
     , _isValid(false)
     , _isFlat(false)
     , _isClosed(false)
@@ -39,8 +38,7 @@ Hand::Hand(Side side)
 	};
 
 	std::vector<float> vertices(22 * 3); // 21 random positions
-	GLHandler::setVertices(mesh, vertices, shaderProgram, {{"position", 3}},
-	                       ebo);
+	mesh.setVertices(vertices, shaderProgram, {{"position", 3}}, ebo);
 
 	// transforms leap coordinates to GL coordinates
 	// account for the controller position on the headset
@@ -60,7 +58,7 @@ void Hand::update(Leap::Hand const& hand)
 		return;
 	}
 
-	GLHandler::updateVertices(mesh, getHandVBO(hand));
+	mesh.updateVertices(getHandVBO(hand));
 
 	_isFlat   = hand.grabStrength() == 0;
 	_isClosed = hand.grabStrength() == 1;
@@ -107,7 +105,7 @@ void Hand::render() const
 		shaderProgram.setUniform("color", QColor::fromRgbF(0.0f, 1.0f, 0.0f));
 	}
 
-	GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
+	mesh.render(PrimitiveType::LINES);
 }
 
 #ifdef LEAP_MOTION
@@ -153,8 +151,3 @@ std::vector<float> Hand::getHandVBO(Leap::Hand const& hand)
 	return result;
 }
 #endif
-
-Hand::~Hand()
-{
-	GLHandler::deleteMesh(mesh);
-}

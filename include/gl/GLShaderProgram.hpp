@@ -100,6 +100,9 @@ class GLShaderProgram
 	GLShaderProgram(QString const& vertexName, QString const& fragmentName,
 	                QMap<QString, QString> const& defines = {},
 	                QString geometryName                  = "");
+	/** @brief Returns attribute location in shader program.
+	 */
+	int getAttribLocationFromName(const char* attributeName) const;
 	// doesn't work in PythonQt
 	/** @brief Sets values for vertex attributes that aren't provided by a
 	 * vertex array.

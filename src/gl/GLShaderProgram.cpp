@@ -83,6 +83,11 @@ void GLShaderProgram::cleanUp()
 	doClean = false;
 }
 
+int GLShaderProgram::getAttribLocationFromName(const char* attributeName) const
+{
+	return GLHandler::glf().glGetAttribLocation(glShaderProgram, attributeName);
+}
+
 void GLShaderProgram::setUnusedAttributesValues(
     std::vector<QPair<const char*, std::vector<float>>> const& defaultValues)
     const

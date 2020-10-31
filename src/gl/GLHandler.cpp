@@ -74,7 +74,6 @@ QMatrix4x4& GLHandler::fullSkyboxSpaceTransform()
 
 GLHandler::GLHandler()
 {
-	PythonQtHandler::addClass<Mesh>("Mesh");
 	PythonQtHandler::addClass<Texture>("Texture");
 	PythonQtHandler::addClass<RenderTarget>("RenderTarget");
 }
@@ -345,13 +344,46 @@ void GLHandler::beginRendering(GLbitfield clearMask,
 	glf().glViewport(0, 0, renderTarget.width, renderTarget.height);
 }
 
+void GLHandler::setUpRender(GLShaderProgram const& shader,
+                            QMatrix4x4 const& model, GeometricSpace space)
+{
+	switch(space)
+	{
+		case GeometricSpace::CLIP:
+			shader.setUniform("camera", model);
+			break;
+		case GeometricSpace::WORLD:
+			shader.setUniform("camera", fullTransform() * model);
+			break;
+		case GeometricSpace::CAMERA:
+			shader.setUniform("camera", fullCameraSpaceTransform() * model);
+			break;
+		case GeometricSpace::SEATEDTRACKED:
+			shader.setUniform("camera",
+			                  fullSeatedTrackedSpaceTransform() * model);
+			break;
+		case GeometricSpace::STANDINGTRACKED:
+			shader.setUniform("camera",
+			                  fullStandingTrackedSpaceTransform() * model);
+			break;
+		case GeometricSpace::HMD:
+			shader.setUniform("camera", fullHmdSpaceTransform() * model);
+			break;
+		case GeometricSpace::SKYBOX:
+			shader.setUniform("camera", fullSkyboxSpaceTransform() * model);
+			break;
+		default:
+			break;
+	};
+}
+
 void GLHandler::postProcess(GLShaderProgram const& shader,
                             RenderTarget const& from, RenderTarget const& to,
                             std::vector<Texture> const& uniformTextures)
 {
-	Mesh quad(newMesh());
-	setVertices(quad, {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
-	            {{"position", 2}});
+	GLMesh quad;
+	quad.setVertices({-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
+	                 {{"position", 2}});
 
 	beginRendering(to);
 	shader.use();
@@ -364,25 +396,23 @@ void GLHandler::postProcess(GLShaderProgram const& shader,
 	}
 	useTextures(texs);
 	setBackfaceCulling(false);
-	render(quad, PrimitiveType::TRIANGLE_STRIP);
+	quad.render(PrimitiveType::TRIANGLE_STRIP);
 	setBackfaceCulling(true);
-
-	deleteMesh(quad);
 }
 
 void GLHandler::renderFromScratch(GLShaderProgram const& shader,
                                   RenderTarget const& to)
 {
-	Mesh quad(newMesh());
-	setVertices(quad, {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
-	            {{"position", 2}});
+	GLMesh quad;
+	quad.setVertices({-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
+	                 {{"position", 2}});
 
 	if(to.depth == 1)
 	{
 		beginRendering(to);
 		shader.use();
 		setBackfaceCulling(false);
-		render(quad, PrimitiveType::TRIANGLE_STRIP);
+		quad.render(PrimitiveType::TRIANGLE_STRIP);
 		setBackfaceCulling(true);
 	}
 	else
@@ -392,12 +422,10 @@ void GLHandler::renderFromScratch(GLShaderProgram const& shader,
 			GLHandler::beginRendering(to, GLHandler::CubeFace::FRONT, i);
 			shader.setUniform("z", i / static_cast<float>(to.depth));
 			GLHandler::setBackfaceCulling(false);
-			GLHandler::render(quad, GLHandler::PrimitiveType::TRIANGLE_STRIP);
-			GLHandler::setBackfaceCulling(true);
+			quad.render(PrimitiveType::TRIANGLE_STRIP);
+			setBackfaceCulling(true);
 		}
 	}
-
-	deleteMesh(quad);
 }
 
 void GLHandler::generateEnvironmentMap(
@@ -514,177 +542,6 @@ void GLHandler::setUpTransforms(
 	    = fullStandingTrackedSpaceTransform;
 	GLHandler::fullHmdSpaceTransform()    = fullHmdSpaceTransform;
 	GLHandler::fullSkyboxSpaceTransform() = fullSkyboxSpaceTransform;
-}
-
-GLHandler::Mesh GLHandler::newMesh()
-{
-	++meshCount();
-	Mesh mesh = {};
-	glf().glGenVertexArrays(1, &mesh.vao);
-	glf().glGenBuffers(1, &mesh.vbo);
-	glf().glBindVertexArray(mesh.vao);
-	glf().glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
-	glf().glGenBuffers(1, &mesh.ebo);
-	glf().glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
-	glf().glBindVertexArray(0);
-
-	mesh.vboSize = 0;
-	mesh.eboSize = 0;
-
-	return mesh;
-}
-
-void GLHandler::setVertices(
-    Mesh& mesh, float const* vertices, size_t size,
-    GLShaderProgram const& shaderProgram,
-    std::vector<QPair<const char*, unsigned int>> const& mapping,
-    std::vector<unsigned int> const& elements)
-{
-	glf().glBindVertexArray(mesh.vao);
-	glf().glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
-	// put data in buffer (it is now sent to graphics card)
-	glf().glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertices[0]), vertices,
-	                   GL_STATIC_DRAW);
-
-	size_t offset = 0, stride = 0;
-	for(auto map : mapping)
-	{
-		stride += map.second;
-	}
-	for(auto map : mapping)
-	{
-		// map position
-		GLint posAttrib = glf().glGetAttribLocation(
-		    shaderProgram.glShaderProgram, map.first);
-		if(posAttrib != -1)
-		{
-			glf().glEnableVertexAttribArray(posAttrib);
-			glf().glVertexAttribPointer(
-			    posAttrib, map.second, GL_FLOAT, GL_FALSE,
-			    stride * sizeof(float),
-			    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-			    reinterpret_cast<void*>(offset * sizeof(float)));
-		}
-		offset += map.second;
-	}
-	if(offset != 0)
-	{
-		mesh.vboSize = size / offset;
-	}
-	if(!elements.empty())
-	{
-		glf().glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
-		glf().glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		                   elements.size() * sizeof(elements[0]),
-		                   &(elements[0]), GL_STATIC_DRAW);
-		mesh.eboSize = elements.size();
-	}
-
-	glf().glBindVertexArray(0);
-}
-
-void GLHandler::setVertices(
-    Mesh& mesh, std::vector<float> const& vertices,
-    GLShaderProgram const& shaderProgram,
-    std::vector<QPair<const char*, unsigned int>> const& mapping,
-    std::vector<unsigned int> const& elements)
-{
-	setVertices(mesh, &(vertices[0]), vertices.size(), shaderProgram, mapping,
-	            elements);
-}
-
-void GLHandler::setVertices(GLHandler::Mesh& mesh,
-                            std::vector<float> const& vertices,
-                            GLShaderProgram const& shaderProgram,
-                            QStringList const& mappingNames,
-                            std::vector<unsigned int> const& mappingSizes,
-                            std::vector<unsigned int> const& elements)
-{
-	std::vector<QPair<const char*, unsigned int>> mapping;
-	for(unsigned int i(0); i < mappingSizes.size(); ++i)
-	{
-		mapping.emplace_back(mappingNames[i].toLatin1().constData(),
-		                     mappingSizes[i]);
-	}
-	setVertices(mesh, vertices, shaderProgram, mapping, elements);
-}
-
-void GLHandler::updateVertices(GLHandler::Mesh& mesh, float const* vertices,
-                               size_t size)
-{
-	glf().glBindVertexArray(mesh.vao);
-	glf().glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
-	// put data in buffer (it is now sent to graphics card)
-	glf().glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertices[0]), vertices,
-	                   GL_DYNAMIC_DRAW);
-	glf().glBindVertexArray(0);
-}
-
-void GLHandler::updateVertices(Mesh& mesh, std::vector<float> const& vertices)
-{
-	updateVertices(mesh, &(vertices[0]), vertices.size());
-}
-
-void GLHandler::setUpRender(GLShaderProgram const& shader,
-                            QMatrix4x4 const& model, GeometricSpace space)
-{
-	switch(space)
-	{
-		case GeometricSpace::CLIP:
-			shader.setUniform("camera", model);
-			break;
-		case GeometricSpace::WORLD:
-			shader.setUniform("camera", fullTransform() * model);
-			break;
-		case GeometricSpace::CAMERA:
-			shader.setUniform("camera", fullCameraSpaceTransform() * model);
-			break;
-		case GeometricSpace::SEATEDTRACKED:
-			shader.setUniform("camera",
-			                  fullSeatedTrackedSpaceTransform() * model);
-			break;
-		case GeometricSpace::STANDINGTRACKED:
-			shader.setUniform("camera",
-			                  fullStandingTrackedSpaceTransform() * model);
-			break;
-		case GeometricSpace::HMD:
-			shader.setUniform("camera", fullHmdSpaceTransform() * model);
-			break;
-		case GeometricSpace::SKYBOX:
-			shader.setUniform("camera", fullSkyboxSpaceTransform() * model);
-			break;
-		default:
-			break;
-	};
-}
-
-void GLHandler::render(Mesh const& mesh, PrimitiveType primitiveType)
-{
-	if(primitiveType == PrimitiveType::AUTO)
-	{
-		primitiveType = (mesh.eboSize == 0) ? PrimitiveType::POINTS
-		                                    : PrimitiveType::TRIANGLES;
-	}
-
-	glf().glBindVertexArray(mesh.vao);
-	if(mesh.eboSize == 0)
-	{
-		glf().glDrawArrays(static_cast<GLenum>(primitiveType), 0, mesh.vboSize);
-	}
-	else
-	{
-		glf().glDrawElements(static_cast<GLenum>(primitiveType), mesh.eboSize,
-		                     GL_UNSIGNED_INT, nullptr);
-	}
-	glf().glBindVertexArray(0);
-}
-
-void GLHandler::deleteMesh(Mesh const& mesh)
-{
-	--meshCount();
-	glf().glDeleteBuffers(1, &mesh.vbo);
-	glf().glDeleteBuffers(1, &mesh.ebo);
-	glf().glDeleteVertexArrays(1, &mesh.vao);
 }
 
 GLHandler::Texture GLHandler::newTexture(unsigned int width, const GLvoid* data,

@@ -33,7 +33,7 @@ class Light
 	void setUpShader(GLShaderProgram const& shader, float boundingSphereRadius,
 	                 QMatrix4x4 const& model) const;
 	GLHandler::Texture getShadowMap() const;
-	void generateShadowMap(std::vector<GLHandler::Mesh> const& meshes,
+	void generateShadowMap(std::vector<GLMesh const*> const& meshes,
 	                       float boundingSphereRadius,
 	                       std::vector<QMatrix4x4> const& models,
 	                       QMatrix4x4 const& model);

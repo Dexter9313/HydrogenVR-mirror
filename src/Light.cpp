@@ -67,7 +67,7 @@ GLHandler::Texture Light::getShadowMap() const
 	return GLHandler::getColorAttachmentTexture(shadowMap);
 }
 
-void Light::generateShadowMap(std::vector<GLHandler::Mesh> const& meshes,
+void Light::generateShadowMap(std::vector<GLMesh const*> const& meshes,
                               float boundingSphereRadius,
                               std::vector<QMatrix4x4> const& models,
                               QMatrix4x4 const& model)
@@ -80,7 +80,7 @@ void Light::generateShadowMap(std::vector<GLHandler::Mesh> const& meshes,
 	for(unsigned int i(0); i < meshes.size(); ++i)
 	{
 		shadowShader.setUniform("camera", lightSpace * models[i]);
-		GLHandler::render(meshes[i]);
+		meshes[i]->render();
 	}
 	GLHandler::setBackfaceCulling(true);
 }

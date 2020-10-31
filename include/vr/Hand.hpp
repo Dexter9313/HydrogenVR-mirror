@@ -55,13 +55,12 @@ class Hand : public QObject
 	void update(Leap::Hand const& hand);
 #endif
 	void render() const;
-	~Hand();
 
 	const Side side;
 
   private:
 	GLShaderProgram shaderProgram;
-	GLHandler::Mesh mesh;
+	GLMesh mesh;
 	QMatrix4x4 model;
 
 	bool _isValid;
