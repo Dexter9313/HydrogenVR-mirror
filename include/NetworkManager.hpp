@@ -32,7 +32,7 @@ class NetworkManager : public QObject
 	Q_OBJECT
   public:
 	// takes ownership
-	NetworkManager(AbstractState* networkedState);
+	explicit NetworkManager(AbstractState* networkedState);
 	bool isServer() const { return server; };
 	AbstractState* getNetworkedState() { return networkedState; };
 	void update(float frameTiming);

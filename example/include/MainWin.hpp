@@ -19,13 +19,9 @@ class MainWin : public AbstractMainWin
 	class State : public AbstractState
 	{
 	  public:
-		State(){};
-		State(State const& other)
-		    : exposure(other.exposure)
-		    , dynamicrange(other.dynamicrange){};
-		State(State&& other)
-		    : exposure(other.exposure)
-		    , dynamicrange(other.dynamicrange){};
+		State()                   = default;
+		State(State const& other) = default;
+		State(State&& other)      = default;
 		virtual void readFromDataStream(QDataStream& stream) override
 		{
 			stream >> exposure;
@@ -41,10 +37,10 @@ class MainWin : public AbstractMainWin
 			stream << pitch;
 		};
 
-		float exposure;
-		float dynamicrange;
-		float yaw;
-		float pitch;
+		float exposure     = 0.f;
+		float dynamicrange = 0.f;
+		float yaw          = 0.f;
+		float pitch        = 0.f;
 	};
 
 	MainWin() = default;
@@ -79,19 +75,19 @@ class MainWin : public AbstractMainWin
 	};
 	virtual void readState(AbstractState const& s) override
 	{
-		auto const& state = dynamic_cast<State const&>(s);
+		auto const& state              = dynamic_cast<State const&>(s);
 		toneMappingModel->exposure     = state.exposure;
 		toneMappingModel->dynamicrange = state.dynamicrange;
-		yaw = state.yaw;
-		pitch = state.pitch;
+		yaw                            = state.yaw;
+		pitch                          = state.pitch;
 	};
 	virtual void writeState(AbstractState& s) override
 	{
-		auto& state = dynamic_cast<State&>(s);
+		auto& state        = dynamic_cast<State&>(s);
 		state.exposure     = toneMappingModel->exposure;
 		state.dynamicrange = toneMappingModel->dynamicrange;
-		state.yaw = yaw;
-		state.pitch = pitch;
+		state.yaw          = yaw;
+		state.pitch        = pitch;
 	};
 
   private:
