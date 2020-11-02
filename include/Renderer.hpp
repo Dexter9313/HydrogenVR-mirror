@@ -191,6 +191,8 @@ class Renderer
 	VRHandler& vrHandler;
 	DebugCamera* dbgCamera = nullptr;
 
+	QMatrix4x4 angleShiftMat;
+
 	QList<QPair<QString, RenderPath>> sceneRenderPipeline_;
 
 	bool cubemapTargetInit                = false;

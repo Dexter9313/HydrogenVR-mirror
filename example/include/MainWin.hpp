@@ -16,6 +16,37 @@ class MainWin : public AbstractMainWin
 {
 	Q_OBJECT
   public:
+	class State : public AbstractState
+	{
+	  public:
+		State(){};
+		State(State const& other)
+		    : exposure(other.exposure)
+		    , dynamicrange(other.dynamicrange){};
+		State(State&& other)
+		    : exposure(other.exposure)
+		    , dynamicrange(other.dynamicrange){};
+		virtual void readFromDataStream(QDataStream& stream) override
+		{
+			stream >> exposure;
+			stream >> dynamicrange;
+			stream >> yaw;
+			stream >> pitch;
+		};
+		virtual void writeInDataStream(QDataStream& stream) override
+		{
+			stream << exposure;
+			stream << dynamicrange;
+			stream << yaw;
+			stream << pitch;
+		};
+
+		float exposure;
+		float dynamicrange;
+		float yaw;
+		float pitch;
+	};
+
 	MainWin() = default;
 	~MainWin();
 
@@ -41,6 +72,27 @@ class MainWin : public AbstractMainWin
 	virtual void applyPostProcShaderParams(
 	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const override;
+
+	virtual AbstractState* constructNewState() const override
+	{
+		return new MainWin::State;
+	};
+	virtual void readState(AbstractState const& s) override
+	{
+		auto const& state = dynamic_cast<State const&>(s);
+		toneMappingModel->exposure     = state.exposure;
+		toneMappingModel->dynamicrange = state.dynamicrange;
+		yaw = state.yaw;
+		pitch = state.pitch;
+	};
+	virtual void writeState(AbstractState& s) override
+	{
+		auto& state = dynamic_cast<State&>(s);
+		state.exposure     = toneMappingModel->exposure;
+		state.dynamicrange = toneMappingModel->dynamicrange;
+		state.yaw = yaw;
+		state.pitch = pitch;
+	};
 
   private:
 	ShaderProgram sbShader;

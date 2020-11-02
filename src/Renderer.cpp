@@ -24,6 +24,11 @@ Renderer::Renderer(AbstractMainWin& window, VRHandler& vrHandler)
     : window(window)
     , vrHandler(vrHandler)
 {
+	if(!QSettings().value("network/server").toBool())
+	{
+		angleShiftMat.rotate(QSettings().value("network/angleshift").toInt(),
+		                     QVector3D(0.f, 1.f, 0.f));
+	}
 }
 
 void Renderer::init()
@@ -216,8 +221,8 @@ void Renderer::vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
                                   bool debug, bool debugInHeadset)
 {
 	GLHandler::glf().glClear(renderPath.clearMask);
-	renderPath.camera->update();
-	dbgCamera->update();
+	renderPath.camera->update(angleShiftMat);
+	dbgCamera->update(angleShiftMat);
 
 	if(debug && debugInHeadset)
 	{
@@ -330,8 +335,8 @@ void Renderer::renderFrame()
 					pair.second.camera->setProj(overrProj);
 					pair.second.camera->setView(overrView * viewBack);
 				}
-				pair.second.camera->update2D();
-				dbgCamera->update();
+				pair.second.camera->update2D(angleShiftMat);
+				dbgCamera->update(angleShiftMat);
 				if(renderingCamIsDebug)
 				{
 					dbgCamera->uploadMatrices();

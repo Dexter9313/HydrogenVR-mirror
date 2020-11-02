@@ -182,12 +182,9 @@ void MainWin::initScene()
 
 void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 {
-	if(networkManager.isServer())
-	{
-		QVector3D lookDir(-cosf(yaw) * cosf(pitch), -sinf(yaw) * cosf(pitch),
-		                  sinf(pitch));
-		camera.setView({1, 1, 1}, lookDir, {0, 0, 1});
-	}
+	QVector3D lookDir(-cosf(yaw) * cosf(pitch), -sinf(yaw) * cosf(pitch),
+	                  sinf(pitch));
+	camera.setView({1, 1, 1}, lookDir, {0, 0, 1});
 
 	Controller const* cont(vrHandler->getController(Side::LEFT));
 	if(cont == nullptr)

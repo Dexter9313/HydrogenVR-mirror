@@ -264,6 +264,10 @@ class AbstractMainWin : public QWindow
 	 */
 	virtual void updateScene(BasicCamera& camera, QString const& pathId) = 0;
 
+	virtual AbstractState* constructNewState() const { return nullptr; };
+	virtual void readState(AbstractState const& /*s*/){};
+	virtual void writeState(AbstractState& /*s*/){};
+
   public:
 	/**
 	 * @brief Gets called in the main loop during each rendering.
@@ -326,7 +330,7 @@ class AbstractMainWin : public QWindow
 	 * @brief The engine's only @ref Renderer.
 	 */
 	Renderer renderer;
-	NetworkManager networkManager;
+	NetworkManager* networkManager = nullptr;
 	/**
 	 * @brief Last frame time to render in seconds.
 	 *

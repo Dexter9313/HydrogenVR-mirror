@@ -109,7 +109,7 @@ class DebugCamera : public BasicCamera
 	 *
 	 * See BasicCamera#update.
 	 */
-	virtual void update() override;
+	virtual void update(QMatrix4x4 const& angleShiftMat) override;
 	/**
 	 * @brief Render's the @p cam's frustum mesh.
 	 */

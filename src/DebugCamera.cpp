@@ -50,16 +50,16 @@ DebugCamera::DebugCamera(VRHandler const& vrHandler)
 	camMesh.setVertices(vertices, camMeshShader, {{"position", 3}}, elements);
 }
 
-void DebugCamera::update()
+void DebugCamera::update(QMatrix4x4 const& angleShiftMat)
 {
 	// act as a 2D camera if we debug from screen only
 	if(!QSettings().value("debugcamera/debuginheadset").toBool())
 	{
-		BasicCamera::update2D();
+		BasicCamera::update2D(angleShiftMat);
 	}
 	else
 	{
-		BasicCamera::update();
+		BasicCamera::update(angleShiftMat);
 	}
 }
 

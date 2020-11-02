@@ -427,6 +427,8 @@ void AbstractMainWin::initializeGL()
 	setVR(QSettings().value("vr/enabled").toBool());
 	// Init libraries
 	initLibraries();
+	// Init NetworkManager
+	networkManager = new NetworkManager(constructNewState());
 
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
 	         << format().minorVersion() << '\n';
@@ -538,6 +540,20 @@ void AbstractMainWin::paintGL()
 		}
 	}
 
+	auto* nState(networkManager->getNetworkedState());
+	if(nState != nullptr)
+	{
+		if(networkManager->isServer())
+		{
+			writeState(*nState);
+		}
+		else
+		{
+			readState(*nState);
+		}
+		networkManager->update(frameTiming);
+	}
+
 	toneMappingModel->autoUpdateExposure(
 	    renderer.getLastFrameAverageLuminance(), frameTiming);
 
@@ -554,10 +570,6 @@ void AbstractMainWin::paintGL()
 	// let user update before rendering
 	for(auto const& pair : renderer.sceneRenderPipeline)
 	{
-		QMatrix4x4 view(pair.second.camera->getView());
-		networkManager.update(frameTiming, view);
-		pair.second.camera->setView(view);
-
 		updateScene(*pair.second.camera, pair.first);
 	}
 	PythonQtHandler::evalScript(
@@ -614,6 +626,7 @@ void AbstractMainWin::paintGL()
 
 AbstractMainWin::~AbstractMainWin()
 {
+	delete networkManager;
 	delete toneMappingModel;
 	GLHandler::deleteRenderTarget(bloomTargets[0]);
 	GLHandler::deleteRenderTarget(bloomTargets[1]);
