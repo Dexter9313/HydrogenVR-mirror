@@ -81,7 +81,7 @@ class MainWin : public AbstractMainWin
 		yaw                            = state.yaw;
 		pitch                          = state.pitch;
 	};
-	virtual void writeState(AbstractState& s) override
+	virtual void writeState(AbstractState& s) const override
 	{
 		auto& state        = dynamic_cast<State&>(s);
 		state.exposure     = toneMappingModel->exposure;

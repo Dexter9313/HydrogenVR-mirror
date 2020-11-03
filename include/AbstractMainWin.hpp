@@ -266,7 +266,7 @@ class AbstractMainWin : public QWindow
 
 	virtual AbstractState* constructNewState() const { return nullptr; };
 	virtual void readState(AbstractState const& /*s*/){};
-	virtual void writeState(AbstractState& /*s*/){};
+	virtual void writeState(AbstractState& /*s*/) const {};
 
   public:
 	/**
