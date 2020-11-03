@@ -26,12 +26,12 @@
 class AsyncMesh
 {
   public:
-	AsyncMesh(QString const& path, GLMesh&& defaultMesh,
-	          GLShaderProgram&& shader);
+	AsyncMesh(QString const& path, GLMesh&& defaultMesh);
 	bool isLoaded() const { return loaded; };
 	float getBoundingSphereRadius() const { return boundingSphereRadius; };
 	GLMesh const& getDefaultMesh() const { return defaultMesh; };
-	void updateMesh();
+	// call regularly (especially at least before using getMesh)
+	void updateMesh(GLShaderProgram const& shader);
 	GLMesh const& getMesh();
 	~AsyncMesh();
 
@@ -48,8 +48,6 @@ class AsyncMesh
 	float boundingSphereRadius = 0.f;
 
 	std::vector<AssetLoader::MeshDescriptor>* meshDescriptors;
-
-	GLShaderProgram shader;
 
 	// never wait for futures to finish within destructor ! if you need to
 	// release resources and the future didn't finish, push it here and other

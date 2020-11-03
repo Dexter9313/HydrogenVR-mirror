@@ -27,10 +27,8 @@ QList<QPair<QFuture<void>, std::vector<AssetLoader::MeshDescriptor>*>>&
 	return waitingForDeletion;
 }
 
-AsyncMesh::AsyncMesh(QString const& path, GLMesh&& defaultMesh,
-                     GLShaderProgram&& shader)
+AsyncMesh::AsyncMesh(QString const& path, GLMesh&& defaultMesh)
     : defaultMesh(std::move(defaultMesh))
-    , shader(std::move(shader))
 {
 	if(path.isEmpty())
 	{
@@ -45,7 +43,7 @@ AsyncMesh::AsyncMesh(QString const& path, GLMesh&& defaultMesh,
     });
 }
 
-void AsyncMesh::updateMesh()
+void AsyncMesh::updateMesh(GLShaderProgram const& shader)
 {
 	if(emptyPath)
 	{
@@ -93,7 +91,6 @@ GLMesh const& AsyncMesh::getMesh()
 		return defaultMesh;
 	}
 
-	updateMesh();
 	if(loaded)
 	{
 		return *mesh;
