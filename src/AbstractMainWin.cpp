@@ -16,14 +16,25 @@ AbstractMainWin::AbstractMainWin()
 	m_context.create();
 }
 
-double AbstractMainWin::getAngleShift() const
+double AbstractMainWin::getHorizontalAngleShift() const
 {
 	return QSettings().value("network/angleshift").toDouble();
 }
 
-void AbstractMainWin::setAngleShift(double angleShift)
+double AbstractMainWin::getVerticalAngleShift() const
+{
+	return QSettings().value("network/vangleshift").toDouble();
+}
+
+void AbstractMainWin::setHorizontalAngleShift(double angleShift)
 {
 	QSettings().setValue("network/angleshift", angleShift);
+	renderer.updateAngleShiftMat();
+}
+
+void AbstractMainWin::setVerticalAngleShift(double angleShift)
+{
+	QSettings().setValue("network/vangleshift", angleShift);
 	renderer.updateAngleShiftMat();
 }
 

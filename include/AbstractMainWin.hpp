@@ -91,10 +91,17 @@ class AbstractMainWin : public QWindow
 {
 	Q_OBJECT
 	/**
-	 * @brief Angle shift in degrees compared to server if current instance is a
-	 * network client.
+	 * @brief Horizontal angle shift in degrees compared to server if current
+	 * instance is a network client.
 	 */
-	Q_PROPERTY(double angleShift READ getAngleShift WRITE setAngleShift)
+	Q_PROPERTY(double horizontalAngleShift READ getHorizontalAngleShift WRITE
+	               setHorizontalAngleShift)
+	/**
+	 * @brief Vertical angle shift in degrees compared to server if current
+	 * instance is a network client.
+	 */
+	Q_PROPERTY(double verticalAngleShift READ getVerticalAngleShift WRITE
+	               setVerticalAngleShift)
 	/**
 	 * @brief Wether the window is displayed in full screen or not.
 	 *
@@ -128,13 +135,21 @@ class AbstractMainWin : public QWindow
 	AbstractMainWin();
 
 	/**
-	 * @getter{angleshift}
+	 * @getter{horizontalAngleShift}
 	 */
-	double getAngleShift() const;
+	double getHorizontalAngleShift() const;
 	/**
-	 * @setter{angleshift}
+	 * @getter{verticalAngleShift}
 	 */
-	void setAngleShift(double angleShift);
+	double getVerticalAngleShift() const;
+	/**
+	 * @setter{horizontalAngleShift}
+	 */
+	void setHorizontalAngleShift(double angleShift);
+	/**
+	 * @setter{verticalAngleShift}
+	 */
+	void setVerticalAngleShift(double angleShift);
 	/**
 	 * @getter{fullscreen}
 	 */

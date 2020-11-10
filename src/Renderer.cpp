@@ -245,6 +245,9 @@ void Renderer::updateAngleShiftMat()
 	angleShiftMat = QMatrix4x4();
 	if(!QSettings().value("network/server").toBool())
 	{
+		angleShiftMat.rotate(
+		    QSettings().value("network/vangleshift").toDouble(),
+		    QVector3D(-1.f, 0.f, 0.f));
 		angleShiftMat.rotate(QSettings().value("network/angleshift").toDouble(),
 		                     QVector3D(0.f, 1.f, 0.f));
 	}
