@@ -16,6 +16,28 @@ AbstractMainWin::AbstractMainWin()
 	m_context.create();
 }
 
+double AbstractMainWin::getHorizontalFOV() const
+{
+	return renderer.getHorizontalFOV();
+}
+
+double AbstractMainWin::getVerticalFOV() const
+{
+	return renderer.getVerticalFOV();
+}
+
+void AbstractMainWin::setHorizontalFOV(double fov)
+{
+	QSettings().setValue("graphics/hfov", fov);
+	renderer.updateFOV();
+}
+
+void AbstractMainWin::setVerticalFOV(double fov)
+{
+	QSettings().setValue("graphics/vfov", fov);
+	renderer.updateFOV();
+}
+
 double AbstractMainWin::getHorizontalAngleShift() const
 {
 	return QSettings().value("network/angleshift").toDouble();

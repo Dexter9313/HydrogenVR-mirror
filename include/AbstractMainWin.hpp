@@ -90,6 +90,9 @@
 class AbstractMainWin : public QWindow
 {
 	Q_OBJECT
+	Q_PROPERTY(float horizontalFOV READ getHorizontalFOV()
+	               WRITE setHorizontalFOV)
+	Q_PROPERTY(float verticalFOV READ getVerticalFOV() WRITE setVerticalFOV)
 	/**
 	 * @brief Horizontal angle shift in degrees compared to server if current
 	 * instance is a network client.
@@ -134,6 +137,22 @@ class AbstractMainWin : public QWindow
 	 */
 	AbstractMainWin();
 
+	/**
+	 * @getter{horizontalFOV}
+	 */
+	double getHorizontalFOV() const;
+	/**
+	 * @getter{verticalFOV}
+	 */
+	double getVerticalFOV() const;
+	/**
+	 * @setter{horizontalFOV}
+	 */
+	void setHorizontalFOV(double fov);
+	/**
+	 * @setter{verticalFOV}
+	 */
+	void setVerticalFOV(double fov);
 	/**
 	 * @getter{horizontalAngleShift}
 	 */

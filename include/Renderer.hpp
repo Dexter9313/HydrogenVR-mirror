@@ -144,6 +144,7 @@ class Renderer
 	 * Will also call @ref VRHandler#reloadPostProcessingTargets if necessary.
 	 */
 	void reloadPostProcessingTargets();
+	void updateFOV();
 	void updateAngleShiftMat();
 	void renderVRControls() const;
 	void renderFrame();
