@@ -210,6 +210,12 @@ class AbstractMainWin : public QWindow
 	 * @toggle{wireframe}
 	 */
 	void toggleWireframe();
+	void toggleCalibrationCompass() { renderer.toggleCalibrationCompass(); };
+	void toggleCalibrationCompassMode()
+	{
+		CalibrationCompass::forceProtractorMode()
+		    = !CalibrationCompass::forceProtractorMode();
+	};
 	/**
 	 * @brief Reloads all shaders managed by ShadersLoader.
 	 */

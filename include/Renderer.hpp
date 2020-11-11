@@ -23,6 +23,7 @@
 #include <utility>
 
 #include "BasicCamera.hpp"
+#include "CalibrationCompass.hpp"
 #include "DebugCamera.hpp"
 #include "vr/VRHandler.hpp"
 
@@ -146,6 +147,7 @@ class Renderer
 	void reloadPostProcessingTargets();
 	void updateFOV();
 	void updateAngleShiftMat();
+	void toggleCalibrationCompass();
 	void renderVRControls() const;
 	void renderFrame();
 	void clean();
@@ -207,6 +209,9 @@ class Renderer
 	GLHandler::RenderTarget multisampledTarget                   = {};
 	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};
 	float lastFrameAverageLuminance                              = 0.f;
+
+	bool renderCompass          = false;
+	CalibrationCompass* compass = nullptr;
 };
 
 template <class T>

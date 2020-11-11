@@ -242,6 +242,9 @@ void Renderer::updateFOV()
 		pair.second.camera->setPerspectiveProj(vFOV, hFOV / vFOV);
 	}
 	dbgCamera->setPerspectiveProj(vFOV, hFOV / vFOV);
+
+	CalibrationCompass::serverHorizontalFOV()     = getHorizontalFOV();
+	CalibrationCompass::serverRenderTargetWidth() = getSize().width();
 }
 
 void Renderer::updateAngleShiftMat()
@@ -254,6 +257,21 @@ void Renderer::updateAngleShiftMat()
 		    QVector3D(-1.f, 0.f, 0.f));
 		angleShiftMat.rotate(QSettings().value("network/angleshift").toDouble(),
 		                     QVector3D(0.f, 1.f, 0.f));
+	}
+}
+
+void Renderer::toggleCalibrationCompass()
+{
+	if(!renderCompass)
+	{
+		compass       = new CalibrationCompass;
+		renderCompass = true;
+	}
+	else
+	{
+		delete compass;
+		compass       = nullptr;
+		renderCompass = false;
 	}
 }
 
@@ -407,6 +425,10 @@ void Renderer::renderFrame()
 				{
 					dbgCamera->renderCamera(pair.second.camera);
 				}
+				if(renderCompass)
+				{
+					compass->render(angleShiftMat);
+				}
 				if(wireframe)
 				{
 					GLHandler::endWireframe();
@@ -518,6 +540,8 @@ void Renderer::clean()
 	{
 		return;
 	}
+
+	delete compass;
 
 	for(auto const& pair : sceneRenderPipeline_)
 	{
