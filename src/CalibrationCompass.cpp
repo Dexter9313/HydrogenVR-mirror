@@ -36,6 +36,32 @@ unsigned int& CalibrationCompass::serverRenderTargetWidth()
 	return serverRenderTargetWidth;
 }
 
+double CalibrationCompass::getCurrentTickResolution()
+{
+	double doubleAngle;
+	if(forceProtractorMode())
+	{
+		doubleAngle = 0.1;
+	}
+	else
+	{
+		//// compute angle of furthest left and right pixels
+		//// screen size := 1 := sum(dw)
+		// distance of camera to screen
+		const double D(0.5 / tan(serverHorizontalFOV() * M_PI / 360.0));
+		// length of a pixel on screen
+		const double dw(1.0 / serverRenderTargetWidth());
+		// length from far right of screen to camera
+		const double C(sqrt(D * D + 0.5 * 0.5));
+		// length from far right pixel's left to camera
+		const double E(sqrt(D * D + (0.5 - dw) * (0.5 - dw)));
+		// Al-Kashi
+		const double cosAngle((C * C + E * E - dw * dw) / (2.0 * C * E));
+		doubleAngle = acos(cosAngle) * 360.0 / M_PI;
+	}
+	return doubleAngle;
+}
+
 CalibrationCompass::CalibrationCompass()
     : shader("default")
 {
@@ -75,28 +101,7 @@ void CalibrationCompass::render(QMatrix4x4 const& angleShiftMat)
 		renderCircle(angleShiftMat, lat);
 	}
 
-	double doubleAngle;
-	if(forceProtractorMode())
-	{
-		doubleAngle = 0.1;
-	}
-	else
-	{
-		//// compute angle of furthest left and right pixels
-		//// screen size := 1 := sum(dw)
-		// distance of camera to screen
-		const double D(0.5 / tan(serverHorizontalFOV() * M_PI / 360.0));
-		// length of a pixel on screen
-		const double dw(1.0 / serverRenderTargetWidth());
-		// length from far right of screen to camera
-		const double C(sqrt(D * D + 0.5 * 0.5));
-		// length from far right pixel's left to camera
-		const double E(sqrt(D * D + (0.5 - dw) * (0.5 - dw)));
-		// Al-Kashi
-		const double cosAngle((C * C + E * E - dw * dw) / (2.0 * C * E));
-		doubleAngle = acos(cosAngle) * 360.0 / M_PI;
-	}
-
+	double doubleAngle(getCurrentTickResolution());
 	renderCompassTicks(angleShiftMat, 1.3, 100.0 * doubleAngle, true);
 	renderCompassTicks(angleShiftMat, 1.0, 10.0 * doubleAngle);
 	renderCompassTicks(angleShiftMat, 0.7, 1.0 * doubleAngle);

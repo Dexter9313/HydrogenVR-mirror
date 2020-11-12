@@ -33,6 +33,7 @@ class CalibrationCompass
 	static bool& forceProtractorMode();
 	static float& serverHorizontalFOV();
 	static unsigned int& serverRenderTargetWidth();
+	static double getCurrentTickResolution();
 	~CalibrationCompass();
 
 	float exposure     = 1.f;

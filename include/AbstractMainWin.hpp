@@ -216,6 +216,10 @@ class AbstractMainWin : public QWindow
 		CalibrationCompass::forceProtractorMode()
 		    = !CalibrationCompass::forceProtractorMode();
 	};
+	double getCalibrationCompassTickResolution()
+	{
+		return CalibrationCompass::getCurrentTickResolution();
+	};
 	/**
 	 * @brief Reloads all shaders managed by ShadersLoader.
 	 */
