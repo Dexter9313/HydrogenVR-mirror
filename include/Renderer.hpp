@@ -148,6 +148,19 @@ class Renderer
 	void reloadPostProcessingTargets();
 	void updateFOV();
 	void updateAngleShiftMat();
+	bool getCalibrationCompass() const { return renderCompass; };
+	CalibrationCompass* getCalibrationCompassPtr() { return compass; };
+	CalibrationCompass const* getCalibrationCompassPtr() const
+	{
+		return compass;
+	};
+	void setCalibrationCompass(bool on)
+	{
+		if(on != renderCompass)
+		{
+			toggleCalibrationCompass();
+		}
+	};
 	void toggleCalibrationCompass();
 	void renderVRControls() const;
 	void renderFrame();

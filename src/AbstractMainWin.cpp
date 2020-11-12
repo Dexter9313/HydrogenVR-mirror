@@ -619,6 +619,14 @@ void AbstractMainWin::paintGL()
 	PythonQtHandler::evalScript(
 	    "if \"updateScene\" in dir():\n\tupdateScene()");
 
+	if(renderer.getCalibrationCompass())
+	{
+		renderer.getCalibrationCompassPtr()->exposure
+		    = toneMappingModel->exposure;
+		renderer.getCalibrationCompassPtr()->dynamicrange
+		    = toneMappingModel->dynamicrange;
+	}
+
 	// Render frame
 	renderer.renderFrame();
 
