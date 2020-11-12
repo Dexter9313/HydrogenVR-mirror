@@ -55,7 +55,8 @@ class Renderer
 	void init();
 	void windowResized();
 	QSize getSize() const;
-	float getAspectRatio() const;
+	float getRenderTargetAspectRatio() const;
+	float getAspectRatioFromFOV() const;
 	float getVerticalFOV() const { return vFOV; };
 	float getHorizontalFOV() const { return hFOV; };
 	/**
