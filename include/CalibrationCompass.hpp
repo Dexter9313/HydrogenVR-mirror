@@ -30,9 +30,13 @@ class CalibrationCompass
 	CalibrationCompass();
 	void render(QMatrix4x4 const& angleShiftMat);
 
+	static double& forcedTickResolution();
 	static bool& forceProtractorMode();
 	static float& serverHorizontalFOV();
 	static unsigned int& serverRenderTargetWidth();
+	static double
+	    getDoubleFarRightPixelSubtendedAngle(float horizontalFOV,
+	                                         unsigned int renderTargetWidth);
 	static double getCurrentTickResolution();
 	~CalibrationCompass();
 

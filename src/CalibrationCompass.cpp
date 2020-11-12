@@ -18,6 +18,12 @@
 
 #include "CalibrationCompass.hpp"
 
+double& CalibrationCompass::forcedTickResolution()
+{
+	static double forcedTickResolution = 0.0;
+	return forcedTickResolution;
+}
+
 bool& CalibrationCompass::forceProtractorMode()
 {
 	static bool forceProtractorMode = false;
@@ -36,30 +42,41 @@ unsigned int& CalibrationCompass::serverRenderTargetWidth()
 	return serverRenderTargetWidth;
 }
 
+double CalibrationCompass::getDoubleFarRightPixelSubtendedAngle(
+    float horizontalFOV, unsigned int renderTargetWidth)
+{
+	//// compute angle of furthest left and right pixels
+	//// screen size := 1 := sum(dw)
+	// distance of camera to screen
+	const double D(0.5 / tan(horizontalFOV * M_PI / 360.0));
+	// length of a pixel on screen
+	const double dw(1.0 / renderTargetWidth);
+	// length from far right of screen to camera
+	const double C(sqrt(D * D + 0.5 * 0.5));
+	// length from far right pixel's left to camera
+	const double E(sqrt(D * D + (0.5 - dw) * (0.5 - dw)));
+	// Al-Kashi
+	const double cosAngle((C * C + E * E - dw * dw) / (2.0 * C * E));
+	return acos(cosAngle) * 360.0 / M_PI;
+}
+
 double CalibrationCompass::getCurrentTickResolution()
 {
-	double doubleAngle;
-	if(forceProtractorMode())
+	double tickRes;
+	if(forcedTickResolution() != 0.0)
 	{
-		doubleAngle = 0.1;
+		tickRes = forcedTickResolution();
+	}
+	else if(forceProtractorMode())
+	{
+		tickRes = 0.1;
 	}
 	else
 	{
-		//// compute angle of furthest left and right pixels
-		//// screen size := 1 := sum(dw)
-		// distance of camera to screen
-		const double D(0.5 / tan(serverHorizontalFOV() * M_PI / 360.0));
-		// length of a pixel on screen
-		const double dw(1.0 / serverRenderTargetWidth());
-		// length from far right of screen to camera
-		const double C(sqrt(D * D + 0.5 * 0.5));
-		// length from far right pixel's left to camera
-		const double E(sqrt(D * D + (0.5 - dw) * (0.5 - dw)));
-		// Al-Kashi
-		const double cosAngle((C * C + E * E - dw * dw) / (2.0 * C * E));
-		doubleAngle = acos(cosAngle) * 360.0 / M_PI;
+		tickRes = getDoubleFarRightPixelSubtendedAngle(
+		    serverHorizontalFOV(), serverRenderTargetWidth());
 	}
-	return doubleAngle;
+	return tickRes;
 }
 
 CalibrationCompass::CalibrationCompass()

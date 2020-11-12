@@ -162,6 +162,12 @@ class Renderer
 		}
 	};
 	void toggleCalibrationCompass();
+	double getDoubleFarRightPixelSubtendedAngle()
+	{
+		return CalibrationCompass::getDoubleFarRightPixelSubtendedAngle(
+		    hFOV, getSize().width());
+	};
+
 	void renderVRControls() const;
 	void renderFrame();
 	void clean();

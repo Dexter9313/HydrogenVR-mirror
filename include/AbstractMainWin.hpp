@@ -220,6 +220,14 @@ class AbstractMainWin : public QWindow
 	{
 		return CalibrationCompass::getCurrentTickResolution();
 	};
+	double getDoubleFarRightPixelSubtendedAngle()
+	{
+		return renderer.getDoubleFarRightPixelSubtendedAngle();
+	};
+	void setCalibrationCompassTickResolution(double tickRes)
+	{
+		CalibrationCompass::forcedTickResolution() = tickRes;
+	}
 	/**
 	 * @brief Reloads all shaders managed by ShadersLoader.
 	 */
