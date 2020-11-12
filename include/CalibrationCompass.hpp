@@ -35,6 +35,9 @@ class CalibrationCompass
 	static unsigned int& serverRenderTargetWidth();
 	~CalibrationCompass();
 
+	float exposure     = 1.f;
+	float dynamicrange = 1.f;
+
   private:
 	GLShaderProgram shader;
 	GLMesh circle;

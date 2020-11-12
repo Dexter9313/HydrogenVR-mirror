@@ -66,6 +66,9 @@ void CalibrationCompass::render(QMatrix4x4 const& angleShiftMat)
 {
 	GLHandler::glf().glDisable(GL_DEPTH_TEST);
 
+	shader.setUniform("exposure", exposure);
+	shader.setUniform("dynamicrange", dynamicrange);
+
 	// NOLINTNEXTLINE(cert-flp30-c, clang-analyzer-security.FloatLoopCounter)
 	for(float lat(-M_PI_2); lat < M_PI_2; lat += 10.0 * M_PI / 180.0)
 	{
@@ -139,6 +142,8 @@ void CalibrationCompass::renderCompassTicks(QMatrix4x4 const& angleShiftMat,
 			model.scale(0.1);
 			model.rotate(i, QVector3D(0.f, -1.f, 0.f));
 			billboards[j]->getModel() = angleShiftMat * model;
+			billboards[j]->getShader().setUniform("exposure", exposure);
+			billboards[j]->getShader().setUniform("dynamicrange", dynamicrange);
 			billboards[j]->render(GLHandler::GeometricSpace::CAMERA);
 		}
 		++j;
