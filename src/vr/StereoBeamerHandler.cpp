@@ -13,7 +13,8 @@ bool StereoBeamerHandler::init(Renderer const& renderer)
 
 QSize StereoBeamerHandler::getEyeRenderTargetSize() const
 {
-	return {1000, 1000};
+	auto fullRTSize(renderer->getSize());
+	return {fullRTSize.width() / 2, fullRTSize.height()};
 }
 
 float StereoBeamerHandler::getFrameTiming() const
