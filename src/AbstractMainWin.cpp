@@ -697,8 +697,8 @@ AbstractMainWin::~AbstractMainWin()
 
 void AbstractMainWin::reloadBloomTargets()
 {
-	GLHandler::deleteRenderTarget(bloomTargets[0]);
-	GLHandler::deleteRenderTarget(bloomTargets[1]);
+	// GLHandler::deleteRenderTarget(bloomTargets[0]);
+	// GLHandler::deleteRenderTarget(bloomTargets[1]);
 	if(!vrHandler->isEnabled())
 	{
 		bloomTargets[0]
