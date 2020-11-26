@@ -20,6 +20,8 @@ class VRHandler : public QObject
 	Q_PROPERTY(QMatrix4x4 hmdposmatrix READ getHMDPosMatrix)
 	Q_PROPERTY(Side currentrenderingeye READ getCurrentRenderingEye)
 	Q_PROPERTY(float frametiming READ getFrameTiming)
+	Q_PROPERTY(double stereomultiplier READ getStereoMultiplier WRITE
+	               setStereoMultiplier)
 
   public: // public types
 	enum class EventType
@@ -55,6 +57,18 @@ class VRHandler : public QObject
 	virtual QSize getEyeRenderTargetSize() const = 0;
 	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };
 	Side getCurrentRenderingEye() const { return currentRenderingEye; };
+	/**
+	 * @getter{stereomultiplier}
+	 */
+	double getStereoMultiplier() const { return stereoMultiplier; };
+	/**
+	 * @setter{stereomultiplier}
+	 */
+	void setStereoMultiplier(double sm)
+	{
+		QSettings().setValue("vr/stereomultiplier", sm);
+		stereoMultiplier = sm;
+	};
 	virtual float getFrameTiming() const                              = 0;
 	virtual const Controller* getController(Side side) const          = 0;
 	virtual const Hand* getHand(Side side) const                      = 0;
@@ -87,6 +101,9 @@ class VRHandler : public QObject
 	virtual void resetPos()                                              = 0;
 
   protected:
+	double stereoMultiplier
+	    = QSettings().value("vr/stereomultiplier").toDouble();
+
 	QMatrix4x4 hmdPosMatrix;
 	Side currentRenderingEye = Side::LEFT;
 	QString sideToStr(Side side) const
