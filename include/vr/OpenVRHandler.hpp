@@ -24,6 +24,7 @@ class OpenVRHandler : public VRHandler
 	Q_OBJECT
   public:
 	OpenVRHandler() = default;
+	virtual QString getDriverName() const override { return "OpenVR"; }
 	virtual bool isEnabled() const override { return vr_pointer != nullptr; }
 	virtual bool init() override;
 	virtual QSize getEyeRenderTargetSize() const override;

@@ -16,6 +16,7 @@ class Hand;
 class VRHandler : public QObject
 {
 	Q_OBJECT
+	Q_PROPERTY(QString drivername READ getDriverName)
 	Q_PROPERTY(QSize eyerendertargetsize READ getEyeRenderTargetSize)
 	Q_PROPERTY(QMatrix4x4 hmdposmatrix READ getHMDPosMatrix)
 	Q_PROPERTY(Side currentrenderingeye READ getCurrentRenderingEye)
@@ -54,6 +55,7 @@ class VRHandler : public QObject
 	VRHandler()                                  = default;
 	virtual bool isEnabled() const               = 0;
 	virtual bool init()                          = 0;
+	virtual QString getDriverName() const = 0;
 	virtual QSize getEyeRenderTargetSize() const = 0;
 	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };
 	Side getCurrentRenderingEye() const { return currentRenderingEye; };
