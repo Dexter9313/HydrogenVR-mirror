@@ -1,7 +1,10 @@
 #include "vr/StereoBeamerHandler.hpp"
 
-bool StereoBeamerHandler::init()
+#include "Renderer.hpp"
+
+bool StereoBeamerHandler::init(Renderer const& renderer)
 {
+	VRHandler::init(renderer);
 	reloadPostProcessingTargets();
 	hmdPosMatrix = QMatrix4x4();
 	enabled      = true;
@@ -133,11 +136,14 @@ QMatrix4x4 StereoBeamerHandler::getEyeViewMatrix(Side eye) const
 	return res;
 }
 
-QMatrix4x4 StereoBeamerHandler::getProjectionMatrix(
-    Side /*eye*/, QMatrix4x4 const& defaultProjMatrix, float /*nearPlan*/,
-    float /*farPlan*/) const
+QMatrix4x4 StereoBeamerHandler::getProjectionMatrix(Side /*eye*/,
+                                                    float nearPlan,
+                                                    float farPlan) const
 {
-	return defaultProjMatrix;
+	QMatrix4x4 result;
+	result.perspective(renderer->getVerticalFOV(),
+	                   renderer->getAspectRatioFromFOV(), nearPlan, farPlan);
+	return result;
 }
 
 void StereoBeamerHandler::resetPos() {}

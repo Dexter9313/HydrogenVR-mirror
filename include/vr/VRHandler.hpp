@@ -8,6 +8,7 @@
 
 class Controller;
 class Hand;
+class Renderer;
 
 /** @ingroup pycall
  *
@@ -52,10 +53,14 @@ class VRHandler : public QObject
 	};
 
   public:
-	VRHandler()                                  = default;
-	virtual bool isEnabled() const               = 0;
-	virtual bool init()                          = 0;
+	VRHandler()                           = default;
 	virtual QString getDriverName() const = 0;
+	virtual bool isEnabled() const        = 0;
+	virtual bool init(Renderer const& renderer)
+	{
+		this->renderer = &renderer;
+		return true;
+	};
 	virtual QSize getEyeRenderTargetSize() const = 0;
 	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };
 	Side getCurrentRenderingEye() const { return currentRenderingEye; };
@@ -95,14 +100,14 @@ class VRHandler : public QObject
 	virtual ~VRHandler(){};
 
   public slots:
-	virtual QMatrix4x4 getEyeViewMatrix(Side eye) const                  = 0;
-	virtual QMatrix4x4 getProjectionMatrix(Side eye,
-	                                       QMatrix4x4 const& defaultProjMatrix,
-	                                       float nearPlan = 0.1f,
-	                                       float farPlan  = 100.0f) const = 0;
-	virtual void resetPos()                                              = 0;
+	virtual QMatrix4x4 getEyeViewMatrix(Side eye) const                    = 0;
+	virtual QMatrix4x4 getProjectionMatrix(Side eye, float nearPlan = 0.1f,
+	                                       float farPlan = 10000.0f) const = 0;
+	virtual void resetPos()                                                = 0;
 
   protected:
+	Renderer const* renderer;
+
 	double stereoMultiplier
 	    = QSettings().value("vr/stereomultiplier").toDouble();
 

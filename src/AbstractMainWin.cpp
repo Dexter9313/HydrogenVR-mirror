@@ -112,7 +112,7 @@ void AbstractMainWin::setVR(bool vr)
 	}
 	else if(!vrHandler->isEnabled() && vr)
 	{
-		if(vrHandler->init())
+		if(vrHandler->init(renderer))
 		{
 			vrHandler->resetPos();
 		}
