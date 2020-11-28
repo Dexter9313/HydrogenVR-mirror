@@ -76,8 +76,8 @@ class GLTexture
 		    : width(width)
 		    , internalFormat(internalFormat)
 		    , target(target){};
-		Tex1DProperties(unsigned int width, bool sRGB = true,
-		                GLenum target = GL_TEXTURE_1D)
+		explicit Tex1DProperties(unsigned int width, bool sRGB = true,
+		                         GLenum target = GL_TEXTURE_1D)
 		    : width(width)
 		    , internalFormat(sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8)
 		    , target(target){};
@@ -144,14 +144,14 @@ class GLTexture
 	};
 	struct TexCubemapProperties
 	{
-		TexCubemapProperties(unsigned int side,
-		                     GLint internalFormat = GL_SRGB8_ALPHA8,
-		                     GLenum target        = GL_TEXTURE_CUBE_MAP)
+		explicit TexCubemapProperties(unsigned int side,
+		                              GLint internalFormat = GL_SRGB8_ALPHA8,
+		                              GLenum target = GL_TEXTURE_CUBE_MAP)
 		    : side(side)
 		    , internalFormat(internalFormat)
 		    , target(target){};
-		TexCubemapProperties(unsigned int side, bool sRGB = true,
-		                     GLenum target = GL_TEXTURE_CUBE_MAP)
+		explicit TexCubemapProperties(unsigned int side, bool sRGB = true,
+		                              GLenum target = GL_TEXTURE_CUBE_MAP)
 		    : side(side)
 		    , internalFormat(sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8)
 		    , target(target){};
@@ -215,22 +215,23 @@ class GLTexture
 		other.doClean = false;
 	};
 
-	GLTexture(Tex1DProperties const& properties, Sampler const& sampler = {},
-	          Data const& data = {});
-	GLTexture(Tex2DProperties const& properties, Sampler const& sampler = {},
-	          Data const& data = {});
-	GLTexture(TexMultisampleProperties const& properties,
-	          Sampler const& sampler = {});
-	GLTexture(Tex3DProperties const& properties, Sampler const& sampler = {},
-	          Data const& data = {});
-	GLTexture(TexCubemapProperties const& properties,
-	          Sampler const& sampler = {}, DataArray<6> const& data = {});
+	explicit GLTexture(Tex1DProperties const& properties,
+	                   Sampler const& sampler = {}, Data const& data = {});
+	explicit GLTexture(Tex2DProperties const& properties,
+	                   Sampler const& sampler = {}, Data const& data = {});
+	explicit GLTexture(TexMultisampleProperties const& properties,
+	                   Sampler const& sampler = {});
+	explicit GLTexture(Tex3DProperties const& properties,
+	                   Sampler const& sampler = {}, Data const& data = {});
+	explicit GLTexture(TexCubemapProperties const& properties,
+	                   Sampler const& sampler   = {},
+	                   DataArray<6> const& data = {});
 
-	GLTexture(QImage const& image, bool sRGB = true);
-	GLTexture(const char* texturePath, bool sRGB = true);
-	GLTexture(std::array<QImage, 6> const& images, bool sRGB = true);
-	GLTexture(std::array<const char*, 6> const& texturesPaths,
-	          bool sRGB = true);
+	explicit GLTexture(QImage const& image, bool sRGB = true);
+	explicit GLTexture(const char* texturePath, bool sRGB = true);
+	explicit GLTexture(std::array<QImage, 6> const& images, bool sRGB = true);
+	explicit GLTexture(std::array<const char*, 6> const& texturesPaths,
+	                   bool sRGB = true);
 
 	// dangerous !
 	GLuint getGLTexture() const { return glTexture; };
