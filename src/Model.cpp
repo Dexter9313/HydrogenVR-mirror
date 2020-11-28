@@ -82,7 +82,7 @@ void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
 		     mesh.textures[AssetLoader::TextureType::SHININESS],
 		     mesh.textures[AssetLoader::TextureType::OPACITY],
 		     mesh.textures[AssetLoader::TextureType::LIGHTMAP],
-		     light.getShadowMap()});
+		     &light.getShadowMap()});
 		shader.setUniform("localTransform", mesh.transform);
 		GLHandler::setUpRender(shader, model * mesh.transform, geometricSpace);
 		mesh.mesh->render();
@@ -96,7 +96,7 @@ Model::~Model()
 		delete mesh.mesh;
 		for(auto pair : mesh.textures)
 		{
-			GLHandler::deleteTexture(pair.second);
+			delete pair.second;
 		}
 	}
 }

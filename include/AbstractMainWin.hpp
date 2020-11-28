@@ -375,7 +375,7 @@ class AbstractMainWin : public QWindow
 	 * processing.
 	 * @param shader The actual shader program.
 	 */
-	virtual std::vector<GLHandler::Texture> getPostProcessingUniformTextures(
+	virtual std::vector<GLTexture const*> getPostProcessingUniformTextures(
 	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const;
 
