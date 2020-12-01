@@ -433,12 +433,6 @@ class GLHandler : public QObject
 	static QColor linearTosRGB(QColor const& linear);
 
   private:
-	static QString
-	    getFullPreprocessedSource(QString const& path,
-	                              QMap<QString, QString> const& defines);
-	static GLuint loadShader(QString const& path, GLenum shaderType,
-	                         QMap<QString, QString> const& defines);
-
 	// object to screen transforms
 	// transform for any world object
 	static QMatrix4x4& fullTransform();
