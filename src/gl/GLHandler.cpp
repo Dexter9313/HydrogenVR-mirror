@@ -537,7 +537,10 @@ void GLHandler::useTextures(std::vector<GLTexture const*> const& textures)
 {
 	for(unsigned int i(0); i < textures.size(); ++i)
 	{
-		textures[i]->use(GL_TEXTURE0 + i);
+		if(textures[i] != nullptr)
+		{
+			textures[i]->use(GL_TEXTURE0 + i);
+		}
 	}
 }
 
