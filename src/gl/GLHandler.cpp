@@ -6,12 +6,6 @@ unsigned int& GLHandler::renderTargetCount()
 	return renderTargetCount;
 }
 
-unsigned int& GLHandler::PBOCount()
-{
-	static unsigned int PBOCount = 0;
-	return PBOCount;
-}
-
 QOpenGLFunctions_4_0_Core& GLHandler::glf()
 {
 	static QOpenGLFunctions_4_0_Core glf;
@@ -536,44 +530,6 @@ void GLHandler::useTextures(std::vector<GLTexture const*> const& textures)
 			textures[i]->use(GL_TEXTURE0 + i);
 		}
 	}
-}
-
-GLHandler::PixelBufferObject
-    GLHandler::newPixelBufferObject(unsigned int width, unsigned int height)
-{
-	++PBOCount();
-	PixelBufferObject result = {};
-	result.width             = width;
-	result.height            = height;
-
-	glf().glGenBuffers(1, &result.id);
-	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, result.id);
-	glf().glBufferData(GL_PIXEL_UNPACK_BUFFER, width * height * 4, nullptr,
-	                   GL_STREAM_DRAW);
-	result.mappedData = static_cast<unsigned char*>(
-	    glf().glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY));
-	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-	return result;
-}
-
-GLTexture* GLHandler::copyPBOToTex(PixelBufferObject const& pbo, bool sRGB)
-{
-	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo.id);
-	glf().glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-	// NOLINTNEXTLINE(hicpp-use-nullptr, modernize-use-nullptr)
-	auto result
-	    = new GLTexture(GLTexture::Tex2DProperties(pbo.width, pbo.height, sRGB),
-	                    {}, {static_cast<GLvoid*>(nullptr)});
-	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
-	return result;
-}
-
-void GLHandler::deletePixelBufferObject(PixelBufferObject const& pbo)
-{
-	--PBOCount();
-	glf().glDeleteBuffers(1, &pbo.id);
-	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 QColor GLHandler::sRGBToLinear(QColor const& srgb)

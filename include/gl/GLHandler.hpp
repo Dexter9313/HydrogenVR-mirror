@@ -21,6 +21,7 @@
 #include "utils.hpp"
 
 #include "gl/GLMesh.hpp"
+#include "gl/GLPixelBufferObject.hpp"
 #include "gl/GLShaderProgram.hpp"
 #include "gl/GLTexture.hpp"
 
@@ -45,23 +46,6 @@ class GLHandler : public QObject
 	Q_OBJECT
   public: // useful types
 	static unsigned int& renderTargetCount();
-	static unsigned int& PBOCount();
-
-	class PixelBufferObject
-	{
-		friend GLHandler;
-		GLuint id;
-
-	  public:
-		unsigned int width;
-		unsigned int height;
-		unsigned char* mappedData;
-
-		PixelBufferObject()                         = default;
-		PixelBufferObject(PixelBufferObject const&) = default;
-		PixelBufferObject(PixelBufferObject&&)      = default;
-		PixelBufferObject& operator=(PixelBufferObject const&) = default;
-	};
 
 	/** @ingroup pywrap
 	 * @brief Mostly opaque class that represents a render target. Use the
@@ -419,13 +403,6 @@ class GLHandler : public QObject
 
 	// TEXTURES
 	static void useTextures(std::vector<GLTexture const*> const& textures);
-
-	// PBOs
-	static PixelBufferObject newPixelBufferObject(unsigned int width,
-	                                              unsigned int height);
-	static GLTexture* copyPBOToTex(PixelBufferObject const& pbo,
-	                               bool sRGB = true);
-	static void deletePixelBufferObject(PixelBufferObject const& pbo);
 
 	// http://entropymine.com/imageworsener/srgbformula/
 	static QColor sRGBToLinear(QColor const& srgb);
