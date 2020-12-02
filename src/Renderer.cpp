@@ -136,8 +136,8 @@ BasicCamera& Renderer::getCamera(QString const& pathId)
 
 QImage Renderer::getLastFrame() const
 {
-	return GLHandler::generateScreenshot(
-	           postProcessingTargets.at(postProcessingPipeline_.size() % 2))
+	return postProcessingTargets.at(postProcessingPipeline_.size() % 2)
+	    ->copyColorBufferToQImage()
 	    .mirrored(false, true);
 }
 
@@ -199,23 +199,24 @@ void Renderer::reloadPostProcessingTargets()
 {
 	QSize newSize(getSize());
 
-	GLHandler::defaultRenderTargetFormat() = GL_RGBA32F;
-
-	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
+	delete postProcessingTargets[0];
+	delete postProcessingTargets[1];
 	postProcessingTargets[0]
-	    = GLHandler::newRenderTarget(newSize.width(), newSize.height());
+	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
+	        newSize.width(), newSize.height(), GL_RGBA32F));
 	postProcessingTargets[1]
-	    = GLHandler::newRenderTarget(newSize.width(), newSize.height());
+	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
+	        newSize.width(), newSize.height(), GL_RGBA32F));
 
 	if(QSettings().value("graphics/antialiasing").toUInt() > 0)
 	{
-		GLHandler::deleteRenderTarget(multisampledTarget);
-		multisampledTarget = GLHandler::newRenderTargetMultisample(
-		    newSize.width(), newSize.height(),
-		    static_cast<unsigned int>(1)
-		        << QSettings().value("graphics/antialiasing").toUInt(),
-		    GL_RGBA32F);
+		delete multisampledTarget;
+		multisampledTarget
+		    = new GLFramebufferObject(GLTexture::TexMultisampleProperties(
+		        newSize.width(), newSize.height(),
+		        static_cast<unsigned int>(1)
+		            << QSettings().value("graphics/antialiasing").toUInt(),
+		        GL_RGBA32F));
 	}
 
 	if(vrHandler.isEnabled())
@@ -452,67 +453,68 @@ void Renderer::renderFrame()
 
 		if(projection == Projection::DEFAULT)
 		{
-			if(cubemapTargetInit)
+			if(cubemapTarget != nullptr)
 			{
-				GLHandler::deleteRenderTarget(cubemapTarget);
-				cubemapTargetInit = false;
+				delete cubemapTarget;
+				cubemapTarget = nullptr;
 			}
 			if(QSettings().value("graphics/antialiasing").toUInt() == 0)
 			{
-				GLHandler::beginRendering(postProcessingTargets[0]);
+				GLHandler::beginRendering(*postProcessingTargets[0]);
 				renderFunc(false, QMatrix4x4(), QMatrix4x4());
 			}
 			else
 			{
-				GLHandler::beginRendering(multisampledTarget);
+				GLHandler::beginRendering(*multisampledTarget);
 				renderFunc(false, QMatrix4x4(), QMatrix4x4());
-				GLHandler::blitColorBuffer(multisampledTarget,
-				                           postProcessingTargets[0]);
+				multisampledTarget->blitColorBufferTo(
+				    *postProcessingTargets[0]);
 			}
 		}
 		else if(projection == Projection::PANORAMA360)
 		{
-			if(!cubemapTargetInit)
+			if(cubemapTarget == nullptr)
 			{
 				unsigned int side(getSize().width() / 3);
-				cubemapTarget = GLHandler::newRenderTarget(side, side, true);
-				cubemapTargetInit = true;
+				cubemapTarget = new GLFramebufferObject(
+				    GLTexture::TexCubemapProperties(side, GL_RGBA32F));
 			}
-			GLHandler::generateEnvironmentMap(cubemapTarget, renderFunc);
+			GLHandler::generateEnvironmentMap(*cubemapTarget, renderFunc);
 
 			GLShaderProgram shader("postprocess", "panorama360");
-			GLHandler::postProcess(shader, cubemapTarget,
-			                       postProcessingTargets[0]);
+			GLHandler::postProcess(shader, *cubemapTarget,
+			                       *postProcessingTargets[0]);
 		}
 		else if(projection == Projection::VR360)
 		{
-			if(!cubemapTargetInit)
+			if(cubemapTarget == nullptr)
 			{
 				unsigned int side(getSize().width() / 3);
-				cubemapTarget = GLHandler::newRenderTarget(side, side, true);
-				cubemapTargetInit = true;
+				cubemapTarget = new GLFramebufferObject(
+				    GLTexture::TexCubemapProperties(side, GL_RGBA32F));
 			}
-			int tgtWidth(postProcessingTargets[0].getSize().width()),
-			    tgtHeight(postProcessingTargets[0].getSize().height());
+			int tgtWidth(postProcessingTargets[0]->getSize().width()),
+			    tgtHeight(postProcessingTargets[0]->getSize().height());
 			QVector3D shift(0.065, 0.0, 0.0);
 
-			GLHandler::generateEnvironmentMap(cubemapTarget, renderFunc, shift);
+			GLHandler::generateEnvironmentMap(*cubemapTarget, renderFunc,
+			                                  shift);
 			GLShaderProgram shader("postprocess", "panorama360");
-			GLHandler::postProcess(shader, cubemapTarget,
-			                       postProcessingTargets[0]);
-			GLHandler::blitColorBuffer(
-			    postProcessingTargets[0], postProcessingTargets[1], 0, 0,
-			    tgtWidth, tgtHeight, 0, 0, tgtWidth, tgtHeight / 2);
+			GLHandler::postProcess(shader, *cubemapTarget,
+			                       *postProcessingTargets[0]);
+			postProcessingTargets[0]->blitColorBufferTo(
+			    *postProcessingTargets[1], 0, 0, tgtWidth, tgtHeight, 0, 0,
+			    tgtWidth, tgtHeight / 2);
 
-			GLHandler::generateEnvironmentMap(cubemapTarget, renderFunc,
+			GLHandler::generateEnvironmentMap(*cubemapTarget, renderFunc,
 			                                  -shift);
-			GLHandler::postProcess(shader, cubemapTarget,
-			                       postProcessingTargets[0]);
-			GLHandler::blitColorBuffer(
-			    postProcessingTargets[0], postProcessingTargets[1], 0, 0,
-			    tgtWidth, tgtHeight, 0, tgtHeight / 2, tgtWidth, tgtHeight);
-			GLHandler::blitColorBuffer(postProcessingTargets[1],
-			                           postProcessingTargets[0]);
+			GLHandler::postProcess(shader, *cubemapTarget,
+			                       *postProcessingTargets[0]);
+			postProcessingTargets[0]->blitColorBufferTo(
+			    *postProcessingTargets[1], 0, 0, tgtWidth, tgtHeight, 0,
+			    tgtHeight / 2, tgtWidth, tgtHeight);
+			postProcessingTargets[1]->blitColorBufferTo(
+			    *postProcessingTargets[0]);
 		}
 		else
 		{
@@ -520,9 +522,9 @@ void Renderer::renderFrame()
 		}
 
 		// compute average luminance
-		auto const& tex
-		    = GLHandler::getColorAttachmentTexture(postProcessingTargets[0]);
-		lastFrameAverageLuminance = tex.getAverageLuminance();
+		lastFrameAverageLuminance = postProcessingTargets[0]
+		                                ->getColorAttachmentTexture()
+		                                .getAverageLuminance();
 
 		// postprocess
 		int i(0);
@@ -530,16 +532,16 @@ void Renderer::renderFrame()
 		    it != postProcessingPipeline_.end(); ++i, ++it)
 		{
 			window.applyPostProcShaderParams(it->first, it->second,
-			                                 postProcessingTargets.at(i % 2));
+			                                 *postProcessingTargets.at(i % 2));
 			auto texs = window.getPostProcessingUniformTextures(
-			    it->first, it->second, postProcessingTargets.at(i % 2));
-			GLHandler::postProcess(it->second, postProcessingTargets.at(i % 2),
-			                       postProcessingTargets.at((i + 1) % 2), texs);
+			    it->first, it->second, *postProcessingTargets.at(i % 2));
+			GLHandler::postProcess(it->second, *postProcessingTargets.at(i % 2),
+			                       *postProcessingTargets.at((i + 1) % 2),
+			                       texs);
 		}
 		// blit result on screen
-		GLHandler::blitColorBuffer(
-		    postProcessingTargets.at(postProcessingPipeline_.size() % 2),
-		    GLHandler::getScreenRenderTarget());
+		postProcessingTargets.at(postProcessingPipeline_.size() % 2)
+		    ->showOnScreen(0, 0, window.width(), window.height());
 	}
 }
 
@@ -558,13 +560,10 @@ void Renderer::clean()
 	}
 	delete dbgCamera;
 
-	if(cubemapTargetInit)
-	{
-		GLHandler::deleteRenderTarget(cubemapTarget);
-	}
-	GLHandler::deleteRenderTarget(multisampledTarget);
-	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
+	delete cubemapTarget;
+	delete multisampledTarget;
+	delete postProcessingTargets[0];
+	delete postProcessingTargets[1];
 
 	initialized = false;
 }

@@ -56,7 +56,12 @@ GLTexture* GLPixelBufferObject::copyContentToNewTex(bool sRGB) const
 
 void GLPixelBufferObject::cleanUp()
 {
+	if(!doClean)
+	{
+		return;
+	}
 	--instancesCount();
 	GLHandler::glf().glDeleteBuffers(1, &id);
 	GLHandler::glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	doClean = false;
 }
