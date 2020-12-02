@@ -45,7 +45,6 @@ class GLHandler : public QObject
 	Q_OBJECT
   public: // useful types
 	static unsigned int& renderTargetCount();
-	static unsigned int& meshCount();
 	static unsigned int& PBOCount();
 
 	class PixelBufferObject

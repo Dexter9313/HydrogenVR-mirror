@@ -6,12 +6,6 @@ unsigned int& GLHandler::renderTargetCount()
 	return renderTargetCount;
 }
 
-unsigned int& GLHandler::meshCount()
-{
-	static unsigned int meshCount = 0;
-	return meshCount;
-}
-
 unsigned int& GLHandler::PBOCount()
 {
 	static unsigned int PBOCount = 0;
