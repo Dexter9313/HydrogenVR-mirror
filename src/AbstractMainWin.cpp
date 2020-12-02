@@ -628,13 +628,13 @@ void AbstractMainWin::paintGL()
 		QString subdir;
 		switch(renderer.projection)
 		{
-			case Renderer::Projection::DEFAULT:
+			case MainRenderTarget::Projection::DEFAULT:
 				subdir = "2D";
 				break;
-			case Renderer::Projection::PANORAMA360:
+			case MainRenderTarget::Projection::PANORAMA360:
 				subdir = "PANORAMA360";
 				break;
-			case Renderer::Projection::VR360:
+			case MainRenderTarget::Projection::VR360:
 				subdir = "VR360";
 				break;
 		}
