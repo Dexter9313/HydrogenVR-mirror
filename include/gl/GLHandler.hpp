@@ -104,8 +104,8 @@ class GLHandler : public QObject
 		    , depth(_5){};
 		GLuint frameBuffer = 0;
 		// if depth map, will be the depth buffer instead
-		GLTexture* texColorBuffer;
-		GLuint renderBuffer = 0;
+		GLTexture* texColorBuffer = nullptr;
+		GLuint renderBuffer       = 0;
 		unsigned int width;
 		unsigned int height;
 		unsigned int depth;
