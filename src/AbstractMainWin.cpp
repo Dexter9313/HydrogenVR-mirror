@@ -70,21 +70,19 @@ void AbstractMainWin::setFullscreen(bool fullscreen)
 	QSettings().setValue("window/fullscreen", fullscreen);
 	if(fullscreen)
 	{
-		QRect screenGeometry(QApplication::desktop()->screenGeometry());
-		resize(screenGeometry.width(), screenGeometry.height());
+		QRect screenGeometry(screen()->geometry());
+		setGeometry(screenGeometry);
+		show();
+		setFlag(Qt::FramelessWindowHint, true);
+		setFlag(Qt::WindowStaysOnTopHint, true);
 	}
 	else
 	{
 		resize(QSettings().value("window/width").toUInt(),
 		       QSettings().value("window/height").toUInt());
-	}
-	if(fullscreen)
-	{
-		showFullScreen();
-	}
-	else
-	{
 		show();
+		setFlag(Qt::FramelessWindowHint, false);
+		setFlag(Qt::WindowStaysOnTopHint, false);
 	}
 }
 
