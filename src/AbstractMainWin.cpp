@@ -71,6 +71,18 @@ void AbstractMainWin::setFullscreen(bool fullscreen)
 	if(fullscreen)
 	{
 		QRect screenGeometry(screen()->geometry());
+		QString screenStr(QSettings().value("window/screenname").toString());
+		if(screenStr != "")
+		{
+			for(auto s : QGuiApplication::screens())
+			{
+				if(s->name() == screenStr)
+				{
+					screenGeometry = s->geometry();
+					break;
+				}
+			}
+		}
 		setGeometry(screenGeometry);
 		show();
 		setFlag(Qt::FramelessWindowHint, true);

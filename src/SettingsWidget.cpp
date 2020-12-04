@@ -30,6 +30,7 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	               tr("Force Rendering Resolution"));
 	addUIntSetting("forcewidth", 1500, tr("Forced Rendering Width"), 0, 17000);
 	addUIntSetting("forceheight", 800, tr("Forced Rendering Height"), 0, 17000);
+	addScreenNameSetting();
 	addLanguageSetting();
 	addDirPathSetting(
 	    "viddir",
@@ -534,4 +535,93 @@ void SettingsWidget::addLanguageSetting(QString const& name,
 	        });
 
 	currentForm->addRow(label + " :", comboBox);
+}
+
+void SettingsWidget::addScreenNameSetting(QString const& name,
+                                          QString const& defaultVal,
+                                          QString const& label)
+{
+	QString fullName(currentGroup + '/' + name);
+
+	if(!settings.contains(fullName))
+	{
+		settings.setValue(fullName, defaultVal);
+	}
+
+	auto stored(settings.value(fullName).toString());
+
+	auto w      = new QWidget(this);
+	auto layout = new QHBoxLayout(w);
+
+	auto qlabel = new QLabel(this);
+	qlabel->setText(stored == "" ? "AUTO" : stored);
+
+	auto button = new QPushButton(this);
+	button->setText("...");
+
+	connect(button, &QPushButton::clicked, this,
+	        [this, fullName, qlabel](bool) {
+		        updateValue(fullName, ScreenSelector::selectScreen(this));
+		        auto stored(settings.value(fullName).toString());
+		        qlabel->setText(stored == "" ? "AUTO" : stored);
+	        });
+
+	layout->setAlignment(Qt::AlignLeft);
+	layout->addWidget(qlabel);
+	layout->addWidget(button);
+	currentForm->addRow(label + " :", w);
+}
+
+// SCREENSELECTOR
+
+QString& ScreenSelector::retValue()
+{
+	static QString retValue = "";
+	return retValue;
+}
+
+QString ScreenSelector::selectScreen(QWidget* parent)
+{
+	retValue() = "";
+	ScreenSelector select(parent);
+	select.exec();
+	return retValue();
+}
+
+ScreenSelector::ScreenSelector(QWidget* parent)
+    : QDialog(parent)
+{
+	float aspectRatio(static_cast<float>(desktopGeometry.width())
+	                  / desktopGeometry.height());
+	h = static_cast<int>(w / aspectRatio);
+
+	this->setFixedSize(QSize(w, h));
+	for(auto const& s : getScreens())
+	{
+		auto button = new QPushButton(this);
+		button->setGeometry(s.second);
+		button->setText(s.first);
+
+		connect(button, &QPushButton::clicked, this, [this, s](bool) {
+			retValue() = s.first;
+			this->close();
+		});
+	}
+}
+
+QList<QPair<QString, QRect>> ScreenSelector::getScreens() const
+{
+	QList<QPair<QString, QRect>> result;
+	QList<QScreen*> screens(QGuiApplication::screens());
+	for(auto s : screens)
+	{
+		QRect geom(s->geometry());
+		geom.setX(s->geometry().x() * w / desktopGeometry.width());
+		geom.setWidth(s->geometry().width() * w / desktopGeometry.width());
+		geom.setY(s->geometry().y() * h / desktopGeometry.height());
+		geom.setHeight(s->geometry().height() * h / desktopGeometry.height());
+
+		result.append({s->name(), geom});
+	}
+	return result;
 }
