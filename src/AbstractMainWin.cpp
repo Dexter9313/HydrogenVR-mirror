@@ -71,15 +71,39 @@ void AbstractMainWin::setFullscreen(bool fullscreen)
 	if(fullscreen)
 	{
 		QRect screenGeometry(screen()->geometry());
-		QString screenStr(QSettings().value("window/screenname").toString());
-		if(screenStr != "")
+		QStringList screensStr(
+		    QSettings().value("window/screennames").toStringList());
+		if(!screensStr.empty())
 		{
+			bool first(true);
 			for(auto s : QGuiApplication::screens())
 			{
-				if(s->name() == screenStr)
+				if(screensStr.contains(s->name()))
 				{
-					screenGeometry = s->geometry();
-					break;
+					if(first)
+					{
+						screenGeometry = s->geometry();
+						first          = false;
+					}
+					else
+					{
+						if(screenGeometry.left() > s->geometry().left())
+						{
+							screenGeometry.setLeft(s->geometry().left());
+						}
+						if(screenGeometry.right() < s->geometry().right())
+						{
+							screenGeometry.setRight(s->geometry().right());
+						}
+						if(screenGeometry.top() > s->geometry().top())
+						{
+							screenGeometry.setTop(s->geometry().top());
+						}
+						if(screenGeometry.bottom() < s->geometry().bottom())
+						{
+							screenGeometry.setBottom(s->geometry().bottom());
+						}
+					}
 				}
 			}
 		}

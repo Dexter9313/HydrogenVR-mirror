@@ -89,9 +89,9 @@ class SettingsWidget : public QTabWidget
 	                        = QLocale::system().name(),
 	                        QString const& label
 	                        = tr("Language (needs restart)"));
-	void addScreenNameSetting(QString const& name       = "screenname",
-	                          QString const& defaultVal = "",
-	                          QString const& label      = tr("Screen"));
+	void addScreenNamesSetting(QString const& name           = "screennames",
+	                           QStringList const& defaultVal = {},
+	                           QString const& label          = tr("Screens"));
 
   private:
 	QFormLayout* currentForm = nullptr;
@@ -112,17 +112,19 @@ void SettingsWidget::updateValue(QString const& fullName, T newValue)
 
 class ScreenSelector : public QDialog
 {
-	static QString& retValue();
+	static QStringList& retValue();
 
   public:
-	static QString selectScreen(QWidget* parent = nullptr);
+	static QStringList selectScreens(QStringList const& initVals = {},
+	                                 QWidget* parent             = nullptr);
 
   private:
 	unsigned int w = 700;
 	unsigned int h;
 	QRect desktopGeometry = QGuiApplication::screens()[0]->virtualGeometry();
 
-	explicit ScreenSelector(QWidget* parent = nullptr);
+	explicit ScreenSelector(QStringList const& initVals = {},
+	                        QWidget* parent             = nullptr);
 
 	// list of pairs of name and geometry
 	QList<QPair<QString, QRect>> getScreens() const;

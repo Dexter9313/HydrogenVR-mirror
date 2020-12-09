@@ -30,7 +30,7 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	               tr("Force Rendering Resolution"));
 	addUIntSetting("forcewidth", 1500, tr("Forced Rendering Width"), 0, 17000);
 	addUIntSetting("forceheight", 800, tr("Forced Rendering Height"), 0, 17000);
-	addScreenNameSetting();
+	addScreenNamesSetting();
 	addLanguageSetting();
 	addDirPathSetting(
 	    "viddir",
@@ -537,9 +537,9 @@ void SettingsWidget::addLanguageSetting(QString const& name,
 	currentForm->addRow(label + " :", comboBox);
 }
 
-void SettingsWidget::addScreenNameSetting(QString const& name,
-                                          QString const& defaultVal,
-                                          QString const& label)
+void SettingsWidget::addScreenNamesSetting(QString const& name,
+                                           QStringList const& defaultVal,
+                                           QString const& label)
 {
 	QString fullName(currentGroup + '/' + name);
 
@@ -548,23 +548,24 @@ void SettingsWidget::addScreenNameSetting(QString const& name,
 		settings.setValue(fullName, defaultVal);
 	}
 
-	auto stored(settings.value(fullName).toString());
+	auto stored(settings.value(fullName).toStringList());
 
 	auto w      = new QWidget(this);
 	auto layout = new QHBoxLayout(w);
 
 	auto qlabel = new QLabel(this);
-	qlabel->setText(stored == "" ? "AUTO" : stored);
+	qlabel->setText(stored.empty() ? "AUTO" : stored.join(","));
 
 	auto button = new QPushButton(this);
 	button->setText("...");
 
-	connect(button, &QPushButton::clicked, this,
-	        [this, fullName, qlabel](bool) {
-		        updateValue(fullName, ScreenSelector::selectScreen(this));
-		        auto stored(settings.value(fullName).toString());
-		        qlabel->setText(stored == "" ? "AUTO" : stored);
-	        });
+	connect(
+	    button, &QPushButton::clicked, this, [this, fullName, qlabel](bool) {
+		    auto stored = settings.value(fullName).toStringList();
+		    updateValue(fullName, ScreenSelector::selectScreens(stored, this));
+		    stored = settings.value(fullName).toStringList();
+		    qlabel->setText(stored.empty() ? "AUTO" : stored.join(","));
+	    });
 
 	layout->setAlignment(Qt::AlignLeft);
 	layout->addWidget(qlabel);
@@ -574,21 +575,22 @@ void SettingsWidget::addScreenNameSetting(QString const& name,
 
 // SCREENSELECTOR
 
-QString& ScreenSelector::retValue()
+QStringList& ScreenSelector::retValue()
 {
-	static QString retValue = "";
+	static QStringList retValue = {};
 	return retValue;
 }
 
-QString ScreenSelector::selectScreen(QWidget* parent)
+QStringList ScreenSelector::selectScreens(QStringList const& initVals,
+                                          QWidget* parent)
 {
-	retValue() = "";
-	ScreenSelector select(parent);
+	retValue() = initVals;
+	ScreenSelector select(initVals, parent);
 	select.exec();
 	return retValue();
 }
 
-ScreenSelector::ScreenSelector(QWidget* parent)
+ScreenSelector::ScreenSelector(QStringList const& initVals, QWidget* parent)
     : QDialog(parent)
 {
 	float aspectRatio(static_cast<float>(desktopGeometry.width())
@@ -602,9 +604,23 @@ ScreenSelector::ScreenSelector(QWidget* parent)
 		button->setGeometry(s.second);
 		button->setText(s.first);
 
-		connect(button, &QPushButton::clicked, this, [this, s](bool) {
-			retValue() = s.first;
-			this->close();
+		auto ckBox = new QCheckBox(this);
+		ckBox->move(s.second.x() + s.second.width() / 2 - 10,
+		            10 + s.second.y() + s.second.height() / 2);
+		ckBox->setChecked(initVals.contains((s.first)));
+
+		connect(button, &QPushButton::clicked, this,
+		        [ckBox]() { ckBox->toggle(); });
+
+		connect(ckBox, &QCheckBox::stateChanged, this, [s](int state) {
+			if(state == Qt::Checked)
+			{
+				retValue().append(s.first);
+			}
+			else
+			{
+				retValue().removeAll(s.first);
+			}
 		});
 	}
 }
