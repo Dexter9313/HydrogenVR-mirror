@@ -25,6 +25,7 @@
 #include "BasicCamera.hpp"
 #include "CalibrationCompass.hpp"
 #include "DebugCamera.hpp"
+#include "MainRenderTarget.hpp"
 #include "vr/VRHandler.hpp"
 
 class AbstractMainWin;
@@ -32,13 +33,6 @@ class AbstractMainWin;
 class Renderer
 {
   public:
-	enum class Projection
-	{
-		DEFAULT     = 0,
-		PANORAMA360 = 1,
-		VR360       = 2,
-	};
-
 	struct RenderPath
 	{
 		explicit RenderPath(BasicCamera* camera)
@@ -176,8 +170,9 @@ class Renderer
 	bool renderControllersBeforeScene  = true;
 	QString pathIdRenderingControllers = "default";
 
-	bool wireframe        = false;
-	Projection projection = Projection::DEFAULT;
+	bool wireframe = false;
+	MainRenderTarget::Projection projection
+	    = MainRenderTarget::Projection::DEFAULT;
 	/**
 	 * @brief Ordered list of render passes to apply as scene rendering.
 	 *

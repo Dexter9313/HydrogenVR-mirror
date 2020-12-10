@@ -451,7 +451,7 @@ void Renderer::renderFrame()
 			}
 		};
 
-		if(projection == Projection::DEFAULT)
+		if(projection == MainRenderTarget::Projection::DEFAULT)
 		{
 			if(cubemapTarget != nullptr)
 			{
@@ -471,7 +471,7 @@ void Renderer::renderFrame()
 				    *postProcessingTargets[0]);
 			}
 		}
-		else if(projection == Projection::PANORAMA360)
+		else if(projection == MainRenderTarget::Projection::PANORAMA360)
 		{
 			if(cubemapTarget == nullptr)
 			{
@@ -485,7 +485,7 @@ void Renderer::renderFrame()
 			GLHandler::postProcess(shader, *cubemapTarget,
 			                       *postProcessingTargets[0]);
 		}
-		else if(projection == Projection::VR360)
+		else if(projection == MainRenderTarget::Projection::VR360)
 		{
 			if(cubemapTarget == nullptr)
 			{
@@ -518,7 +518,7 @@ void Renderer::renderFrame()
 		}
 		else
 		{
-			qDebug() << "Invalid RenderTarget::Projection";
+			qDebug() << "Invalid MainRenderTarget::Projection";
 		}
 
 		// compute average luminance
