@@ -206,7 +206,8 @@ class Renderer
 
 	void vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
 	                        bool debug, bool debugInHeadset);
-	void vrRender(Side side, bool debug, bool debugInHeadset);
+	void vrRender(Side side, bool debug, bool debugInHeadset,
+	              bool displayOnScreen);
 
 	AbstractMainWin& window;
 	VRHandler& vrHandler;
