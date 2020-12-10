@@ -21,6 +21,7 @@ environment:
       VCREDIST15: vc_redist.x86.exe
       PYTHON_URL: "https://www.python.org/ftp/python/3.7.4/python-3.7.4.exe"
 
+
 install:
     - set INNOSETUPPATH=C:\Program Files (x86)\Inno Setup 5
     - set BINDIR=%APPVEYOR_BUILD_FOLDER%\build\Release\
