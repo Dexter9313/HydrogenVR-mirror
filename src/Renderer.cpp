@@ -33,26 +33,6 @@ void Renderer::init()
 		clean();
 	}
 
-	vFOV = QSettings().value("graphics/vfov").toDouble();
-	hFOV = QSettings().value("graphics/hfov").toDouble();
-	if(vFOV == 0.0)
-	{
-		if(hFOV == 0.0)
-		{
-			vFOV = 70.0;
-		}
-		else
-		{
-			float a(getRenderTargetAspectRatio());
-			vFOV = 360.f * atan(tan(hFOV * M_PI / 360.f) / a) / M_PI;
-		}
-	}
-	if(hFOV == 0.0)
-	{
-		float a(getRenderTargetAspectRatio());
-		hFOV = 360.f * atan(tan(vFOV * M_PI / 360.f) * a) / M_PI;
-	}
-
 	dbgCamera = new DebugCamera(vrHandler);
 	dbgCamera->lookAt({2, 0, 2}, {0, 0, 0}, {0, 0, 1});
 
