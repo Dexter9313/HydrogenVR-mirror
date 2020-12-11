@@ -218,15 +218,13 @@ class Renderer
 
 	QList<QPair<QString, RenderPath>> sceneRenderPipeline_;
 
-	GLFramebufferObject* cubemapTarget = nullptr;
 	std::list<std::pair<QString, GLShaderProgram>> postProcessingPipeline_;
-	GLFramebufferObject* multisampledTarget = nullptr;
-	std::array<GLFramebufferObject*, 2> postProcessingTargets
-	    = {{nullptr, nullptr}};
 	float lastFrameAverageLuminance = 0.f;
 
 	bool renderCompass          = false;
 	CalibrationCompass* compass = nullptr;
+
+	MainRenderTarget* mainRenderTarget = new MainRenderTarget;
 };
 
 template <class T>

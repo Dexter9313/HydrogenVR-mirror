@@ -19,6 +19,8 @@
 #ifndef MAINRENDERTARGET_HPP
 #define MAINRENDERTARGET_HPP
 
+#include "gl/GLHandler.hpp"
+
 class MainRenderTarget
 {
   public:
@@ -29,10 +31,14 @@ class MainRenderTarget
 		VR360       = 2,
 	};
 
-	MainRenderTarget();
-	~MainRenderTarget();
+	MainRenderTarget()  = default;
+	~MainRenderTarget() = default;
 
-  private:
+  public:
+	GLFramebufferObject* cubemapTarget      = nullptr;
+	GLFramebufferObject* multisampledTarget = nullptr;
+	std::array<GLFramebufferObject*, 2> postProcessingTargets
+	    = {{nullptr, nullptr}};
 };
 
 #endif // MAINRENDERTARGET_HPP
