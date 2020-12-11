@@ -118,7 +118,7 @@ QImage Renderer::getLastFrame() const
 {
 	return mainRenderTarget->postProcessingTargets
 	    .at(postProcessingPipeline_.size() % 2)
-	    ->copyColorBufferToQImage()
+	    .copyColorBufferToQImage()
 	    .mirrored(false, true);
 }
 
@@ -429,7 +429,7 @@ void Renderer::renderFrame()
 			if(QSettings().value("graphics/antialiasing").toUInt() == 0)
 			{
 				GLHandler::beginRendering(
-				    *mainRenderTarget->postProcessingTargets[0]);
+				    mainRenderTarget->postProcessingTargets[0]);
 				renderFunc(false, QMatrix4x4(), QMatrix4x4());
 			}
 			else
@@ -438,7 +438,7 @@ void Renderer::renderFrame()
 				    *mainRenderTarget->multisampledTarget);
 				renderFunc(false, QMatrix4x4(), QMatrix4x4());
 				mainRenderTarget->multisampledTarget->blitColorBufferTo(
-				    *mainRenderTarget->postProcessingTargets[0]);
+				    mainRenderTarget->postProcessingTargets[0]);
 			}
 		}
 		else if(projection == MainRenderTarget::Projection::PANORAMA360)
@@ -454,7 +454,7 @@ void Renderer::renderFrame()
 
 			GLShaderProgram shader("postprocess", "panorama360");
 			GLHandler::postProcess(shader, *mainRenderTarget->cubemapTarget,
-			                       *mainRenderTarget->postProcessingTargets[0]);
+			                       mainRenderTarget->postProcessingTargets[0]);
 		}
 		else if(projection == MainRenderTarget::Projection::VR360)
 		{
@@ -465,9 +465,9 @@ void Renderer::renderFrame()
 				    GLTexture::TexCubemapProperties(side, GL_RGBA32F));
 			}
 			int tgtWidth(
-			    mainRenderTarget->postProcessingTargets[0]->getSize().width()),
+			    mainRenderTarget->postProcessingTargets[0].getSize().width()),
 			    tgtHeight(mainRenderTarget->postProcessingTargets[0]
-			                  ->getSize()
+			                  .getSize()
 			                  .height());
 			QVector3D shift(0.065, 0.0, 0.0);
 
@@ -475,20 +475,20 @@ void Renderer::renderFrame()
 			                                  renderFunc, shift);
 			GLShaderProgram shader("postprocess", "panorama360");
 			GLHandler::postProcess(shader, *mainRenderTarget->cubemapTarget,
-			                       *mainRenderTarget->postProcessingTargets[0]);
-			mainRenderTarget->postProcessingTargets[0]->blitColorBufferTo(
-			    *mainRenderTarget->postProcessingTargets[1], 0, 0, tgtWidth,
+			                       mainRenderTarget->postProcessingTargets[0]);
+			mainRenderTarget->postProcessingTargets[0].blitColorBufferTo(
+			    mainRenderTarget->postProcessingTargets[1], 0, 0, tgtWidth,
 			    tgtHeight, 0, 0, tgtWidth, tgtHeight / 2);
 
 			GLHandler::generateEnvironmentMap(*mainRenderTarget->cubemapTarget,
 			                                  renderFunc, -shift);
 			GLHandler::postProcess(shader, *mainRenderTarget->cubemapTarget,
-			                       *mainRenderTarget->postProcessingTargets[0]);
-			mainRenderTarget->postProcessingTargets[0]->blitColorBufferTo(
-			    *mainRenderTarget->postProcessingTargets[1], 0, 0, tgtWidth,
+			                       mainRenderTarget->postProcessingTargets[0]);
+			mainRenderTarget->postProcessingTargets[0].blitColorBufferTo(
+			    mainRenderTarget->postProcessingTargets[1], 0, 0, tgtWidth,
 			    tgtHeight, 0, tgtHeight / 2, tgtWidth, tgtHeight);
-			mainRenderTarget->postProcessingTargets[1]->blitColorBufferTo(
-			    *mainRenderTarget->postProcessingTargets[0]);
+			mainRenderTarget->postProcessingTargets[1].blitColorBufferTo(
+			    mainRenderTarget->postProcessingTargets[0]);
 		}
 		else
 		{
@@ -497,7 +497,7 @@ void Renderer::renderFrame()
 
 		// compute average luminance
 		lastFrameAverageLuminance = mainRenderTarget->postProcessingTargets[0]
-		                                ->getColorAttachmentTexture()
+		                                .getColorAttachmentTexture()
 		                                .getAverageLuminance();
 
 		// postprocess
@@ -507,18 +507,18 @@ void Renderer::renderFrame()
 		{
 			window.applyPostProcShaderParams(
 			    it->first, it->second,
-			    *mainRenderTarget->postProcessingTargets.at(i % 2));
+			    mainRenderTarget->postProcessingTargets.at(i % 2));
 			auto texs = window.getPostProcessingUniformTextures(
 			    it->first, it->second,
-			    *mainRenderTarget->postProcessingTargets.at(i % 2));
+			    mainRenderTarget->postProcessingTargets.at(i % 2));
 			GLHandler::postProcess(
-			    it->second, *mainRenderTarget->postProcessingTargets.at(i % 2),
-			    *mainRenderTarget->postProcessingTargets.at((i + 1) % 2), texs);
+			    it->second, mainRenderTarget->postProcessingTargets.at(i % 2),
+			    mainRenderTarget->postProcessingTargets.at((i + 1) % 2), texs);
 		}
 		// blit result on screen
 		mainRenderTarget->postProcessingTargets
 		    .at(postProcessingPipeline_.size() % 2)
-		    ->showOnScreen(0, 0, window.width(), window.height());
+		    .showOnScreen(0, 0, window.width(), window.height());
 	}
 }
 
