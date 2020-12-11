@@ -421,27 +421,18 @@ void Renderer::renderFrame()
 
 		if(projection == MainRenderTarget::Projection::DEFAULT)
 		{
-			if(QSettings().value("graphics/antialiasing").toUInt() == 0)
-			{
-				GLHandler::beginRendering(
-				    mainRenderTarget->postProcessingTargets[0]);
-				renderFunc(false, QMatrix4x4(), QMatrix4x4());
-			}
-			else
-			{
-				GLHandler::beginRendering(*mainRenderTarget->sceneTarget);
-				renderFunc(false, QMatrix4x4(), QMatrix4x4());
-				mainRenderTarget->sceneTarget->blitColorBufferTo(
-				    mainRenderTarget->postProcessingTargets[0]);
-			}
+			GLHandler::beginRendering(mainRenderTarget->sceneTarget);
+			renderFunc(false, QMatrix4x4(), QMatrix4x4());
+			mainRenderTarget->sceneTarget.blitColorBufferTo(
+			    mainRenderTarget->postProcessingTargets[0]);
 		}
 		else if(projection == MainRenderTarget::Projection::PANORAMA360)
 		{
-			GLHandler::generateEnvironmentMap(*mainRenderTarget->sceneTarget,
+			GLHandler::generateEnvironmentMap(mainRenderTarget->sceneTarget,
 			                                  renderFunc);
 
 			GLShaderProgram shader("postprocess", "panorama360");
-			GLHandler::postProcess(shader, *mainRenderTarget->sceneTarget,
+			GLHandler::postProcess(shader, mainRenderTarget->sceneTarget,
 			                       mainRenderTarget->postProcessingTargets[0]);
 		}
 		else if(projection == MainRenderTarget::Projection::VR360)
@@ -453,18 +444,18 @@ void Renderer::renderFrame()
 			                  .height());
 			QVector3D shift(0.065, 0.0, 0.0);
 
-			GLHandler::generateEnvironmentMap(*mainRenderTarget->sceneTarget,
+			GLHandler::generateEnvironmentMap(mainRenderTarget->sceneTarget,
 			                                  renderFunc, shift);
 			GLShaderProgram shader("postprocess", "panorama360");
-			GLHandler::postProcess(shader, *mainRenderTarget->sceneTarget,
+			GLHandler::postProcess(shader, mainRenderTarget->sceneTarget,
 			                       mainRenderTarget->postProcessingTargets[0]);
 			mainRenderTarget->postProcessingTargets[0].blitColorBufferTo(
 			    mainRenderTarget->postProcessingTargets[1], 0, 0, tgtWidth,
 			    tgtHeight, 0, 0, tgtWidth, tgtHeight / 2);
 
-			GLHandler::generateEnvironmentMap(*mainRenderTarget->sceneTarget,
+			GLHandler::generateEnvironmentMap(mainRenderTarget->sceneTarget,
 			                                  renderFunc, -shift);
-			GLHandler::postProcess(shader, *mainRenderTarget->sceneTarget,
+			GLHandler::postProcess(shader, mainRenderTarget->sceneTarget,
 			                       mainRenderTarget->postProcessingTargets[0]);
 			mainRenderTarget->postProcessingTargets[0].blitColorBufferTo(
 			    mainRenderTarget->postProcessingTargets[1], 0, 0, tgtWidth,
