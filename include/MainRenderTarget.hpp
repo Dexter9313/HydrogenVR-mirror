@@ -32,29 +32,32 @@ class MainRenderTarget
 	};
 
 	MainRenderTarget(unsigned int width, unsigned int height,
-	                 unsigned int samples, Projection /*projection*/)
+	                 unsigned int samples, Projection projection)
 	    : postProcessingTargets({GLFramebufferObject(GLTexture::Tex2DProperties(
 	                                 width, height, GL_RGBA32F)),
 	                             GLFramebufferObject(GLTexture::Tex2DProperties(
 	                                 width, height, GL_RGBA32F))})
 
 	{
-		if(samples > 1)
+		if(projection == Projection::DEFAULT)
 		{
-			multisampledTarget
-			    = new GLFramebufferObject(GLTexture::TexMultisampleProperties(
-			        width, height, samples, GL_RGBA32F));
+			if(samples > 1)
+			{
+				sceneTarget = new GLFramebufferObject(
+				    GLTexture::TexMultisampleProperties(width, height, samples,
+				                                        GL_RGBA32F));
+			}
+		}
+		else
+		{
+			sceneTarget = new GLFramebufferObject(
+			    GLTexture::TexCubemapProperties(width / 3, GL_RGBA32F));
 		}
 	};
-	~MainRenderTarget()
-	{
-		delete cubemapTarget;
-		delete multisampledTarget;
-	};
+	~MainRenderTarget() { delete sceneTarget; };
 
   public:
-	GLFramebufferObject* cubemapTarget      = nullptr;
-	GLFramebufferObject* multisampledTarget = nullptr;
+	GLFramebufferObject* sceneTarget = nullptr;
 	std::array<GLFramebufferObject, 2> postProcessingTargets;
 };
 

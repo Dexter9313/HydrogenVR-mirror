@@ -421,11 +421,6 @@ void Renderer::renderFrame()
 
 		if(projection == MainRenderTarget::Projection::DEFAULT)
 		{
-			if(mainRenderTarget->cubemapTarget != nullptr)
-			{
-				delete mainRenderTarget->cubemapTarget;
-				mainRenderTarget->cubemapTarget = nullptr;
-			}
 			if(QSettings().value("graphics/antialiasing").toUInt() == 0)
 			{
 				GLHandler::beginRendering(
@@ -434,36 +429,23 @@ void Renderer::renderFrame()
 			}
 			else
 			{
-				GLHandler::beginRendering(
-				    *mainRenderTarget->multisampledTarget);
+				GLHandler::beginRendering(*mainRenderTarget->sceneTarget);
 				renderFunc(false, QMatrix4x4(), QMatrix4x4());
-				mainRenderTarget->multisampledTarget->blitColorBufferTo(
+				mainRenderTarget->sceneTarget->blitColorBufferTo(
 				    mainRenderTarget->postProcessingTargets[0]);
 			}
 		}
 		else if(projection == MainRenderTarget::Projection::PANORAMA360)
 		{
-			if(mainRenderTarget->cubemapTarget == nullptr)
-			{
-				unsigned int side(getSize().width() / 3);
-				mainRenderTarget->cubemapTarget = new GLFramebufferObject(
-				    GLTexture::TexCubemapProperties(side, GL_RGBA32F));
-			}
-			GLHandler::generateEnvironmentMap(*mainRenderTarget->cubemapTarget,
+			GLHandler::generateEnvironmentMap(*mainRenderTarget->sceneTarget,
 			                                  renderFunc);
 
 			GLShaderProgram shader("postprocess", "panorama360");
-			GLHandler::postProcess(shader, *mainRenderTarget->cubemapTarget,
+			GLHandler::postProcess(shader, *mainRenderTarget->sceneTarget,
 			                       mainRenderTarget->postProcessingTargets[0]);
 		}
 		else if(projection == MainRenderTarget::Projection::VR360)
 		{
-			if(mainRenderTarget->cubemapTarget == nullptr)
-			{
-				unsigned int side(getSize().width() / 3);
-				mainRenderTarget->cubemapTarget = new GLFramebufferObject(
-				    GLTexture::TexCubemapProperties(side, GL_RGBA32F));
-			}
 			int tgtWidth(
 			    mainRenderTarget->postProcessingTargets[0].getSize().width()),
 			    tgtHeight(mainRenderTarget->postProcessingTargets[0]
@@ -471,18 +453,18 @@ void Renderer::renderFrame()
 			                  .height());
 			QVector3D shift(0.065, 0.0, 0.0);
 
-			GLHandler::generateEnvironmentMap(*mainRenderTarget->cubemapTarget,
+			GLHandler::generateEnvironmentMap(*mainRenderTarget->sceneTarget,
 			                                  renderFunc, shift);
 			GLShaderProgram shader("postprocess", "panorama360");
-			GLHandler::postProcess(shader, *mainRenderTarget->cubemapTarget,
+			GLHandler::postProcess(shader, *mainRenderTarget->sceneTarget,
 			                       mainRenderTarget->postProcessingTargets[0]);
 			mainRenderTarget->postProcessingTargets[0].blitColorBufferTo(
 			    mainRenderTarget->postProcessingTargets[1], 0, 0, tgtWidth,
 			    tgtHeight, 0, 0, tgtWidth, tgtHeight / 2);
 
-			GLHandler::generateEnvironmentMap(*mainRenderTarget->cubemapTarget,
+			GLHandler::generateEnvironmentMap(*mainRenderTarget->sceneTarget,
 			                                  renderFunc, -shift);
-			GLHandler::postProcess(shader, *mainRenderTarget->cubemapTarget,
+			GLHandler::postProcess(shader, *mainRenderTarget->sceneTarget,
 			                       mainRenderTarget->postProcessingTargets[0]);
 			mainRenderTarget->postProcessingTargets[0].blitColorBufferTo(
 			    mainRenderTarget->postProcessingTargets[1], 0, 0, tgtWidth,
