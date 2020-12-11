@@ -180,8 +180,8 @@ void Renderer::reloadPostProcessingTargets()
 {
 	QSize newSize(getSize());
 
-	delete mainRenderTarget->postProcessingTargets[0];
-	delete mainRenderTarget->postProcessingTargets[1];
+	delete mainRenderTarget;
+	mainRenderTarget = new MainRenderTarget;
 	mainRenderTarget->postProcessingTargets[0]
 	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
 	        newSize.width(), newSize.height(), GL_RGBA32F));
@@ -191,7 +191,6 @@ void Renderer::reloadPostProcessingTargets()
 
 	if(QSettings().value("graphics/antialiasing").toUInt() > 0)
 	{
-		delete mainRenderTarget->multisampledTarget;
 		mainRenderTarget->multisampledTarget
 		    = new GLFramebufferObject(GLTexture::TexMultisampleProperties(
 		        newSize.width(), newSize.height(),
@@ -550,10 +549,6 @@ void Renderer::clean()
 	}
 	delete dbgCamera;
 
-	delete mainRenderTarget->cubemapTarget;
-	delete mainRenderTarget->multisampledTarget;
-	delete mainRenderTarget->postProcessingTargets[0];
-	delete mainRenderTarget->postProcessingTargets[1];
 	delete mainRenderTarget;
 
 	initialized = false;

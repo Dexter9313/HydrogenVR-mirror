@@ -224,7 +224,7 @@ class Renderer
 	bool renderCompass          = false;
 	CalibrationCompass* compass = nullptr;
 
-	MainRenderTarget* mainRenderTarget = new MainRenderTarget;
+	MainRenderTarget* mainRenderTarget = nullptr;
 };
 
 template <class T>

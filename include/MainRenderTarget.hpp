@@ -31,8 +31,14 @@ class MainRenderTarget
 		VR360       = 2,
 	};
 
-	MainRenderTarget()  = default;
-	~MainRenderTarget() = default;
+	MainRenderTarget() = default;
+	~MainRenderTarget()
+	{
+		delete cubemapTarget;
+		delete multisampledTarget;
+		delete postProcessingTargets[0];
+		delete postProcessingTargets[1];
+	};
 
   public:
 	GLFramebufferObject* cubemapTarget      = nullptr;
