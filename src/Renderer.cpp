@@ -179,25 +179,13 @@ void Renderer::removePostProcessingShader(QString const& id)
 void Renderer::reloadPostProcessingTargets()
 {
 	QSize newSize(getSize());
+	unsigned int samples(
+	    static_cast<unsigned int>(1)
+	    << QSettings().value("graphics/antialiasing").toUInt());
 
 	delete mainRenderTarget;
-	mainRenderTarget = new MainRenderTarget;
-	mainRenderTarget->postProcessingTargets[0]
-	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
-	        newSize.width(), newSize.height(), GL_RGBA32F));
-	mainRenderTarget->postProcessingTargets[1]
-	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
-	        newSize.width(), newSize.height(), GL_RGBA32F));
-
-	if(QSettings().value("graphics/antialiasing").toUInt() > 0)
-	{
-		mainRenderTarget->multisampledTarget
-		    = new GLFramebufferObject(GLTexture::TexMultisampleProperties(
-		        newSize.width(), newSize.height(),
-		        static_cast<unsigned int>(1)
-		            << QSettings().value("graphics/antialiasing").toUInt(),
-		        GL_RGBA32F));
-	}
+	mainRenderTarget = new MainRenderTarget(newSize.width(), newSize.height(),
+	                                        samples, projection);
 
 	if(vrHandler.isEnabled())
 	{

@@ -31,7 +31,21 @@ class MainRenderTarget
 		VR360       = 2,
 	};
 
-	MainRenderTarget() = default;
+	MainRenderTarget(unsigned int width, unsigned int height,
+	                 unsigned int samples, Projection /*projection*/)
+	{
+		postProcessingTargets[0] = new GLFramebufferObject(
+		    GLTexture::Tex2DProperties(width, height, GL_RGBA32F));
+		postProcessingTargets[1] = new GLFramebufferObject(
+		    GLTexture::Tex2DProperties(width, height, GL_RGBA32F));
+
+		if(samples > 1)
+		{
+			multisampledTarget
+			    = new GLFramebufferObject(GLTexture::TexMultisampleProperties(
+			        width, height, samples, GL_RGBA32F));
+		}
+	};
 	~MainRenderTarget()
 	{
 		delete cubemapTarget;
