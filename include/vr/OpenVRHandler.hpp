@@ -83,8 +83,8 @@ class OpenVRHandler : public VRHandler
 	std::array<GLFramebufferObject*, 2> postProcessingTargetsLeft
 	    = {{nullptr, nullptr}};
 	std::array<GLFramebufferObject*, 2> postProcessingTargetsRight
-	    = {{nullptr, nullptr}};
-	QSize currentTargetSize;*/
+	    = {{nullptr, nullptr}};*/
+	QSize currentTargetSize;
 
 	void updateController(Side side, int nDevice);
 	void updateHands();

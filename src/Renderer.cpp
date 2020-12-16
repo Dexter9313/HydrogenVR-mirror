@@ -33,6 +33,9 @@ void Renderer::init()
 		clean();
 	}
 
+	QObject::connect(&vrHandler, &VRHandler::renderTargetSizeChanged,
+	                 [this]() { this->updateRenderTargets(); });
+
 	dbgCamera = new DebugCamera(vrHandler);
 	dbgCamera->lookAt({2, 0, 2}, {0, 0, 0}, {0, 0, 1});
 
@@ -47,7 +50,7 @@ void Renderer::init()
 	initialized = true;
 }
 
-void Renderer::windowResized()
+void Renderer::updateRenderTargets()
 {
 	if(!initialized)
 	{
@@ -59,18 +62,18 @@ void Renderer::windowResized()
 		QSettings().setValue("window/width", window.size().width());
 		QSettings().setValue("window/height", window.size().height());
 	}
-	if(QSettings().value("window/forcerenderresolution").toBool())
-	{
-		return;
-	}
 	updateFOV();
 	reloadPostProcessingTargets();
 }
 
-QSize Renderer::getSize() const
+QSize Renderer::getSize(bool ignoreVR) const
 {
 	QSize renderSize(window.size().width(), window.size().height());
-	if(QSettings().value("window/forcerenderresolution").toBool())
+	if(vrHandler.isEnabled() && !ignoreVR)
+	{
+		renderSize = vrHandler.getEyeRenderTargetSize();
+	}
+	else if(QSettings().value("window/forcerenderresolution").toBool())
 	{
 		renderSize.setWidth(QSettings().value("window/forcewidth").toInt());
 		renderSize.setHeight(QSettings().value("window/forceheight").toInt());

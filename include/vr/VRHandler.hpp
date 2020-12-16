@@ -107,6 +107,9 @@ class VRHandler : public QObject
 	                                       float farPlan = 10000.0f) const = 0;
 	virtual void resetPos()                                                = 0;
 
+  signals:
+	void renderTargetSizeChanged(QSize newSize);
+
   protected:
 	Renderer const* renderer;
 

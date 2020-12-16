@@ -235,10 +235,11 @@ void OpenVRHandler::prepareRendering(Side eye)
 	    &tracked_device_pose[0], vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
 	// reload render targets if resolution per eye changed (supersampling)
-	/*if(currentTargetSize != getEyeRenderTargetSize())
+	if(currentTargetSize != getEyeRenderTargetSize())
 	{
-	    reloadPostProcessingTargets();
-	}*/
+		currentTargetSize = getEyeRenderTargetSize();
+		emit renderTargetSizeChanged(currentTargetSize);
+	}
 
 	int nDeviceLeft  = -1;
 	int nDeviceRight = -1;

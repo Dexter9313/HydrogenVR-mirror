@@ -162,6 +162,7 @@ void AbstractMainWin::setVR(bool vr)
 	}
 	QSettings().setValue("vr/enabled", vrIsEnabled());
 
+	renderer.updateRenderTargets();
 	reloadBloomTargets();
 }
 
@@ -204,7 +205,7 @@ bool AbstractMainWin::event(QEvent* e)
 
 void AbstractMainWin::resizeEvent(QResizeEvent* /*ev*/)
 {
-	renderer.windowResized();
+	renderer.updateRenderTargets();
 }
 
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
