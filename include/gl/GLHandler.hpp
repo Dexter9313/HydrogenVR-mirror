@@ -7,7 +7,7 @@
 #include <QImage>
 #include <QMatrix4x4>
 #include <QOpenGLFunctions>
-#include <QOpenGLFunctions_4_0_Core>
+#include <QOpenGLFunctions_4_2_Core>
 #include <QSettings>
 #include <QString>
 #include <QVector2D>
@@ -80,7 +80,7 @@ class GLHandler : public QObject
 	 * You can call OpenGL directly through that reference, but be careful !
 	 * Make sure you keep a clean OpenGL state.
 	 */
-	static QOpenGLFunctions_4_0_Core& glf();
+	static QOpenGLFunctions_4_2_Core& glf();
 
   public slots:
 	/**

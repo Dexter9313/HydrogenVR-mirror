@@ -8,7 +8,7 @@ AbstractMainWin::AbstractMainWin()
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
 	format.setStencilBufferSize(8);
-	format.setVersion(4, 0);
+	format.setVersion(4, 2);
 	format.setSwapInterval(0);
 	setFormat(format);
 
