@@ -192,11 +192,6 @@ void Renderer::reloadPostProcessingTargets()
 	delete mainRenderTarget;
 	mainRenderTarget = new MainRenderTarget(newSize.width(), newSize.height(),
 	                                        samples, projection);
-
-	if(vrHandler.isEnabled())
-	{
-		// vrHandler.reloadPostProcessingTargets();
-	}
 }
 
 void Renderer::updateFOV()
