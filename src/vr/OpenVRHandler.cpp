@@ -283,6 +283,34 @@ void OpenVRHandler::prepareRendering(Side eye)
 	}
 }
 
+void OpenVRHandler::renderHiddenAreaMesh(Side eye)
+{
+	GLHandler::setBackfaceCulling(false);
+	GLShaderProgram s("hiddenarea");
+
+	GLHandler::glf().glClearStencil(0x0);
+	GLHandler::glf().glEnable(GL_STENCIL_TEST);
+	GLHandler::glf().glStencilMask(0xFF);
+	GLHandler::glf().glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+	GLMesh hiddenAreaMesh;
+	hiddenAreaMesh.setVertices(
+	    &(vr_pointer->GetHiddenAreaMesh(getEye(eye)).pVertexData[0].v[0]),
+	    2 * 3 * vr_pointer->GetHiddenAreaMesh(getEye(eye)).unTriangleCount, s,
+	    {{"position", 2}});
+
+	GLHandler::glf().glClear(static_cast<GLuint>(GL_STENCIL_BUFFER_BIT));
+	s.use();
+	hiddenAreaMesh.render(PrimitiveType::TRIANGLES);
+
+	GLHandler::setBackfaceCulling(true);
+
+	GLHandler::glf().glStencilMask(0x00);
+	GLHandler::glf().glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+}
+
 void OpenVRHandler::renderControllers() const
 {
 	if(leftController != nullptr)
@@ -306,56 +334,6 @@ void OpenVRHandler::renderHands() const
 		rightHand->render();
 	}
 }
-
-/*void OpenVRHandler::reloadPostProcessingTargets()
-{
-    // Render hidden area mesh
-
-    GLHandler::setBackfaceCulling(false);
-    GLShaderProgram s("hiddenarea");
-
-    GLHandler::glf().glClearStencil(0x0);
-    GLHandler::glf().glEnable(GL_STENCIL_TEST);
-    GLHandler::glf().glStencilMask(0xFF);
-    GLHandler::glf().glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-    // LEFT
-    auto hiddenAreaMesh = new GLMesh;
-    hiddenAreaMesh->setVertices(
-        &(vr_pointer->GetHiddenAreaMesh(vr::Eye_Left).pVertexData[0].v[0]),
-        2 * 3 * vr_pointer->GetHiddenAreaMesh(vr::Eye_Left).unTriangleCount, s,
-        {{"position", 2}});
-
-    GLHandler::beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
-                                  | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT)
-                                  | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
-                              *postProcessingTargetsLeft[0]);
-    s.use();
-    hiddenAreaMesh->render(PrimitiveType::TRIANGLES);
-    delete hiddenAreaMesh;
-
-    // RIGHT
-    hiddenAreaMesh = new GLMesh;
-    hiddenAreaMesh->setVertices(
-        &(vr_pointer->GetHiddenAreaMesh(vr::Eye_Right).pVertexData[0].v[0]),
-        2 * 3 * vr_pointer->GetHiddenAreaMesh(vr::Eye_Right).unTriangleCount, s,
-        {{"position", 2}});
-
-    GLHandler::beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
-                                  | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT)
-                                  | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
-                              *postProcessingTargetsRight[0]);
-    s.use();
-    hiddenAreaMesh->render(PrimitiveType::TRIANGLES);
-    delete hiddenAreaMesh;
-
-    GLHandler::setBackfaceCulling(true);
-
-    GLHandler::glf().glStencilMask(0x00);
-    GLHandler::glf().glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-}*/
 
 void OpenVRHandler::submitRendering(GLFramebufferObject const& fbo)
 {

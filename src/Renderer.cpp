@@ -309,6 +309,7 @@ void Renderer::vrRender(Side side, bool debug, bool debugInHeadset,
 {
 	vrHandler.prepareRendering(side);
 	GLHandler::beginRendering(mainRenderTarget->sceneTarget);
+	vrHandler.renderHiddenAreaMesh(side);
 
 	for(auto pair : sceneRenderPipeline_)
 	{

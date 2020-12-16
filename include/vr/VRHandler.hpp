@@ -85,7 +85,8 @@ class VRHandler : public QObject
 	virtual QSizeF getPlayAreaSize() const                            = 0;
 	virtual std::vector<QVector3D> getPlayAreaQuad() const            = 0;
 	// update state
-	virtual void prepareRendering(Side eye)                      = 0;
+	virtual void prepareRendering(Side eye) = 0;
+	virtual void renderHiddenAreaMesh(Side /*eye*/){};
 	virtual void renderControllers() const                       = 0;
 	virtual void renderHands() const                             = 0;
 	virtual void submitRendering(GLFramebufferObject const& fbo) = 0;

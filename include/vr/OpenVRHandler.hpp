@@ -36,6 +36,7 @@ class OpenVRHandler : public VRHandler
 	virtual QSizeF getPlayAreaSize() const override;
 	virtual std::vector<QVector3D> getPlayAreaQuad() const override;
 	virtual void prepareRendering(Side eye) override;
+	virtual void renderHiddenAreaMesh(Side eye) override;
 	virtual void renderControllers() const override;
 	virtual void renderHands() const override;
 	virtual void submitRendering(GLFramebufferObject const& fbo) override;
