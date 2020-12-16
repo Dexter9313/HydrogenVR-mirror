@@ -96,7 +96,8 @@ class GLFramebufferObject
 	{
 		return *texColorBuffer;
 	};
-	void bind(GLTexture::CubemapFace face, GLint layer) const;
+	void bind(GLTexture::CubemapFace face = GLTexture::CubemapFace::FRONT,
+	          GLint layer                 = 0) const;
 	void blitColorBufferTo(GLFramebufferObject const& to) const;
 	void blitColorBufferTo(GLFramebufferObject const& to, int srcX0, int srcY0,
 	                       int srcX1, int srcY1, int dstX0, int dstY0,

@@ -70,7 +70,10 @@ bool OpenVRHandler::init(Renderer const& renderer)
 		qDebug() << "Render models loaded successfully";
 	}
 
-	// reloadPostProcessingTargets();
+	currentTargetSize = getEyeRenderTargetSize();
+	submitFBO         = new GLFramebufferObject(GLTexture::Tex2DProperties(
+        currentTargetSize.width(), currentTargetSize.height(), GL_RGB8));
+	submitFBO->bind();
 
 #ifdef LEAP_MOTION
 	if(leapController.isConnected())
@@ -238,6 +241,10 @@ void OpenVRHandler::prepareRendering(Side eye)
 	if(currentTargetSize != getEyeRenderTargetSize())
 	{
 		currentTargetSize = getEyeRenderTargetSize();
+		delete submitFBO;
+		submitFBO = new GLFramebufferObject(GLTexture::Tex2DProperties(
+		    currentTargetSize.width(), currentTargetSize.height(), GL_RGB8));
+		submitFBO->bind();
 		emit renderTargetSizeChanged(currentTargetSize);
 	}
 
@@ -391,10 +398,11 @@ void OpenVRHandler::submitRendering(GLFramebufferObject const& fbo)
 	/*submittedIndex = i % 2;
 	GLFramebufferObject const& frame
 	    = getPostProcessingTarget(submittedIndex, eye);*/
+	fbo.blitColorBufferTo(*submitFBO);
 	vr::Texture_t texture
 	    = {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 	       reinterpret_cast<void*>(static_cast<uintptr_t>(
-	           fbo.getColorAttachmentTexture().getGLTexture())),
+	           submitFBO->getColorAttachmentTexture().getGLTexture())),
 	       vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
 	vr::EVRCompositorError error
 	    = vr_compositor->Submit(getEye(currentRenderingEye), &texture);
@@ -495,6 +503,8 @@ void OpenVRHandler::close()
 	postProcessingTargetsLeft[1]  = nullptr;
 	postProcessingTargetsRight[0] = nullptr;
 	postProcessingTargetsRight[1] = nullptr;*/
+	delete submitFBO;
+	submitFBO = nullptr;
 	qDebug() << "Closing VR runtime...";
 	vr::VR_Shutdown();
 	vr_pointer = nullptr;

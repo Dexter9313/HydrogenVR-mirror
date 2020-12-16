@@ -85,6 +85,7 @@ class OpenVRHandler : public VRHandler
 	std::array<GLFramebufferObject*, 2> postProcessingTargetsRight
 	    = {{nullptr, nullptr}};*/
 	QSize currentTargetSize;
+	GLFramebufferObject* submitFBO = nullptr;
 
 	void updateController(Side side, int nDevice);
 	void updateHands();
