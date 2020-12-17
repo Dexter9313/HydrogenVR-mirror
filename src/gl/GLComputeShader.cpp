@@ -20,9 +20,9 @@
 
 #include "gl/GLComputeShader.hpp"
 
-GLComputeShader::GLComputeShader(QString const& name,
+GLComputeShader::GLComputeShader(QString const& fileName,
                                  QMap<QString, QString> const& defines)
-    : GLShaderProgram({{name, Stage::COMPUTE}}, defines)
+    : GLShaderProgram({{fileName, Stage::COMPUTE}}, defines)
 {
 }
 

@@ -32,8 +32,8 @@ class GLComputeShader : public GLShaderProgram
 		RW = GL_READ_WRITE
 	};
 
-	GLComputeShader(QString const& name,
-	                QMap<QString, QString> const& defines = {});
+	explicit GLComputeShader(QString const& fileName,
+	                         QMap<QString, QString> const& defines = {});
 	// waitForFinish is non-blocking for the CPU but is for the GPU (to be
 	// confirmed !)
 	void exec(std::vector<std::pair<GLTexture const*, DataAccessMode>> const&
