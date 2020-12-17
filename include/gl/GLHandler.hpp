@@ -14,12 +14,14 @@
 #include <QVector3D>
 #include <QVector>
 #include <QtMath>
+#include <QtOpenGLExtensions>
 #include <array>
 #include <functional>
 
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
 
+#include "gl/GLComputeShader.hpp"
 #include "gl/GLFramebufferObject.hpp"
 #include "gl/GLMesh.hpp"
 #include "gl/GLPixelBufferObject.hpp"
@@ -81,6 +83,8 @@ class GLHandler : public QObject
 	 * Make sure you keep a clean OpenGL state.
 	 */
 	static QOpenGLFunctions_4_2_Core& glf();
+
+	static QOpenGLExtension_ARB_compute_shader& glf_ARB_compute_shader();
 
   public slots:
 	/**
