@@ -26,6 +26,7 @@
 
 #include "GLShaderProgram.hpp"
 
+class GLBuffer;
 class GLHandler;
 
 /**
@@ -75,8 +76,7 @@ class GLMesh
 	    : vao(other.vao)
 	    , vbo(other.vbo)
 	    , ebo(other.ebo)
-	    , vboSize(other.vboSize)
-	    , eboSize(other.eboSize)
+	    , verticesNumber(other.verticesNumber)
 	    , doClean(other.doClean)
 	{
 		// prevent other from cleaning shader if it destroys itself
@@ -204,11 +204,10 @@ class GLMesh
 	void cleanUp();
 
   private:
-	GLuint vao           = 0;
-	GLuint vbo           = 0;
-	GLuint ebo           = 0;
-	unsigned int vboSize = 0;
-	unsigned int eboSize = 0;
+	GLuint vao                  = 0;
+	GLBuffer* vbo               = 0;
+	GLBuffer* ebo               = 0;
+	unsigned int verticesNumber = 0;
 
 	bool doClean = true;
 	static unsigned int& instancesCount();

@@ -30,12 +30,8 @@ GLMesh::GLMesh()
 {
 	++instancesCount();
 	GLHandler::glf().glGenVertexArrays(1, &vao);
-	GLHandler::glf().glGenBuffers(1, &vbo);
-	GLHandler::glf().glBindVertexArray(vao);
-	GLHandler::glf().glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	GLHandler::glf().glGenBuffers(1, &ebo);
-	GLHandler::glf().glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	GLHandler::glf().glBindVertexArray(0);
+	vbo = new GLBuffer(GL_ARRAY_BUFFER);
+	ebo = new GLBuffer(GL_ELEMENT_ARRAY_BUFFER);
 }
 
 void GLMesh::cleanUp()
@@ -45,8 +41,8 @@ void GLMesh::cleanUp()
 		return;
 	}
 	--instancesCount();
-	GLHandler::glf().glDeleteBuffers(1, &vbo);
-	GLHandler::glf().glDeleteBuffers(1, &ebo);
+	delete vbo;
+	delete ebo;
 	GLHandler::glf().glDeleteVertexArrays(1, &vao);
 	doClean = false;
 }
@@ -57,10 +53,7 @@ void GLMesh::setVertices(
     std::vector<unsigned int> const& elements)
 {
 	GLHandler::glf().glBindVertexArray(vao);
-	GLHandler::glf().glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	// put data in buffer (it is now sent to graphics card)
-	GLHandler::glf().glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertices[0]),
-	                              vertices, GL_STATIC_DRAW);
+	vbo->setData(vertices, size);
 
 	size_t offset = 0, stride = 0;
 	for(auto map : mapping)
@@ -74,6 +67,7 @@ void GLMesh::setVertices(
 		if(posAttrib != -1)
 		{
 			GLHandler::glf().glEnableVertexAttribArray(posAttrib);
+			vbo->bind(); // binds the vbo to the vao attrib pointer
 			GLHandler::glf().glVertexAttribPointer(
 			    posAttrib, map.second, GL_FLOAT, GL_FALSE,
 			    stride * sizeof(float),
@@ -84,15 +78,12 @@ void GLMesh::setVertices(
 	}
 	if(offset != 0)
 	{
-		vboSize = size / offset;
+		verticesNumber = size / offset;
 	}
 	if(!elements.empty())
 	{
-		GLHandler::glf().glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		GLHandler::glf().glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		                              elements.size() * sizeof(elements[0]),
-		                              &(elements[0]), GL_STATIC_DRAW);
-		eboSize = elements.size();
+		ebo->setData(elements);
+		verticesNumber = elements.size();
 	}
 
 	GLHandler::glf().glBindVertexArray(0);
@@ -124,12 +115,7 @@ void GLMesh::setVertices(std::vector<float> const& vertices,
 
 void GLMesh::updateVertices(float const* vertices, size_t size) const
 {
-	GLHandler::glf().glBindVertexArray(vao);
-	GLHandler::glf().glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	// put data in buffer (it is now sent to graphics card)
-	GLHandler::glf().glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertices[0]),
-	                              vertices, GL_DYNAMIC_DRAW);
-	GLHandler::glf().glBindVertexArray(0);
+	vbo->setData(vertices, size);
 }
 
 void GLMesh::updateVertices(std::vector<float> const& vertices) const
@@ -141,20 +127,21 @@ void GLMesh::render(PrimitiveType primitiveType) const
 {
 	if(primitiveType == PrimitiveType::AUTO)
 	{
-		primitiveType
-		    = (eboSize == 0) ? PrimitiveType::POINTS : PrimitiveType::TRIANGLES;
+		primitiveType = (ebo->getSize() == 0) ? PrimitiveType::POINTS
+		                                      : PrimitiveType::TRIANGLES;
 	}
 
 	GLHandler::glf().glBindVertexArray(vao);
-	if(eboSize == 0)
+	if(ebo->getSize() == 0)
 	{
 		GLHandler::glf().glDrawArrays(static_cast<GLenum>(primitiveType), 0,
-		                              vboSize);
+		                              verticesNumber);
 	}
 	else
 	{
 		GLHandler::glf().glDrawElements(static_cast<GLenum>(primitiveType),
-		                                eboSize, GL_UNSIGNED_INT, nullptr);
+		                                verticesNumber, GL_UNSIGNED_INT,
+		                                nullptr);
 	}
 	GLHandler::glf().glBindVertexArray(0);
 }

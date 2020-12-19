@@ -21,6 +21,7 @@
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
 
+#include "gl/GLBuffer.hpp"
 #include "gl/GLComputeShader.hpp"
 #include "gl/GLFramebufferObject.hpp"
 #include "gl/GLMesh.hpp"
