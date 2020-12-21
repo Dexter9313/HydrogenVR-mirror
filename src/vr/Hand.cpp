@@ -59,7 +59,7 @@ void Hand::update(Leap::Hand const& hand)
 		return;
 	}
 
-	mesh.updateVertices(getHandVBO(hand));
+	mesh.setVertices(getHandVBO(hand));
 
 	_isFlat   = hand.grabStrength() == 0;
 	_isClosed = hand.grabStrength() == 1;
