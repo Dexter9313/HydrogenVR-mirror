@@ -102,7 +102,7 @@ class GLBuffer
 template <typename T>
 void GLBuffer::setData(T const* data, size_t size, GLenum usage)
 {
-	if(this->size * sizeof(T) == size)
+	if(this->size * sizeof(T) == size && size != 0)
 	{
 		// optimize, don't reallocate
 		setSubData(0, data, size);
