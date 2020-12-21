@@ -130,8 +130,8 @@ void GLHandler::postProcess(
     std::vector<GLTexture const*> const& uniformTextures)
 {
 	GLMesh quad;
-	quad.setVertices({-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
-	                 {{"position", 2}});
+	quad.setVertexShaderMapping(shader, {{"position", 2}});
+	quad.setVertices({-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f});
 
 	beginRendering(to);
 	shader.use();
@@ -152,8 +152,8 @@ void GLHandler::renderFromScratch(GLShaderProgram const& shader,
                                   GLFramebufferObject const& to)
 {
 	GLMesh quad;
-	quad.setVertices({-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
-	                 {{"position", 2}});
+	quad.setVertexShaderMapping(shader, {{"position", 2}});
+	quad.setVertices({-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f});
 
 	if(to.getDepth() == 1)
 	{

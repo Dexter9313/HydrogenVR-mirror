@@ -47,13 +47,11 @@ void GLMesh::cleanUp()
 	doClean = false;
 }
 
-void GLMesh::setVertices(
-    float const* vertices, size_t size, GLShaderProgram const& shaderProgram,
-    std::vector<QPair<const char*, unsigned int>> const& mapping,
-    std::vector<unsigned int> const& elements)
+void GLMesh::setVertexShaderMapping(
+    GLShaderProgram const& shaderProgram,
+    std::vector<QPair<const char*, unsigned int>> const& mapping)
 {
 	GLHandler::glf().glBindVertexArray(vao);
-	vbo->setData(vertices, size);
 
 	size_t offset = 0, stride = 0;
 	for(auto map : mapping)
@@ -76,33 +74,15 @@ void GLMesh::setVertices(
 		}
 		offset += map.second;
 	}
-	if(offset != 0)
-	{
-		verticesNumber = size / offset;
-	}
-	if(!elements.empty())
-	{
-		ebo->setData(elements);
-		verticesNumber = elements.size();
-	}
+	vertexSize = offset * sizeof(float);
 
+	ebo->bind();
 	GLHandler::glf().glBindVertexArray(0);
 }
 
-void GLMesh::setVertices(
-    std::vector<float> const& vertices, GLShaderProgram const& shaderProgram,
-    std::vector<QPair<const char*, unsigned int>> const& mapping,
-    std::vector<unsigned int> const& elements)
-{
-	setVertices(&(vertices[0]), vertices.size(), shaderProgram, mapping,
-	            elements);
-}
-
-void GLMesh::setVertices(std::vector<float> const& vertices,
-                         GLShaderProgram const& shaderProgram,
-                         QStringList const& mappingNames,
-                         std::vector<unsigned int> const& mappingSizes,
-                         std::vector<unsigned int> const& elements)
+void GLMesh::setVertexShaderMapping(
+    GLShaderProgram const& shaderProgram, QStringList const& mappingNames,
+    std::vector<unsigned int> const& mappingSizes)
 {
 	std::vector<QPair<const char*, unsigned int>> mapping;
 	for(unsigned int i(0); i < mappingSizes.size(); ++i)
@@ -110,21 +90,39 @@ void GLMesh::setVertices(std::vector<float> const& vertices,
 		mapping.emplace_back(mappingNames[i].toLatin1().constData(),
 		                     mappingSizes[i]);
 	}
-	setVertices(vertices, shaderProgram, mapping, elements);
+	setVertexShaderMapping(shaderProgram, mapping);
 }
 
-void GLMesh::updateVertices(float const* vertices, size_t size) const
+void GLMesh::setVertices(float const* vertices, size_t vertSize)
 {
-	vbo->setData(vertices, size);
+	vbo->setData(vertices, vertSize);
 }
 
-void GLMesh::updateVertices(std::vector<float> const& vertices) const
+void GLMesh::setVertices(float const* vertices, size_t vertSize,
+                         unsigned int const* elements, size_t elemSize)
 {
-	updateVertices(&(vertices[0]), vertices.size());
+	vbo->setData(vertices, vertSize);
+	ebo->setData(elements, elemSize);
+}
+
+void GLMesh::setVertices(std::vector<float> const& vertices)
+{
+	setVertices(&(vertices[0]), vertices.size());
+}
+
+void GLMesh::setVertices(std::vector<float> const& vertices,
+                         std::vector<unsigned int> const& elements)
+{
+	setVertices(&(vertices[0]), vertices.size(), &(elements[0]),
+	            elements.size());
 }
 
 void GLMesh::render(PrimitiveType primitiveType) const
 {
+	if(vertexSize == 0)
+	{
+		return;
+	}
 	if(primitiveType == PrimitiveType::AUTO)
 	{
 		primitiveType = (ebo->getSize() == 0) ? PrimitiveType::POINTS
@@ -135,13 +133,13 @@ void GLMesh::render(PrimitiveType primitiveType) const
 	if(ebo->getSize() == 0)
 	{
 		GLHandler::glf().glDrawArrays(static_cast<GLenum>(primitiveType), 0,
-		                              verticesNumber);
+		                              vbo->getSize() / vertexSize);
 	}
 	else
 	{
 		GLHandler::glf().glDrawElements(static_cast<GLenum>(primitiveType),
-		                                verticesNumber, GL_UNSIGNED_INT,
-		                                nullptr);
+		                                ebo->getSize() / sizeof(unsigned int),
+		                                GL_UNSIGNED_INT, nullptr);
 	}
 	GLHandler::glf().glBindVertexArray(0);
 }

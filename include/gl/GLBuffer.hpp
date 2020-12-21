@@ -56,6 +56,7 @@ class GLBuffer
 	{
 		this->currentTarget = currentTarget;
 	};
+	// in bytes
 	size_t getSize() const { return size; };
 	void resize(size_t size, GLenum usage = GL_STATIC_DRAW);
 	void bind() const;
