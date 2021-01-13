@@ -434,19 +434,15 @@ void AbstractMainWin::applyPostProcShaderParams(
     QString const& id, GLShaderProgram const& shader,
     GLFramebufferObject const& /*currentTarget*/) const
 {
-	if(id == "colors")
-	{
-		shader.setUniform("gamma", gamma);
-	}
-	else if(id == "exposure")
+	if(id == "exposure")
 	{
 		shader.setUniform("exposure", toneMappingModel->exposure);
 		shader.setUniform("dynamicrange", toneMappingModel->dynamicrange);
 		shader.setUniform("purkinje", toneMappingModel->purkinje ? 1.f : 0.f);
 	}
-	else if(id == "bloom")
+	else if(id == "colors")
 	{
-		shader.setUniform("highlumtex", 1);
+		shader.setUniform("gamma", gamma);
 	}
 	else
 	{
@@ -457,31 +453,36 @@ void AbstractMainWin::applyPostProcShaderParams(
 	}
 }
 
-std::vector<GLTexture const*> AbstractMainWin::getPostProcessingUniformTextures(
-    QString const& id, GLShaderProgram const& /*shader*/,
-    GLFramebufferObject const& currentTarget) const
+std::vector<std::pair<GLTexture const*, GLComputeShader::DataAccessMode>>
+    AbstractMainWin::getPostProcessingUniformTextures(
+        QString const& id, GLShaderProgram const& /*shader*/,
+        GLFramebufferObject const& currentTarget) const
 {
 	if(id == "bloom")
 	{
 		if(bloom)
 		{
 			// high luminosity pass
-			GLShaderProgram hlshader("postprocess", "highlumpass");
+			GLComputeShader hlshader("highlumpass");
 			GLHandler::postProcess(hlshader, currentTarget, *bloomTargets[0]);
 
 			// blurring
-			GLShaderProgram blurshader("postprocess", "blur");
-			for(unsigned int i = 0; i < 6; i++)
+			GLComputeShader blurshader("blur");
+			for(unsigned int i = 0; i < 6;
+			    i++) // always execute even number of times
 			{
-				blurshader.setUniform("horizontal", static_cast<float>(i % 2));
+				blurshader.setUniform("dir", i % 2 == 0 ? QVector2D(1, 0)
+				                                        : QVector2D(0, 1));
 				GLHandler::postProcess(blurshader, *bloomTargets.at(i % 2),
 				                       *bloomTargets.at((i + 1) % 2));
 			}
 
-			return {&bloomTargets[0]->getColorAttachmentTexture()};
+			return {{&bloomTargets[0]->getColorAttachmentTexture(),
+			         GLComputeShader::DataAccessMode::R}};
 		}
 		GLHandler::beginRendering(*bloomTargets[0]);
-		return {&bloomTargets[0]->getColorAttachmentTexture()};
+		return {{&bloomTargets[0]->getColorAttachmentTexture(),
+		         GLComputeShader::DataAccessMode::R}};
 	}
 	return {};
 }
