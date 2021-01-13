@@ -206,6 +206,7 @@ bool AbstractMainWin::event(QEvent* e)
 void AbstractMainWin::resizeEvent(QResizeEvent* /*ev*/)
 {
 	renderer.updateRenderTargets();
+	reloadBloomTargets();
 }
 
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
@@ -516,9 +517,6 @@ void AbstractMainWin::initializeGL()
 		vrHandler->resetPos();
 	}
 
-	// BLOOM
-	reloadBloomTargets();
-
 	// let user init
 	initScene();
 
@@ -540,6 +538,9 @@ void AbstractMainWin::initializeGL()
 
 	frameTimer.start();
 	initialized = true;
+
+	// BLOOM
+	reloadBloomTargets();
 }
 
 void AbstractMainWin::initializePythonQt()
@@ -717,6 +718,10 @@ AbstractMainWin::~AbstractMainWin()
 
 void AbstractMainWin::reloadBloomTargets()
 {
+	if(!initialized)
+	{
+		return;
+	}
 	delete bloomTargets[0];
 	delete bloomTargets[1];
 	if(!vrHandler->isEnabled())
