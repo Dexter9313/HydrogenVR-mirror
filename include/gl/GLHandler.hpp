@@ -166,6 +166,19 @@ class GLHandler : public QObject
 	                        GLFramebufferObject const& to,
 	                        std::vector<GLTexture const*> const& uniformTextures
 	                        = {});
+	static void postProcess(
+	    GLComputeShader const& shader, GLFramebufferObject const& inplace,
+	    std::vector<
+	        std::pair<GLTexture const*, GLComputeShader::DataAccessMode>> const&
+	        uniformTextures
+	    = {});
+	static void postProcess(
+	    GLComputeShader const& shader, GLFramebufferObject const& from,
+	    GLFramebufferObject const& to,
+	    std::vector<
+	        std::pair<GLTexture const*, GLComputeShader::DataAccessMode>> const&
+	        uniformTextures
+	    = {});
 	static void renderFromScratch(GLShaderProgram const& shader,
 	                              GLFramebufferObject const& to);
 

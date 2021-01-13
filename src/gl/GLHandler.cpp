@@ -148,6 +148,48 @@ void GLHandler::postProcess(
 	setBackfaceCulling(true);
 }
 
+void GLHandler::postProcess(
+    GLComputeShader const& shader, GLFramebufferObject const& inplace,
+    std::vector<
+        std::pair<GLTexture const*, GLComputeShader::DataAccessMode>> const&
+        uniformTextures)
+{
+	std::vector<std::pair<GLTexture const*, GLComputeShader::DataAccessMode>>
+	    texs;
+	texs.emplace_back(&inplace.getColorAttachmentTexture(),
+	                  GLComputeShader::DataAccessMode::RW);
+	// TODO(florian) performance
+	for(auto tex : uniformTextures)
+	{
+		texs.push_back(tex);
+	}
+	shader.exec(texs,
+	            {static_cast<unsigned int>(inplace.getSize().width()),
+	             static_cast<unsigned int>(inplace.getSize().height()), 1});
+}
+
+void GLHandler::postProcess(
+    GLComputeShader const& shader, GLFramebufferObject const& from,
+    GLFramebufferObject const& to,
+    std::vector<
+        std::pair<GLTexture const*, GLComputeShader::DataAccessMode>> const&
+        uniformTextures)
+{
+	std::vector<std::pair<GLTexture const*, GLComputeShader::DataAccessMode>>
+	    texs;
+	texs.emplace_back(&from.getColorAttachmentTexture(),
+	                  GLComputeShader::DataAccessMode::R);
+	texs.emplace_back(&to.getColorAttachmentTexture(),
+	                  GLComputeShader::DataAccessMode::R);
+	// TODO(florian) performance
+	for(auto tex : uniformTextures)
+	{
+		texs.push_back(tex);
+	}
+	shader.exec(texs, {static_cast<unsigned int>(from.getSize().width()),
+	                   static_cast<unsigned int>(from.getSize().height()), 1});
+}
+
 void GLHandler::renderFromScratch(GLShaderProgram const& shader,
                                   GLFramebufferObject const& to)
 {
