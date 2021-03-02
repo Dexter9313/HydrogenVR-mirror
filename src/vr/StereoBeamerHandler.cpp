@@ -90,9 +90,29 @@ QMatrix4x4 StereoBeamerHandler::getProjectionMatrix(Side /*eye*/,
                                                     float nearPlan,
                                                     float farPlan) const
 {
+	QVector3D deltaRel(QSettings()
+	                       .value("vr/virtualcamshift")
+	                       .value<QVector3D>()); // move cam in height units
+	float vFOV(renderer->getVerticalFOV() * 3.1415 / 180.0),
+	    a(renderer->getAspectRatioFromFOV());
+	float l(-nearPlan * a * tan(vFOV / 2.0)), t(nearPlan * tan(vFOV / 2.0));
+	float r(-l), b(-t);
+
+	float height(t - b);
+
+	r -= deltaRel.x() * height;
+	l -= deltaRel.x() * height;
+	t -= deltaRel.y() * height;
+	b -= deltaRel.y() * height;
+
+	float n(nearPlan + deltaRel.z() * height);
+	r *= nearPlan / n;
+	l *= nearPlan / n;
+	t *= nearPlan / n;
+	b *= nearPlan / n;
+
 	QMatrix4x4 result;
-	result.perspective(renderer->getVerticalFOV(),
-	                   renderer->getAspectRatioFromFOV(), nearPlan, farPlan);
+	result.frustum(l, r, b, t, nearPlan, farPlan);
 	return result;
 }
 

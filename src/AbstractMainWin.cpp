@@ -60,6 +60,16 @@ void AbstractMainWin::setVerticalAngleShift(double angleShift)
 	renderer.updateAngleShiftMat();
 }
 
+QVector3D AbstractMainWin::getVirtualCamShift() const
+{
+	return QSettings().value("vr/virtualcamshift").value<QVector3D>();
+}
+
+void AbstractMainWin::setVirtualCamShift(QVector3D const& virtualCamShift)
+{
+	QSettings().setValue("vr/virtualcamshift", virtualCamShift);
+}
+
 bool AbstractMainWin::isFullscreen() const
 {
 	return QSettings().value("window/fullscreen").toBool();
