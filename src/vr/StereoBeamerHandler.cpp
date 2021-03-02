@@ -80,9 +80,9 @@ void StereoBeamerHandler::close()
 QMatrix4x4 StereoBeamerHandler::getEyeViewMatrix(Side eye) const
 {
 	QMatrix4x4 res;
-	res.translate(
-	    stereoMultiplier
-	    * QVector3D(eye == Side::LEFT ? 0.03215 : -0.03215, 0.f, -0.015f));
+	res.translate(stereoMultiplier
+	              * QVector3D(eye == Side::LEFT ? 0.03215 : -0.03215, 0.f,
+	                          0.f /*-0.015f*/));
 	return res;
 }
 
