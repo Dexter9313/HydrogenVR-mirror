@@ -298,6 +298,10 @@ void Renderer::vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
 	{
 		dbgCamera->renderCamera(renderPath.camera);
 	}
+	if(renderCompass)
+	{
+		compass->render(angleShiftMat);
+	}
 	if(wireframe)
 	{
 		GLHandler::endWireframe();
