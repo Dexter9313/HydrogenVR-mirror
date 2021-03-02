@@ -634,9 +634,11 @@ QList<QPair<QString, QRect>> ScreenSelector::getScreens() const
 	for(auto s : screens)
 	{
 		QRect geom(s->geometry());
-		geom.setX(s->geometry().x() * w / desktopGeometry.width());
+		geom.setX((s->geometry().x() - desktopGeometry.x()) * w
+		          / desktopGeometry.width());
 		geom.setWidth(s->geometry().width() * w / desktopGeometry.width());
-		geom.setY(s->geometry().y() * h / desktopGeometry.height());
+		geom.setY((s->geometry().y() - desktopGeometry.y()) * h
+		          / desktopGeometry.height());
 		geom.setHeight(s->geometry().height() * h / desktopGeometry.height());
 
 		result.append({s->name(), geom});
