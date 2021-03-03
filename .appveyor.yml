@@ -117,5 +117,5 @@ deploy:
     secure: zl4QU+v4bBjyTAJkEVn7y1tBF63bC79DMH9rzcfYGMZnW8d1bDr8LWGHhNCrL44w
   artifact: zipfile, installer
   on:
-    branch: master                 # release from master branch only
     appveyor_repo_tag: true        # deploy on tag push only
+    #    branch: master                 # release from master branch only # tags are created on master anyway
