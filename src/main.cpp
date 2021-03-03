@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
 		launcher.init();
 		if(launcher.exec() == QDialog::Rejected)
 		{
-			return 1;
+			return EXIT_SUCCESS;
 		}
 	}
 
