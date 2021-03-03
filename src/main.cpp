@@ -34,6 +34,10 @@ int main(int argc, char* argv[])
 	    QCoreApplication::translate("main", "Read .ini config from <file>."),
 	    "file");
 	parser.addOption(config);
+	QCommandLineOption version(
+	    "version",
+	    QCoreApplication::translate("main", "Display version information."));
+	parser.addOption(version);
 	parser.process(a);
 
 	// set settings
@@ -91,6 +95,14 @@ int main(int argc, char* argv[])
 #pragma GCC diagnostic pop
 	}
 #endif
+
+	if(parser.isSet(version))
+	{
+		std::cout << PROJECT_NAME << " version " << PROJECT_VERSION
+		          << std::endl;
+		Logger::close();
+		return EXIT_SUCCESS;
+	}
 
 	if(!parser.isSet(noLauncher))
 	{

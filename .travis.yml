@@ -83,7 +83,8 @@ cache:
 
 script:
     - mkdir build ; cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DTAG=$TRAVIS_TAG -DWERROR=true
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DWERROR=true
+    - export VERSION=$(cat PROJECT_VERSION)
     - make -j 6
     - ./tests
     - make clang-format
@@ -91,7 +92,7 @@ script:
 
 before_deploy:
     - make package
-    - export RELEASE_DIR=$PROJECT_NAME-$TRAVIS_TAG-$TRAVIS_OS_NAME-64bit
+    - export RELEASE_DIR=$PROJECT_NAME-$VERSION-$TRAVIS_OS_NAME-64bit
     - mkdir $RELEASE_DIR
     - cp $PROJECT_NAME $RELEASE_DIR
     - cp -r ./data $RELEASE_DIR

@@ -70,13 +70,25 @@ if(NOT WIN32)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
 
+#Get project version from Git
+set(PROJECT_VERSION "custom")
+find_package(Git)
+if(GIT_FOUND)
+	execute_process(COMMAND ${GIT_EXECUTABLE} fetch --tags WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+	execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags --always WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_VARIABLE PROJECT_VERSION)
+	string(REGEX REPLACE "\n$" "" PROJECT_VERSION "${PROJECT_VERSION}")
+endif()
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/PROJECT_VERSION "${PROJECT_VERSION}")
+
 #Define project name in source for preprocessor
 add_definitions(-DPROJECT_NAME="${PROJECT_NAME}")
+add_definitions(-DPROJECT_VERSION="${PROJECT_VERSION}")
 add_definitions(-DPROJECT_DIRECTORY="${PROJECT_DIRECTORY}")
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 add_definitions(-DBUILD_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 message(STATUS "Project name: ${PROJECT_NAME}")
+message(STATUS "Project version: ${PROJECT_VERSION}")
 message(STATUS "Project dir: ${PROJECT_DIRECTORY}")
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 
@@ -299,9 +311,7 @@ if(NOT WIN32)
 	SET(CPACK_GENERATOR "DEB")
 	SET(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 	SET(CPACK_DEBIAN_PACKAGE_MAINTAINER ${PROJECT_MAINTAINER})
-	if(TAG)
-		SET(CPACK_PACKAGE_VERSION ${TAG})
-	endif()
+	SET(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
 
 	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5:amd64,\
 	libassimp4:amd64,\
