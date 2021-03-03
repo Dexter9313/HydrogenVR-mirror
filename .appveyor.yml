@@ -114,7 +114,7 @@ artifacts:
 deploy:
   provider: GitHub
   auth_token:
-    secure: zl4QU+v4bBjyTAJkEVn7y1tBF63bC79DMH9rzcfYGMZnW8d1bDr8LWGHhNCrL44w
+    secure: e0AD9IKzFUFfTSrjH7YKugmCOSPEZHTzglBFewQOq3xL8GK1d/PXfhMgSj+auKf0
   artifact: zipfile, installer
   on:
     appveyor_repo_tag: true        # deploy on tag push only
