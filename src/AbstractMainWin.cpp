@@ -94,17 +94,13 @@ void AbstractMainWin::setFullscreen(bool fullscreen)
 			}
 		}
 		setGeometry(screenGeometry);
-		show();
-		setFlag(Qt::FramelessWindowHint, true);
-		setFlag(Qt::WindowStaysOnTopHint, true);
+		showFullScreen();
 	}
 	else
 	{
+		show();
 		resize(QSettings().value("window/width").toUInt(),
 		       QSettings().value("window/height").toUInt());
-		show();
-		setFlag(Qt::FramelessWindowHint, false);
-		setFlag(Qt::WindowStaysOnTopHint, false);
 	}
 }
 
