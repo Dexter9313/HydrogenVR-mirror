@@ -1,72 +1,24 @@
-.build_template: &ubuntu_dep_commons
-    before_script:
-        - apt-get update
-        - DEBIAN_FRONTEND=noninteractive apt-get install -yq build-essential wget cmake git qtbase5-dev libassimp-dev libqt5opengl5-dev qtdeclarative5-dev libqt5svg5-dev qttools5-dev libqt5webkit5-dev qtmultimedia5-dev libqt5xmlpatterns5-dev libpython2.7-dev
-        - if [ ! -f "./build.conf" ]; then
-              . ./build.conf.example ;
-          else
-              . ./build.conf ;
-          fi
-        - mkdir deps ; cd deps
-        # install openvr
-        - OPENVR_COMMIT=0eb70325a4ea3edca2a0ff8aefa631f2529e6eb7 ;
-          wget --content-disposition https://github.com/ValveSoftware/openvr/raw/$OPENVR_COMMIT/bin/linux64/libopenvr_api.so ;
-          wget --content-disposition https://raw.githubusercontent.com/ValveSoftware/openvr/$OPENVR_COMMIT/headers/openvr.h ;
-          cp ./libopenvr_api.so /usr/lib ;
-          cp ./openvr.h /usr/include ;
-        # install leap motion sdk
-        - wget --content-disposition https://warehouse.leapmotion.com/apps/4185/download ;
-          tar xzf Leap_Motion_SDK_Linux_*.tgz ;
-          cp ./LeapDeveloperKit*/LeapSDK/include/Leap*.h /usr/include ;
-          cp ./LeapDeveloperKit*/LeapSDK/lib/x64/libLeap.so /usr/lib ;
-        - cd ..
-        # install project additional deps
-        - ./$PROJECT_DIRECTORY/ci/travis/install.sh
-
-
-#
-.build_template: &ubuntu_build_commons
-    after_script:
-        - mkdir build ; cd build
-        - cmake .. -DCMAKE_BUILD_TYPE=Release -DWERROR=true
-        - export VERSION=$(cat PROJECT_VERSION)
-        - make -j 8
-        - ./tests
-
 build:bionic:
     image: ubuntu:18.04
     stage: build
-    <<: *ubuntu_dep_commons
+    only:
+        - pushes
     script:
-        # latest cmake
-        - apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common wget
-        - wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-        - apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main'
-        - apt-get purge -y --auto-remove cmake
-        - apt-get install -y cmake libpythonqt-qt5-python2-dev libpythonqt-qtall-qt5-python2-dev
-    <<: *ubuntu_build_commons
+        - ./ci/gitlab-ci/ubuntu/18.04/build.sh
 
 build:focal:
     image: ubuntu:20.04
     stage: build
-    <<: *ubuntu_dep_commons
+    only:
+        - pushes
     script:
-        - cd deps;
-          git clone https://github.com/Orochimarufan/PythonQt ;
-          cd PythonQt ;
-          git checkout 18d4c249ca9b0003cfb10ad711c60fb7f9d5f79b ;
-          sed -i "s/PythonQt_init_QtQml(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
-          sed -i "s/PythonQt_init_QtQuick(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
-          cd build ;
-          cmake .. -DBUILD_SHARED_LIBS=ON ;
-          make -j 6 ;
-          make install ;
-          cd ../..
-    <<: *ubuntu_build_commons
+        - ./ci/gitlab-ci/ubuntu/20.04/build.sh
 
 pages:
     image: gcc
     stage: deploy
+    only:
+        - pushes
     script:
         - apt-get update && apt-get install -y cmake doxygen graphviz
         - mkdir build
