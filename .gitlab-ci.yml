@@ -1,5 +1,5 @@
 .build_template: &ubuntu_dep_commons
-    script:
+    before_script:
         - apt-get update && apt-get install -y qtbase5-dev libassimp-dev libqt5opengl5-dev qtdeclarative5-dev libqt5svg5-dev qttools5-dev libqt5webkit5-dev qtmultimedia5-dev libqt5xmlpatterns5-dev libpython2-dev
         - if [ ! -f "./build.conf" ]; then
               . ./build.conf.example ;
@@ -25,7 +25,7 @@
 
 #
 .build_template: &ubuntu_build_commons
-    script:
+    after_script:
         - mkdir build ; cd build
         - cmake .. -DCMAKE_BUILD_TYPE=Release -DWERROR=true
         - export VERSION=$(cat PROJECT_VERSION)
