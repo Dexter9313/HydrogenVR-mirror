@@ -25,7 +25,7 @@ test:bionic:
         - build:bionic
     script:
         - ls build/
-        - dpkg -i build/*.deb || {apt-get -f install; dpkg -i build/*.deb;}
+        - dpkg -i build/*.deb || { apt-get -f install; dpkg -i build/*.deb; }
         - ldd $(which HydrogenVR)
         - HydrogenVR --version
 
