@@ -5,6 +5,10 @@ build:bionic:
         - pushes
     script:
         - ./ci/gitlab-ci/ubuntu/18.04/build.sh
+    artifacts:
+        paths:
+            - build/*.deb
+        expire_in: 1h
 
 build:focal:
     image: ubuntu:20.04
@@ -13,6 +17,17 @@ build:focal:
         - pushes
     script:
         - ./ci/gitlab-ci/ubuntu/20.04/build.sh
+
+test:bionic:
+    image: ubuntu:18.04
+    stage: test
+    dependencies:
+        - build:bionic
+    script:
+        - ls build/
+        - dpkg -i build/*.deb
+        - apt-get -f install
+        - dpkg -i build/*.deb
 
 pages:
     image: gcc
