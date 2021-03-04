@@ -6,7 +6,7 @@ language: cpp
 os:
     - linux
     #- osx
-dist: bionic
+dist: focal
 
 compiler:
     - gcc
@@ -30,9 +30,7 @@ addons:
             - libqt5webkit5-dev
             - qtmultimedia5-dev
             - libqt5xmlpatterns5-dev
-            - libpython3-dev
-            - libpythonqt-qt5-python3-dev
-            - libpythonqt-qtall-qt5-python3-dev
+            - libpython2-dev
 
 install:
     - if [ ! -f "./build.conf" ]; then
@@ -64,6 +62,23 @@ install:
         sudo cp ./libopenvr_api.so /usr/lib ;
         sudo cp ./openvr.h /usr/include ;
       fi
+    # install PythonQt
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        if [[ "$CACHED" = false ]]; then
+            git clone https://github.com/Orochimarufan/PythonQt ;
+            cd PythonQt ;
+            git checkout 18d4c249ca9b0003cfb10ad711c60fb7f9d5f79b ;
+            sed -i "s/PythonQt_init_QtQml(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
+            sed -i "s/PythonQt_init_QtQuick(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
+            cd build ;
+            cmake .. -DBUILD_SHARED_LIBS=ON ;
+            make -j 6 ;
+        else
+            cd PythonQt/build ;
+        fi;
+        sudo make install ;
+        cd ../.. ;
+      fi
     # install leap motion sdk
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         if [[ "$CACHED" = false ]]; then
@@ -87,7 +102,7 @@ script:
     - export VERSION=$(cat PROJECT_VERSION)
     - make -j 6
     - ./tests
-    - make clang-format
+    - if [ "$CXX" == "clang++" ]; then make clang-format ; fi
     - if [ "$CXX" == "clang++" ]; then make clang-tidy ; fi
 
 before_deploy:
