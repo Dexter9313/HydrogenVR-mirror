@@ -1,11 +1,50 @@
-image: gcc
+.build_template: &ubuntu_dep_commons
+    script:
+        - apt-get update && apt-get install -y qtbase5-dev libassimp-dev libqt5opengl5-dev qtdeclarative5-dev libqt5svg5-dev qttools5-dev libqt5webkit5-dev qtmultimedia5-dev libqt5xmlpatterns5-dev libpython2-dev
+        - if [ ! -f "./build.conf" ]; then
+              . ./build.conf.example ;
+          else
+              . ./build.conf ;
+          fi
+        - mkdir deps ; cd deps
+        # install openvr
+        - OPENVR_COMMIT=0eb70325a4ea3edca2a0ff8aefa631f2529e6eb7 ;
+          wget --content-disposition https://github.com/ValveSoftware/openvr/raw/$OPENVR_COMMIT/bin/linux64/libopenvr_api.so ;
+          wget --content-disposition https://raw.githubusercontent.com/ValveSoftware/openvr/$OPENVR_COMMIT/headers/openvr.h ;
+          sudo cp ./libopenvr_api.so /usr/lib ;
+          sudo cp ./openvr.h /usr/include ;
+        # install leap motion sdk
+        - wget --content-disposition https://warehouse.leapmotion.com/apps/4185/download ;
+          tar xzf Leap_Motion_SDK_Linux_*.tgz ;
+          sudo cp ./LeapDeveloperKit*/LeapSDK/include/Leap*.h /usr/include ;
+          sudo cp ./LeapDeveloperKit*/LeapSDK/lib/x64/libLeap.so /usr/lib ;
+        - cd ..
+        # install project additional deps
+        - ./$PROJECT_DIRECTORY/ci/travis/install.sh
 
-before_script:
-    - apt-get update && apt-get install -y cmake doxygen graphviz
+
+#
+.build_template: &ubuntu_build_commons
+    script:
+        - mkdir build ; cd build
+        - cmake .. -DCMAKE_BUILD_TYPE=Release -DWERROR=true
+        - export VERSION=$(cat PROJECT_VERSION)
+        - make -j 6
+        - ./tests
+
+build:bionic:
+    image: ubuntu:18.04
+    stage: build
+    <<: *ubuntu_dep_commons
+    script:
+        - apt-get install -y libpythonqt-qt5-python2-dev libpythonqt-qtall-qt5-python2-dev
+    <<: *ubuntu_build_commons
 
 pages:
+    image: gcc
     stage: deploy
     script:
+        - apt-get update && apt-get install -y cmake doxygen graphviz
         - mkdir build
         - cd build
         - cmake .. -DDOC_ONLY=true
