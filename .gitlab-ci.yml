@@ -45,6 +45,24 @@ build:bionic:
         - apt-get install -y cmake libpythonqt-qt5-python2-dev libpythonqt-qtall-qt5-python2-dev
     <<: *ubuntu_build_commons
 
+build:focal:
+    image: ubuntu:20.04
+    stage: build
+    <<: *ubuntu_dep_commons
+    script:
+        - cd deps;
+          git clone https://github.com/Orochimarufan/PythonQt ;
+          cd PythonQt ;
+          git checkout 18d4c249ca9b0003cfb10ad711c60fb7f9d5f79b ;
+          sed -i "s/PythonQt_init_QtQml(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
+          sed -i "s/PythonQt_init_QtQuick(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
+          cd build ;
+          cmake .. -DBUILD_SHARED_LIBS=ON ;
+          make -j 6 ;
+          make install ;
+          cd ../..
+    <<: *ubuntu_build_commons
+
 pages:
     image: gcc
     stage: deploy
